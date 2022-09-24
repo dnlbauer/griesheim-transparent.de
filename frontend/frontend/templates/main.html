@@ -1,12 +1,14 @@
 {% include "header.html" %}
-<form action="{% url 'search' %}" method="get" up-target=".searchresults">
-    <input
+<main class="container">
+    <h1>Griesheim, aber transparent.</h1>
+    <form action="{% url 'search' %}" method="get" up-target=".searchresults">
+        <input
             type="search"
             name="query"
-            placeholder="Suche nach Dokumenten..."
+            placeholder="Suche nach Dokumenten, Inhalten, ..."
             class="form-control"
-    />
-</form>
-
-{% include "search/search.html" %}
+        />
+    </form>
+    {% include "search/search.html" %}
+</main>
 {% include "footer.html" %}

@@ -2,34 +2,42 @@ import logging
 
 from django.views.generic import TemplateView
 
-from frontend.models import Document
 from django.shortcuts import render
+
+from frontend.solr import SolrService
 
 logger = logging.getLogger(__name__)
 
-def get_docs(query):
-    docs = None
-    if query is not None:
-        docs = [
-            Document("test", query),
-            Document("test2", "test")
-        ]
-    return docs
+def search_documents_context(query):
+    result = None
+    if query:
+        docs = SolrService().search(query)
+        result = []
+        for document in docs:
+            hl = docs.highlighting[document['id']]
+            if len(hl) > 0:
+                values = [item for sublist in hl.values() for item in sublist]
+                document["hl"] = "...".join(values)
+            result.append(document)
+
+    return dict(result=result)
+
 
 class MainView(TemplateView):
     template_name = "main.html"
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)
-        docs = get_docs(query)
+        context = search_documents_context(query)
 
-        return render(request, self.template_name, context={"documents": docs})
+        return render(request, self.template_name, context=context)
+
 
 class SearchView(TemplateView):
     template_name = "search/search.html"
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)
-        docs = get_docs(query)
+        context = search_documents_context(query)
 
-        return render(request, self.template_name, context={'documents': docs})
+        return render(request, self.template_name, context=context)

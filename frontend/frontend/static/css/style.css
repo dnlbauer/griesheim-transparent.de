@@ -1,0 +1,10 @@
+.searchresult {
+    padding-bottom: 0.75em;
+    padding-top: 0.25em;
+}
+
+.nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

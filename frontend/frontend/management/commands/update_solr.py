@@ -18,8 +18,6 @@ class Command(BaseCommand):
 
     def _connect_solr(self):
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
-        result = solr.ping()
-        assert("OK" in result)
         return solr
 
     def _to_solr(self, doc):

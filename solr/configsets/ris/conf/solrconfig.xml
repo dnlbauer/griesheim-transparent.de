@@ -749,7 +749,6 @@
       <str name="hl">true</str>
       <str name="hl.fl">
         content content_ocr
-        author
         consultation_name consultation_topic consultation_type consultation_text
       </str>
       <str name="hl.fragsize">100</str>

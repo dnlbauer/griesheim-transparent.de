@@ -11,19 +11,23 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 from os.path import join
 from pathlib import Path
+import environ
+
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+environ.Env.read_env(join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-$vob9+fgpc=h_2e57lc=3*vsae(x0-jd@cexqzhdqaoa29qcy4"
+SECRET_KEY = env('SECRET_KEY', default="django-insecure-$vob9+fgpc=h_2e57lc=3*vsae(x0-jd@cexqzhdqaoa29qcy4")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
+
 
 ALLOWED_HOSTS = []
 
@@ -79,8 +83,17 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+    },
+    "ris": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "HOST": env("RIS_DB_HOST"),
+        "PORT": env("RIS_DB_PORT"),
+        "NAME": env("RIS_DB_NAME"),
+        "USER": env("RIS_DB_USER"),
+        "PASSWORD": env("RIS_DB_PASSWORD")
     }
 }
+DATABASE_ROUTERS = ['frontend.databaserouter.DatabaseRouter']
 
 
 # Password validation
@@ -124,5 +137,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-SOLR_HOST = "http://localhost:8983/solr"
-SOLR_COLLECTION = "ris"
+SOLR_HOST = env("SOLR_HOST", default="http://localhost:8983/solr")
+SOLR_COLLECTION = env('SOLR_COLLECTION', default="ris")

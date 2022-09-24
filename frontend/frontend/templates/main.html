@@ -1,0 +1,12 @@
+{% include "header.html" %}
+<form action="{% url 'search' %}" method="get" up-target=".searchresults">
+    <input
+            type="search"
+            name="query"
+            placeholder="Suche nach Dokumenten..."
+            class="form-control"
+    />
+</form>
+
+{% include "search/search.html" %}
+{% include "footer.html" %}

@@ -1,13 +1,4 @@
-{% include "header.html" %}
-<form action="{% url 'search' %}" method="get">
-    <input
-            type="search"
-            name="query"
-            placeholder="Suche nach Dokumenten..."
-            class="form-control"
-    />
-</form>
-
+<div class="searchresults">
 {% if documents %}
     <ul>
     {% for document in documents %}
@@ -15,4 +6,4 @@
     {% endfor %}
     </ul>
 {% endif %}
-{% include "footer.html" %}
+</div>

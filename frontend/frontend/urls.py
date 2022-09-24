@@ -16,9 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from frontend.views import SearchView
+from frontend.views import MainView, SearchView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", SearchView.as_view(), name="search")
+    path("", MainView.as_view(), name="main"),
+    path("search", SearchView.as_view(), name="search")
 ]

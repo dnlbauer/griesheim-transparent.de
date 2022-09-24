@@ -1,0 +1,18 @@
+{% include "header.html" %}
+<form action="{% url 'search' %}" method="get">
+    <input
+            type="search"
+            name="query"
+            placeholder="Suche nach Dokumenten..."
+            class="form-control"
+    />
+</form>
+
+{% if documents %}
+    <ul>
+    {% for document in documents %}
+        <li>{{ document.author }}: {{ document.content }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% include "footer.html" %}

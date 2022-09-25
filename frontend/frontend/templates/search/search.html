@@ -1,7 +1,8 @@
 <div class="searchresults">
-{% if result %}
-    {% for document in result %}
-        {% include "search/search_list_element.html" %}
-    {% endfor %}
-{% endif %}
+    <small><em>{{ result.hits }} gefunden ({{ result.qtime }}ms)</em></small>
+    {% if result %}
+        {% for document in result.documents %}
+            {% include "search/search_list_element.html" %}
+        {% endfor %}
+    {% endif %}
 </div>

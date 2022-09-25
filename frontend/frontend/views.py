@@ -8,29 +8,15 @@ from frontend.solr import SolrService
 
 logger = logging.getLogger(__name__)
 
-def search_documents_context(query):
-    result = None
-    if query:
-        docs = SolrService().search(query)
-        result = []
-        for document in docs:
-            hl = docs.highlighting[document['id']]
-            if len(hl) > 0:
-                values = [item for sublist in hl.values() for item in sublist]
-                document["hl"] = "...".join(values)
-            result.append(document)
-
-    return dict(result=result)
-
 
 class MainView(TemplateView):
     template_name = "main.html"
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)
-        context = search_documents_context(query)
+        result = SolrService().search(query)
 
-        return render(request, self.template_name, context=context)
+        return render(request, self.template_name, context={"result": result})
 
 
 class SearchView(TemplateView):
@@ -38,6 +24,6 @@ class SearchView(TemplateView):
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)
-        context = search_documents_context(query)
+        result = SolrService().search(query)
 
-        return render(request, self.template_name, context=context)
+        return render(request, self.template_name, context={"result": result})

@@ -3,6 +3,13 @@ import pysolr
 from frontend import settings
 
 
+class SearchResults:
+    def __init__(self, documents, hits, qtime):
+        self.documents = documents
+        self.hits = hits
+        self.qtime = qtime
+
+
 class SolrService:
 
     solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
@@ -25,11 +32,22 @@ class SolrService:
         "hl.bs.separator": ".",
     }
 
+    def _parse_document(self, doc, response):
+        hl = response.highlighting[doc['id']]
+        if len(hl) > 0:
+            values = [item for sublist in hl.values() for item in sublist]
+            doc["hl"] = "...".join(values)
+        return doc
+
     def search(self, query, hl=True):
         args = self.SOLR_ARGS
         if hl:
             args |= self.HL_ARGS
         else:
             args['hl'] = 'false'
-        return self.solr.search(query, **self.SOLR_ARGS)
+        result = self.solr.search(query, **self.SOLR_ARGS)
+        documents = [self._parse_document(doc, result) for doc in result.docs]
+
+        return SearchResults(documents, result.hits, result.qtime)
+
 

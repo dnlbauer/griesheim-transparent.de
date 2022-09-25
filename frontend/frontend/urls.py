@@ -16,10 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from frontend.views import MainView, SearchView
+from frontend.views import MainView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", MainView.as_view(), name="main"),
-    path("search", SearchView.as_view(), name="search")
+    path("search", MainView.as_view(), name="search")
 ]

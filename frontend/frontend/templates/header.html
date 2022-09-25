@@ -12,5 +12,11 @@ zu durchsuchen." />
     <link rel="stylesheet" href="{% static 'css/picocss/pico.css' %}"/>
     <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
     <script src="{% static 'js/unpoly.js' %}"></script>
+    <script>
+        {% if DEBUG %}
+            up.log.enable()
+        {% endif %}
+        up.fragment.config.autoHistoryTargets.push(".searchresults")
+    </script>
 </head>
 <body>

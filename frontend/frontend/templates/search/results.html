@@ -1,6 +1,6 @@
 <div class="facets mb3">
     <select class="facet bn pa2 mr3">
-        <option>Beliebige Zeig</option>
+        <option>Beliebige Zeit (stub)</option>
         <option>Letzte Woche</option>
         <option>Letzter Monat</option>
         <option>Letztes Jahr</option>
@@ -8,14 +8,14 @@
 
 
     <select class="facet bn pa2 mr3">
-        <option>Beliebiges Dokument</option>
-        <option>Niederschrift</option>
-        <option>Antrag</option>
-        <option>Änderungsantrag</option>
+        <option value="">Beliebiges Dokument</option>
+        {% for consultation_type in result.facets.consultation_type %}
+            <option value="{{ consultation_type.0 }}">{{ consultation_type.0 }} ({{ consultation_type.1 }})</option>
+        {% endfor %}
     </select>
 
     <select class="facet bn pa2 mr3">
-        <option>Beliebiges Gremium</option>
+        <option>Beliebiges Gremium (stub)</option>
         <option>Stadtverordnetenversammlung</option>
         <option>Ausschuss Jugend, Kultur, Soziales</option>
         <option>Umweltausschuss</option>

@@ -31,6 +31,8 @@
     <field name="consultation_id" type="pint" indexed="true" stored="true" />
     <field name="consultation_name" type="keyword" indexed="true" stored="true" />
     <field name="consultation_type" type="keyword" indexed="true" stored="true" />
+    <field name="consultation_type_s" type="string" indexed="true" stored="true" />
+    <copyField source="consultation_type" dest="consultation_type_s"/>
     <field name="consultation_topic" type="text" indexed="true" stored="true" />
     <field name="consultation_topic_hp" type="text_hp" indexed="true" stored="false" />
     <field name="consultation_topic_hr" type="text_hr" indexed="true" stored="false" />

@@ -3,9 +3,14 @@ import pysolr
 from frontend import settings
 
 
+def pairwise(iterable):
+    return list(zip(iterable[0::2], iterable[1::2]))
+
+
 class SearchResults:
-    def __init__(self, documents, hits, qtime):
+    def __init__(self, documents, facets, hits, qtime):
         self.documents = documents
+        self.facets = facets
         self.hits = hits
         self.qtime = qtime
 
@@ -32,6 +37,11 @@ class SolrService:
         "hl.bs.separator": ".",
     }
 
+    FACET_ARGS = {
+        "facet": "true",
+        "facet.field": "consultation_type_s",
+    }
+
     def _parse_document(self, doc, response):
         hl = response.highlighting[doc['id']]
         if len(hl) > 0:
@@ -44,15 +54,24 @@ class SolrService:
             doc["link"] = doc['download']
         return doc
 
-    def search(self, query, hl=True):
+    def search(self, query, hl=True, facet=True):
         args = self.SOLR_ARGS
         if hl:
             args |= self.HL_ARGS
         else:
             args['hl'] = 'false'
+        if facet:
+            args |= self.FACET_ARGS
+            args |= {"fq": query}
         result = self.solr.search(query, **self.SOLR_ARGS)
         documents = [self._parse_document(doc, result) for doc in result.docs]
+        if facet:
+            facets = {
+                "consultation_type": pairwise(result.facets['facet_fields']['consultation_type_s'])
+            }
+        else:
+            facets = {}
 
-        return SearchResults(documents, result.hits, result.qtime)
+        return SearchResults(documents, facets, result.hits, result.qtime)
 
 

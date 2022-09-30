@@ -30,3 +30,7 @@ class MainView(TemplateView):
         context['result'] = result
 
         return render(request, self.template_name, context=context)
+
+
+class SearchView(MainView):
+    template_name = "search/search.html"

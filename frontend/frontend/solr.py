@@ -37,6 +37,11 @@ class SolrService:
         if len(hl) > 0:
             values = [item for sublist in hl.values() for item in sublist]
             doc["hl"] = "...".join(values)
+        doc['download'] = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
+        if "consultation_id" in doc:
+            doc["link"] = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
+        else:
+            doc["link"] = doc['download']
         return doc
 
     def search(self, query, hl=True):

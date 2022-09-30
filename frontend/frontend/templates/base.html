@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="de">
+    <title>{% block title %}Griesheim Transparent{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/tachyons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/unpoly.js' %}"></script>
+    <script>
+        {% if DEBUG %}
+            up.log.enable()
+        {% endif %}
+        up.fragment.config.autoHistoryTargets.push(".searchresults")
+    </script>
+    <body class="sans-serif">
+        {% block content %}{% endblock %}
+    </body>
+    </html>

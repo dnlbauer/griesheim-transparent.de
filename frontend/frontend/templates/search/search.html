@@ -1,8 +1,25 @@
-<div class="searchresults">
-    <small><em>{{ result.hits }} gefunden ({{ result.qtime }}ms)</em></small>
-    {% if result %}
-        {% for document in result.documents %}
-            {% include "search/search_list_element.html" %}
-        {% endfor %}
-    {% endif %}
-</div>
+{% extends "base.html" %}
+
+{% block content %}
+    <script>up.form.config.submitSelectors.push(['form'])</script>
+    <div class="w-100">
+        <div class="mw9 center">
+            <form class="ma3 w-30r p3" action="{% url 'search' %}" method="get" up-target=".searchresults">
+                <input class="w-60 f5 pa2 br-pill"
+                       type="text"
+                       name="query"
+                       placeholder="Suche nach Dokumenten, Inhalten, ..."
+                       autocomplete="off"
+                />
+            </form>
+        </div>
+    </div>
+    <hr />
+    <div class="w-100">
+        <div class="mw9 center">
+            <div class="w-60">
+                {% include "search/results.html" %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

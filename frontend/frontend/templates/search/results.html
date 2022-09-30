@@ -1,0 +1,34 @@
+<div class="facets mb3">
+    <select class="facet bn pa2 mr3">
+        <option>Beliebige Zeig</option>
+        <option>Letzte Woche</option>
+        <option>Letzter Monat</option>
+        <option>Letztes Jahr</option>
+    </select>
+
+
+    <select class="facet bn pa2 mr3">
+        <option>Beliebiges Dokument</option>
+        <option>Niederschrift</option>
+        <option>Antrag</option>
+        <option>Änderungsantrag</option>
+    </select>
+
+    <select class="facet bn pa2 mr3">
+        <option>Beliebiges Gremium</option>
+        <option>Stadtverordnetenversammlung</option>
+        <option>Ausschuss Jugend, Kultur, Soziales</option>
+        <option>Umweltausschuss</option>
+    </select>
+</div>
+
+<div class="searchresults">
+    <small class="f5"><em>{{ result.hits }} Ergebnisse gefunden ({{ result.qtime }} ms)</em></small>
+    <div class="results mt3">
+        {% if result %}
+            {% for document in result.documents %}
+                {% include "search/search_list_element.html" %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

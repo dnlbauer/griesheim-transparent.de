@@ -1,17 +1,14 @@
-<div class="searchresult">
-    {% if "consultation_id" in document %}
-        <small><a href="https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={{ document.consultation_id }}">
-            https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={{ document.consultation_id }}
-        </a></small><br/>
-        {{ document.consultation_name }}: {{ document.consultation_topic }}
-    {% else %}
-        <small><a href="https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={{ document.document_id }}">
-            https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={{ document.document_id }}
-        </a></small><br/>
-        <span class="nowrap">{{ document.content.strip|slice:"0:100" }}...</span>
-    {% endif %}<br>
+<article class="searchresult mt3 f5 pb3" style="line-height: 1.6">
+    <div class="searchresult-head">
+        <a class="f6 grow no-underline br-pill ba ph2 mb2 dib black mr2" href="{{ document.download }}">DL ↓</a>
+        <a href="{{ document.link }}">
+            {{ document.link }}
+            <span class="f4 nowrap blue title fw4">{{ document.content.strip|slice:"0:100" }}...</span>
+        </a>
+    </div>
     {% if "hl" in document %}
-        <mark><small>{{ document.hl.strip|safe }}</small></mark>
+        <div>
+            {{ document.hl.strip|safe }}
+        </div>
     {% endif %}
-    <hr>
-</div>
+</article>

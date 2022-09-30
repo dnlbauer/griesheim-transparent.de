@@ -1,10 +1,8 @@
-.searchresult {
-    padding-bottom: 0.75em;
-    padding-top: 0.25em;
+div.searchresult-head > a {
+    text-decoration: none;
+    color: inherit
 }
 
-.nowrap {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+div.searchresult-head > a > span.title:hover {
+    text-decoration: underline;
 }

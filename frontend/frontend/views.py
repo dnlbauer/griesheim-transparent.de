@@ -25,6 +25,7 @@ class MainView(TemplateView):
         query = request.GET.get("query", None)
         if query is not None:
             result = SolrService().search(query)
+            context['query'] = query
         else:
             result = None
         context['result'] = result

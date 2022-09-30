@@ -9,6 +9,7 @@
                        type="text"
                        name="query"
                        placeholder="Suche nach Dokumenten, Inhalten, ..."
+                        {% if query %}value="{{ query }}"{% endif %}
                        autocomplete="off"
                 />
             </form>

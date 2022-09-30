@@ -1,18 +1,38 @@
+import math
+
 import pysolr
 
 from frontend import settings
 
 
 class SearchResults:
-    def __init__(self, documents, hits, qtime):
+    def __init__(self, documents, page, rows, hits, qtime):
         self.documents = documents
+        self.page = page
+        self.max_page = math.ceil(hits/rows)
         self.hits = hits
         self.qtime = qtime
+
+    def __iter__(self):
+        return iter(self.documents)
+
+    def __len__(self):
+        return len(self.documents)
+
+    @property
+    def has_previous(self):
+        return self.page > 1
+
+    @property
+    def has_next(self):
+        return self.page < self.max_page
 
 
 class SolrService:
 
     solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
+
+    NUM_ROWS = 10
 
     SOLR_ARGS = {
         "search_handler": "/select",
@@ -44,8 +64,16 @@ class SolrService:
             doc["link"] = doc['download']
         return doc
 
-    def search(self, query, hl=True):
+    def solr_page(self, page_number, rows_per_page):
+        start = page_number * rows_per_page
+        return {
+            "rows": rows_per_page,
+            "start": start
+        }
+
+    def search(self, query, page, hl=True):
         args = self.SOLR_ARGS
+        args |= self.solr_page(page-1, self.NUM_ROWS)
         if hl:
             args |= self.HL_ARGS
         else:
@@ -53,6 +81,6 @@ class SolrService:
         result = self.solr.search(query, **self.SOLR_ARGS)
         documents = [self._parse_document(doc, result) for doc in result.docs]
 
-        return SearchResults(documents, result.hits, result.qtime)
+        return SearchResults(documents, page, self.NUM_ROWS, result.hits, result.qtime)
 
 

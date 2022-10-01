@@ -298,7 +298,9 @@ def scrape_consultation(id, config, db, queue, lock):
         consultation.documents = documents
         repository.add_consultation(consultation)
         repository.commit()
+        uuid = consultation.id
     lock.release()
+    return uuid
 
 
 def scrape_dom_for_documents(dom, config, db, queue, lock):

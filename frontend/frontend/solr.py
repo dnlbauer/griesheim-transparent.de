@@ -1,8 +1,22 @@
+from datetime import datetime
+
 import math
 
 import pysolr
 
 from frontend import settings
+
+
+class SearchResult:
+    def __init__(self, title, highlight, link, download_link,
+                 doc_type, short_name, date):
+        self.title = title
+        self.highlight = highlight
+        self.link = link
+        self.download_link = download_link
+        self.doc_type = doc_type
+        self.short_name = short_name
+        self.date = date
 
 
 class SearchResults:
@@ -36,7 +50,7 @@ class SolrService:
 
     SOLR_ARGS = {
         "search_handler": "/select",
-        "fl": "id,consultation_id",
+        "fl": "id,content"
     }
 
     HL_ARGS = {
@@ -52,17 +66,41 @@ class SolrService:
         "hl.bs.separator": ".",
     }
 
-    def _parse_document(self, doc, response):
+    def _parse_search_result(self, doc, response):
+        download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
+        if "consultation_id" in doc:
+            link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
+            title = doc['consultation_topic']
+            doc_type = doc['consultation_type']
+            short_name = doc['consultation_name']
+        else:
+            link = download_link
+            title = doc['content'][:100] + "..."
+            doc_type = None
+            short_name = None
+
+        if "meeting_date" in doc and len(doc['meeting_date']) > 0:
+            date = sorted(doc['meeting_date'])[0]
+            date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            date = None
+
         hl = response.highlighting[doc['id']]
         if len(hl) > 0:
             values = [item for sublist in hl.values() for item in sublist]
-            doc["hl"] = "...".join(values)
-        doc['download'] = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
-        if "consultation_id" in doc:
-            doc["link"] = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
+            hl = "...".join(values)
         else:
-            doc["link"] = doc['download']
-        return doc
+            hl = None
+
+        return SearchResult(
+            title,
+            hl,
+            link,
+            download_link,
+            doc_type,
+            short_name,
+            date
+        )
 
     def solr_page(self, page_number, rows_per_page):
         start = page_number * rows_per_page
@@ -79,7 +117,7 @@ class SolrService:
         else:
             args['hl'] = 'false'
         result = self.solr.search(query, **self.SOLR_ARGS)
-        documents = [self._parse_document(doc, result) for doc in result.docs]
+        documents = [self._parse_search_result(doc, result) for doc in result.docs]
 
         return SearchResults(documents, page, self.NUM_ROWS, result.hits, result.qtime)
 

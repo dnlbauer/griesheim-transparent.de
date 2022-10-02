@@ -1,0 +1,25 @@
+<article class="searchresult mt3 f5 pb3" style="line-height: 1.6">
+    <div class="searchresult-head">
+        <a class="f6 grow no-underline br-pill ba ph2 mb2 dib black mr2" href="{{ document.download }}">Runterladen ↓</a>
+        <a href="{{ document.link }}">
+            {{ document.link }}
+            <span class="f4 blue result-title fw4">
+                {{ document.title.strip }}
+            </span>
+        </a>
+    </div>
+    {% if document.highlight %}
+        <div class="gray" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
+            {{ document.highlight.strip|safe }}
+        </div>
+    {% endif %}
+    <div class="metadata">
+        {% if document.doc_type %}
+            <span class="f4" style="vertical-align: middle">🗎</span>
+            <small class="f6"> {{ document.doc_type }} | {{ document.short_name }}{% if document.date %} | {{ document.date|date:'d. M o' }}{% endif %}</small>
+        {% else %}
+            <span class="f4" style="vertical-align: middle">🖫</span>
+            <small class="f6 red"> UNKNOWN | TEST/1234/567 | 13-13-2022</small>
+        {% endif %}
+    </div>
+</article>

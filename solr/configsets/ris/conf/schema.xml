@@ -6,7 +6,8 @@
     <field name="id" type="string" indexed="true" stored="true" required="true" />
     <field name="doc_type" type="string" indexed="false" stored="true" required="true" />
 
-    <field name="document_id" type="pint" indexed="true" stored="true" required="true" />
+    <!-- Document data -->
+    <field name="document_id" type="pint" indexed="false" stored="true" required="true" />
 
     <field name="content" type="text" indexed="true" stored="true" />
     <field name="content_hr" type="text_hr" indexed="true" stored="false" />
@@ -20,7 +21,7 @@
     <copyField source="content_ocr" dest="content_ocr_hr"/>
     <copyField source="content_ocr" dest="content_ocr_hp"/>
 
-    <field name="size" type="pint" indexed="true" stored="true" required="true" />
+    <field name="size" type="pint" indexed="false" stored="true" required="true" />
     <field name="content_type" type="string" indexed="false" stored="true" required="true" />
 
     <field name="author" type="text" indexed="true" stored="true" />
@@ -28,7 +29,8 @@
     <field name="last_modified" type="pdate" indexed="true" stored="true" />
     <field name="last_saved" type="pdate" indexed="true" stored="true" />
 
-    <field name="consultation_id" type="pint" indexed="true" stored="true" />
+    <!-- Consultation -->
+    <field name="consultation_id" type="pint" indexed="false" stored="true" />
     <field name="consultation_name" type="keyword" indexed="true" stored="true" />
     <field name="consultation_type" type="keyword" indexed="true" stored="true" />
     <field name="consultation_topic" type="text" indexed="true" stored="true" />
@@ -41,6 +43,14 @@
     <copyField source="consultation_text" dest="consultation_text_hp"/>
     <copyField source="consultation_topic" dest="consultation_topic_hr"/>
     <copyField source="consultation_topic" dest="consultation_topic_hp"/>
+
+    <!-- Meeting -->
+    <field name="meeting_id" type="pint" indexed="false" stored="true" multiValued="true" />
+    <field name="meeting_title" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_title_short" type="string" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_date" type="pdate" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_organization_name" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_count" type="pint" indexed="true" stored="true" />
 
     <uniqueKey>id</uniqueKey>
 

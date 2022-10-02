@@ -29,9 +29,13 @@ class Command(BaseCommand):
             content=doc.content_text,
             content_ocr=doc.content_text_ocr,
             author=doc.author,
-            content_type=doc.content_type
+            content_type=doc.content_type,
+            meeting_id=[],
+            meeting_title=[],
+            meeting_title_short=[],
+            meeting_date=[],
+            meeting_organization_name=[]
         )
-
         consultations = doc.consultations.all()
         consultation = None
         if len(consultations) > 1:
@@ -44,6 +48,29 @@ class Command(BaseCommand):
             solr_doc["consultation_topic"] = consultation.topic
             solr_doc["consultation_type"] = consultation.type
             solr_doc["consultation_text"] = consultation.text
+
+
+            agenda_items = consultation.agenda_items.all()
+            for item in agenda_items:
+                meeting = item.meeting
+                if meeting.meeting_id not in solr_doc['meeting_id']:
+                    solr_doc['meeting_id'].append(meeting.meeting_id)
+                    solr_doc['meeting_title'].append(meeting.title)
+                    solr_doc['meeting_title_short'].append(meeting.title_short)
+                    solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
+                    solr_doc['meeting_organization_name'].append(meeting.organization.name)
+
+        for meeting in doc.meetings.all():
+            if meeting.meeting_id not in solr_doc['meeting_id']:
+                solr_doc['meeting_id'].append(meeting.meeting_id)
+                solr_doc['meeting_title'].append(meeting.title)
+                solr_doc['meeting_title_short'].append(meeting.title_short)
+                solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
+                solr_doc['meeting_organization_name'].append(meeting.organization.name)
+
+
+
+        solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
         if doc.creation_date is not None:
             solr_doc['creation_date'] = doc.creation_date.strftime(self.DATE_FORMAT),

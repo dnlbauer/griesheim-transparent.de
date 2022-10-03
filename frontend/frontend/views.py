@@ -35,8 +35,12 @@ class MainView(TemplateView):
 
         query = request.GET.get("query", None)
         page = parse_page(request)
+        if query is not None:
+            result = SolrService().search(query, page)
+        else:
+            result = []
+            context['num_docs'] = SolrService().search("*:*", page).hits
 
-        result = SolrService().search(query, page)
         context['query'] = query
         context['result'] = result
 

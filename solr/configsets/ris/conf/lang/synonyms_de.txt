@@ -33,3 +33,4 @@ Griesheimer Anger,Konversion Südost
 SWBA,Schwimmbadausschuss
 FW,Feuerwehrausschuss
 KITA,Kindertagesstätte
+IV,Informationsvorlage

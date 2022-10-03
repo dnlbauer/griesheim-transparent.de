@@ -50,7 +50,7 @@ class SolrService:
 
     SOLR_ARGS = {
         "search_handler": "/select",
-        "fl": "id,content"
+        "fl": "id,content,content_ocr"
     }
 
     HL_ARGS = {
@@ -75,7 +75,14 @@ class SolrService:
             short_name = doc['consultation_name']
         else:
             link = download_link
-            title = doc['content'][:100] + "..."
+            if "content" in doc:
+                title = doc['content'][:100] + "..."
+            elif "content_ocr" in doc:
+                title = doc['content_ocr'][:100] + "..."
+            elif "meeting_title" in doc:
+                title = doc['meeting_title']
+            else:
+                title = None
             doc_type = None
             short_name = None
 

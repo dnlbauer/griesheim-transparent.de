@@ -34,7 +34,8 @@ class Command(BaseCommand):
             meeting_title=[],
             meeting_title_short=[],
             meeting_date=[],
-            meeting_organization_name=[]
+            meeting_organization_name=[],
+            filename=doc.file_name
         )
         consultations = doc.consultations.all()
         consultation = None

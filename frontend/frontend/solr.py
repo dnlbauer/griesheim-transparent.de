@@ -79,12 +79,17 @@ class SolrService:
                 title = doc['content'][:100] + "..."
             elif "content_ocr" in doc:
                 title = doc['content_ocr'][:100] + "..."
-            elif "meeting_title" in doc:
-                title = doc['meeting_title']
             else:
                 title = None
-            doc_type = None
-            short_name = None
+            if ("content" in doc and "niederschrift" in doc['content'][:200].lower()) or ("content_ocr" in doc and "niederschrift" in doc['content_ocr'][:200].lower()):
+                doc_type = "Niederschrift"
+            else:
+                doc_type = None
+
+            if "meeting_title_short" in doc and len(doc['meeting_title_short']) == 1:
+                short_name = doc['meeting_title_short'][0]
+            else:
+                short_name = None
 
         if "meeting_date" in doc and len(doc['meeting_date']) > 0:
             date = sorted(doc['meeting_date'])[0]

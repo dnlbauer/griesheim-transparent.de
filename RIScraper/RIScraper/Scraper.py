@@ -18,6 +18,7 @@ import mechanize as mechanize
 import structlog
 from lxml import html
 from nameparser import HumanName
+from sqlalchemy import and_
 from structlog import get_logger
 from tika import parser
 
@@ -383,18 +384,26 @@ def analyze_document(document_id, db, config):
         temp_file = tempfile.NamedTemporaryFile("wb", suffix=".pdf", delete=False)
         temp_file.write(doc.content_binary)
         temp_file.close()
+
+    logger.info(f"Extract content for {document_id}/{doc.file_name} with tika")
     parsed = parser.from_file(temp_file.name, serverEndpoint=config['tika'], headers={
         "X-Tika-PDFOcrStrategy": "no_ocr",
     }, requestOptions={'timeout': 30*60})
 
     metadata = parsed["metadata"]
     content = parsed['content']
+    if content is None or len(content) == 0:
+        logger.warn(f"Empty content for {document_id}")
 
+    logger.info(f"OCR for {document_id}/{doc.file_name} with tika")
     parsed_ocr = parser.from_file(temp_file.name, serverEndpoint=config['tika'], headers={
         "X-Tika-PDFOcrStrategy": "OCR_ONLY",
         "X-Tika-OCRLanguage": "deu"
     }, requestOptions={'timeout': 30*60})
     content_ocr = parsed_ocr["content"]
+    if content_ocr is None or len(content_ocr) == 0:
+        logger.warn(f"Empty OCR content for {document_id}")
+
 
     os.unlink(temp_file.name)
 
@@ -541,7 +550,7 @@ def init_queue_for_analyze(queue, config, db):
     elif config["analyze"] == "new":
         with db.create_transaction() as t:
             ids = t.session.query(Document.document_id)\
-                .where(Document.content_text == None, Document.content_type == "application/pdf")\
+                .where(and_(Document.content_text_ocr == None, Document.content_text == None), Document.content_type == "application/pdf")\
                 .all()
     else:
         ids = []
@@ -655,7 +664,7 @@ def analyze(config):
     db = Schema(config["database_url"], verbose=False)
     init_queue_for_analyze(queue, config, db)
 
-    logger.info(f"Analyzing {queue.qsize()} documents with {num_threads} threads ...")
+    logger.info(f"Analyzing {queue.qsize()} pdf documents with {num_threads} threads ...")
     processors = []
     pool = multiprocessing.Pool(num_threads)
     for i in range(num_threads):

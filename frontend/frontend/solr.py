@@ -54,17 +54,33 @@ class SolrService:
     }
 
     HL_ARGS = {
+        "hl.encoder": "html",
         "hl.tag.pre": "<strong>",
         "hl.tag.post": "</strong>",
+        "hl.fl": "content content_ocr consultation_text",
         "hl.method": "unified",
-        "hl.snippets": "2",
-        "hl.fragsize": "5",
-        "hl.fragsizeIsMinimum": "false",
-        "hl.encoder": "html",
+        "hl.snippets": "3",
+        "hl.fragsize": "250",
+        "hl.fragsizeIsMinimum": "true",
         "hl.tag.ellipsis": "…",
-        "hl.bs.type": "SEPARATOR",
-        "hl.bs.separator": ".",
+        "hl.bs.type": "WORD",
+        "hl.defaultSummary": "true",
     }
+
+    def _parse_highlights(self, highlights):
+        if highlights is None or len(highlights) == 0:
+            return None
+
+        hl = []
+        if "consultation_text" in highlights:
+            hl += highlights['consultation_text']
+        if "content" in highlights:
+            hl += highlights['content']
+        elif "content_ocr" in highlights:
+            hl += highlights['content_ocr']
+        hl = "...".join(hl)
+        return hl
+
 
     def _parse_search_result(self, doc, response):
         download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
@@ -94,12 +110,7 @@ class SolrService:
         date = doc['last_seen']
         date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
 
-        hl = response.highlighting[doc['id']]
-        if len(hl) > 0:
-            values = [item for sublist in hl.values() for item in sublist]
-            hl = "...".join(values)
-        else:
-            hl = None
+        hl = self._parse_highlights(response.highlighting[doc['id']])
 
         return SearchResult(
             title,

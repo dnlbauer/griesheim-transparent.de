@@ -749,7 +749,7 @@
       <str name="hl">true</str>
       <str name="hl.fl">
         content content_ocr
-        consultation_name consultation_topic consultation_type consultation_text
+        consultation_text
       </str>
       <str name="hl.fragsize">100</str>
       <!-- boot more recent documents (slope of reciprocal at 1/4 year) -->

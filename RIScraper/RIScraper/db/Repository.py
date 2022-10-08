@@ -34,7 +34,9 @@ class Repository:
 
     def add_organization(self, organization):
         session = self.session
-        if self.has_organization_by_name(organization.name):
+        if organization.org_id is not None and self.has_organization_by_org_id(organization.org_id):
+            organization.id = self.find_organization_by_org_id(organization.org_id).id
+        elif self.has_organization_by_name(organization.name):
             organization.id = self.find_organization_by_name(organization.name).id
         return session.merge(organization)
 
@@ -43,8 +45,17 @@ class Repository:
             .filter(Organization.name == name)\
             .scalar()
 
+    def find_organization_by_org_id(self, org_id):
+        return self.session.query(Organization) \
+            .filter(Organization.org_id == int(org_id))\
+            .scalar()
+
     def has_organization_by_name(self, name):
         qry = exists(Organization).where(Organization.name == name)
+        return self.session.query(qry).scalar()
+
+    def has_organization_by_org_id(self, org_id):
+        qry = exists(Organization).where(Organization.org_id == int(org_id))
         return self.session.query(qry).scalar()
 
     def has_membership(self, organization_id, person_id):

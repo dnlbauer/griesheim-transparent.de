@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pysolr
 from django.core.management import BaseCommand
 
@@ -37,6 +39,7 @@ class Command(BaseCommand):
             meeting_organization_name=[],
             filename=doc.file_name
         )
+        meetings = []
         consultations = doc.consultations.all()
         consultation = None
         if len(consultations) > 1:
@@ -50,26 +53,22 @@ class Command(BaseCommand):
             solr_doc["consultation_type"] = consultation.type
             solr_doc["consultation_text"] = consultation.text
 
-
             agenda_items = consultation.agenda_items.all()
             for item in agenda_items:
-                meeting = item.meeting
-                if meeting.meeting_id not in solr_doc['meeting_id']:
-                    solr_doc['meeting_id'].append(meeting.meeting_id)
-                    solr_doc['meeting_title'].append(meeting.title)
-                    solr_doc['meeting_title_short'].append(meeting.title_short)
-                    solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
-                    solr_doc['meeting_organization_name'].append(meeting.organization.name)
+                meetings.append(item.meeting)
 
-        for meeting in doc.meetings.all():
+        meetings += doc.meetings.all()
+        for meeting in meetings:
             if meeting.meeting_id not in solr_doc['meeting_id']:
                 solr_doc['meeting_id'].append(meeting.meeting_id)
                 solr_doc['meeting_title'].append(meeting.title)
                 solr_doc['meeting_title_short'].append(meeting.title_short)
                 solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
                 solr_doc['meeting_organization_name'].append(meeting.organization.name)
-
-
+                if "last_seen" not in solr_doc or datetime.strptime(solr_doc['last_seen'], self.DATE_FORMAT) < meeting.date:
+                    solr_doc['last_seen'] = solr_doc['meeting_date'][-1]
+                if "first_seen" not in solr_doc or datetime.strptime(solr_doc['first_seen'], self.DATE_FORMAT) > meeting.date:
+                    solr_doc['first_seen'] = solr_doc['meeting_date'][-1]
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 

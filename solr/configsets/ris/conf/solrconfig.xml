@@ -752,6 +752,10 @@
         consultation_name consultation_topic consultation_type consultation_text
       </str>
       <str name="hl.fragsize">100</str>
+      <!-- boot more recent documents (slope of reciprocal at 1/4 year) -->
+      <str name="bf">
+        recip(ms(NOW,last_seen),1.2674271e-10,1,1)
+      </str>
     </lst>
     <lst name="invariants">
       <str name="echoParams">explicit</str>
@@ -779,11 +783,6 @@
         meeting_organization_name^5
         filename^3
       </str>
-      <!-- boot more recent documents (slope of reciprocal at 1/2 year) -->
-      <!-- TODO better definition for boosting date: most recent of meeting_date, last_saved  -->
-<!--      <str name="bf">-->
-<!--        recip(ms(NOW,last_saved),1.58e-11,1,1)-->
-<!--      </str>-->
     </lst>
     <lst name="appends">
       <str name="fl">
@@ -791,6 +790,7 @@
         content_type
         consultation_id consultation_topic consultation_name consultation_type
         meeting_id meeting_title meeting_title_short meeting_date meeting_organization_name meeting_count
+        last_seen
       </str>
     </lst>
   </requestHandler>

@@ -91,11 +91,8 @@ class SolrService:
             else:
                 short_name = None
 
-        if "meeting_date" in doc and len(doc['meeting_date']) > 0:
-            date = sorted(doc['meeting_date'])[0]
-            date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-        else:
-            date = None
+        date = doc['last_seen']
+        date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
 
         hl = response.highlighting[doc['id']]
         if len(hl) > 0:

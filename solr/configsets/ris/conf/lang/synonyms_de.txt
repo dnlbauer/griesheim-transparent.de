@@ -20,10 +20,10 @@ Fotovoltaik,Photovoltaik
 Straße,strasse
 Protokoll,Niederschrift,NS
 SVV,STVV,Stadtverordnetenversammlung
-JSKS,Ausschuss für Jugend Soziales Kultur und Sport
+JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
 WF,WIFI,Wirtschafts und Finanzausschuss,Wirtschaftsauschuss,Finanzausschuss,Wirtschaftsausschuss und Finanzausschuss
-UEM,Ausschuss für Umwelt Energie und Mobilität
-SB,Stadtplanungs und Bauausschuss
+UEM,Ausschuss für Umwelt Energie und Mobilität,Umweltausschuss,Energieausschuss,Mobilitätsausschuss
+SB,Stadtplanungs und Bauausschuss,Stadtplanungsausschuss,Bauausschuss
 Griesheim Nord, Flüsseviertel
 Griesheim,Griesm,Griesem
 Darmstadt,DA

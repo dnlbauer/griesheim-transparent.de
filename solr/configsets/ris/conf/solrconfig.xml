@@ -759,27 +759,36 @@
       <!-- hp 20% higher
            hr 50%lower with minimum of 0.8
            keywords and numerics boosted to 5 -->
+      <!--
+      main search fields: content and content_ocr with a boosting of 1
+      exact matched fields boosted by 10
+      -->
       <str name="qf">
-        document_id^5
+        document_id^10
         content^1 content_hp^1.2 content_hr^0.8
         content_ocr^1 content_ocr_hp^1.2 content_ocr_hr^0.8
 
         consultation_id^10
-        consultation_name^5
+        consultation_name^10
         consultation_topic^3 consultation_topic_hp^3.6 consultation_topic_hr^0.8
         consultation_text^2 consultation_text^2.4 consultation_text_hr^0.8
-        consultation_type^5
+        consultation_type^10
+
         meeting_title^1
-        meeting_title_short^5
-        meeting_organization_name^1
+        meeting_title_short^10
+        meeting_organization_name^5
         filename^3
       </str>
+      <!-- boot more recent documents (slope of reciprocal at 1/2 year) -->
+      <!-- TODO better definition for boosting date: most recent of meeting_date, last_saved  -->
+<!--      <str name="bf">-->
+<!--        recip(ms(NOW,last_saved),1.58e-11,1,1)-->
+<!--      </str>-->
     </lst>
     <lst name="appends">
       <str name="fl">
         document_id
         content_type
-        size
         consultation_id consultation_topic consultation_name consultation_type
         meeting_id meeting_title meeting_title_short meeting_date meeting_organization_name meeting_count
       </str>

@@ -42,6 +42,21 @@ def test_create_organization(repository):
     assert organizations[0].name == "test"
 
 
+def test_create_orgnization_twice(repository):
+    organization = Organization(org_id=5, name="test")
+    repository.add_organization(organization)
+    organizations = repository.get_all_organizations()
+    assert len(organizations) == 1
+    assert organizations[0].name == "test"
+    repository.session.flush()
+
+    organization = Organization(org_id=5, name="test")
+    repository.add_organization(organization)
+    organizations = repository.get_all_organizations()
+    assert len(organizations) == 1
+    assert organizations[0].name == "test"
+
+
 def test_find_organization(repository):
     repository.add_organization(Organization(org_id=5, name="test"))
     organization = repository.find_organization_by_name("test")
@@ -78,6 +93,7 @@ def test_add_person_with_membership_existing_person(repository):
 def test_add_person_with_membership_existing_organization(repository):
     organization_old = Organization(org_id=5, name="test")
     repository.add_organization(organization_old)
+    repository.session.flush()
     person = Person(first_name="John", last_name="Doe")
     organization = Organization(org_id=5, name="test")
     repository.add_person_with_membership(person, organization)
@@ -91,6 +107,7 @@ def test_add_person_with_membership_existing_membership(repository):
     person_old = Person(first_name="John", last_name="Doe")
     organization_old = Organization(org_id=5, name="test")
     repository.add_person_with_membership(person_old, organization_old)
+    repository.session.flush()
     person = Person(first_name="John", last_name="Doe")
     organization = Organization(org_id=5, name="test")
     repository.add_person_with_membership(person, organization)

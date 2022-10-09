@@ -6,3 +6,9 @@ div.searchresult-head > a {
 div.searchresult-head > a > span.title:hover {
     text-decoration: underline;
 }
+
+.result-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

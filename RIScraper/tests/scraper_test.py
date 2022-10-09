@@ -173,6 +173,12 @@ def test_scrape_agenda_item_vorlage(config, db, queue, lock):
     assert (item.consultation_id == id)
 
 
+def test_scrape_agenda_item_vorlage_not_exist_yet(config, db, queue, lock):
+    scrape_agenda_item(33609, config, db, queue, lock)
+    item = Repository(db.create_session()).get_all_agenda_items()[0]
+    assert (item.consultation_id is not None)
+
+
 def test_scrape_consultation(config, db, queue, lock):
     scrape_consultation(12966, config, db, queue, lock)
     item = Repository(db.create_session()).get_all_consultations()[0]

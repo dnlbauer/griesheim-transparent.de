@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pysolr
 from django.core.management import BaseCommand
 
@@ -29,9 +31,15 @@ class Command(BaseCommand):
             content=doc.content_text,
             content_ocr=doc.content_text_ocr,
             author=doc.author,
-            content_type=doc.content_type
+            content_type=doc.content_type,
+            meeting_id=[],
+            meeting_title=[],
+            meeting_title_short=[],
+            meeting_date=[],
+            meeting_organization_name=[],
+            filename=doc.file_name
         )
-
+        meetings = []
         consultations = doc.consultations.all()
         consultation = None
         if len(consultations) > 1:
@@ -44,6 +52,25 @@ class Command(BaseCommand):
             solr_doc["consultation_topic"] = consultation.topic
             solr_doc["consultation_type"] = consultation.type
             solr_doc["consultation_text"] = consultation.text
+
+            agenda_items = consultation.agenda_items.all()
+            for item in agenda_items:
+                meetings.append(item.meeting)
+
+        meetings += doc.meetings.all()
+        for meeting in meetings:
+            if meeting.meeting_id not in solr_doc['meeting_id']:
+                solr_doc['meeting_id'].append(meeting.meeting_id)
+                solr_doc['meeting_title'].append(meeting.title)
+                solr_doc['meeting_title_short'].append(meeting.title_short)
+                solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
+                solr_doc['meeting_organization_name'].append(meeting.organization.name)
+                if "last_seen" not in solr_doc or datetime.strptime(solr_doc['last_seen'], self.DATE_FORMAT) < meeting.date:
+                    solr_doc['last_seen'] = solr_doc['meeting_date'][-1]
+                if "first_seen" not in solr_doc or datetime.strptime(solr_doc['first_seen'], self.DATE_FORMAT) > meeting.date:
+                    solr_doc['first_seen'] = solr_doc['meeting_date'][-1]
+
+        solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
         if doc.creation_date is not None:
             solr_doc['creation_date'] = doc.creation_date.strftime(self.DATE_FORMAT),
@@ -64,7 +91,7 @@ class Command(BaseCommand):
             solr_doc = self._to_solr(document)
             solr_docs.append(solr_doc)
             if len(solr_docs) >= chunk_size:
-                solr.add(solr_docs, commit=False)
+                solr.add(solr_docs, commit=True)
                 self.stdout.write(f"Submitted {chunk_size} documents to solr.")
                 processed += len(solr_docs)
                 solr_docs = []

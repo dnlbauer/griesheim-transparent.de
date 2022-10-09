@@ -24,7 +24,6 @@ class Command(BaseCommand):
 
     def _to_solr(self, doc):
         solr_doc = dict(
-            doc_type="document",
             id=str(doc.id),
             document_id=doc.document_id,
             size=doc.size,
@@ -52,10 +51,14 @@ class Command(BaseCommand):
             solr_doc["consultation_topic"] = consultation.topic
             solr_doc["consultation_type"] = consultation.type
             solr_doc["consultation_text"] = consultation.text
+            solr_doc['doc_type'] = consultation.type
 
             agenda_items = consultation.agenda_items.all()
             for item in agenda_items:
                 meetings.append(item.meeting)
+        if 'doc_type' not in solr_doc:
+            if (doc.content_text and "niederschrift" in doc.content_text[:100].lower()) or (doc.content_text_ocr and "niederschrift" in doc.content_text_ocr[:100].lower()):
+                solr_doc['doc_type'] = "Niederschrift"
 
         meetings += doc.meetings.all()
         for meeting in meetings:

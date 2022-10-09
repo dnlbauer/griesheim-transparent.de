@@ -4,10 +4,10 @@
 
     <field name="_version_" type="plong" indexed="true" stored="false" />
     <field name="id" type="string" indexed="true" stored="true" required="true" />
-    <field name="doc_type" type="string" indexed="false" stored="true" required="true" />
 
     <!-- Document data -->
     <field name="document_id" type="pint" indexed="false" stored="true" required="true" />
+    <field name="doc_type" type="string" indexed="true" stored="true" required="false" />
 
     <field name="content" type="text" indexed="true" stored="true" />
     <field name="content_hr" type="text_hr" indexed="true" stored="false" />

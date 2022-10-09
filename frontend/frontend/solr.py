@@ -57,7 +57,7 @@ class SolrService:
 
     NUM_ROWS = 10
     FACET_FIELDS = {
-        "doc_type": "consultation_type_s",
+        "doc_type": "doc_type",
         "organization": "meeting_organization_name_s"
     }
 
@@ -108,7 +108,6 @@ class SolrService:
         if "consultation_id" in doc:
             link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
             title = doc['consultation_topic']
-            doc_type = doc['consultation_type']
             short_name = doc['consultation_name']
         else:
             link = download_link
@@ -118,15 +117,15 @@ class SolrService:
                 title = doc['content_ocr'][:100] + "..."
             else:
                 title = None
-            if ("content" in doc and "niederschrift" in doc['content'][:200].lower()) or ("content_ocr" in doc and "niederschrift" in doc['content_ocr'][:200].lower()):
-                doc_type = "Niederschrift"
-            else:
-                doc_type = None
 
             if "meeting_title_short" in doc and len(doc['meeting_title_short']) == 1:
                 short_name = doc['meeting_title_short'][0]
             else:
                 short_name = None
+        if "doc_type" in doc:
+            doc_type = doc['doc_type']
+        else:
+            doc_type = None
 
         date = doc['last_seen']
         date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")

@@ -786,7 +786,7 @@
     </lst>
     <lst name="appends">
       <str name="fl">
-        document_id
+        document_id doc_type
         content_type
         consultation_id consultation_topic consultation_name consultation_type
         meeting_id meeting_title meeting_title_short meeting_date meeting_organization_name meeting_count

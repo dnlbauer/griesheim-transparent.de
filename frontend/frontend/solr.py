@@ -77,7 +77,7 @@ class SolrService:
         "hl.fragsizeIsMinimum": "true",
         "hl.tag.ellipsis": "…",
         "hl.bs.type": "WORD",
-        "hl.defaultSummary": "true",
+        # "hl.defaultSummary": "true",
     }
 
     FACET_ARGS = {
@@ -166,6 +166,7 @@ class SolrService:
             args['hl'] = 'false'
         if facet:
             args |= self.FACET_ARGS
+            args['facet.query'] = query
 
         result = self.solr.search(query, **args)
 

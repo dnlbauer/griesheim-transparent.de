@@ -34,3 +34,5 @@ SWBA,Schwimmbadausschuss
 FW,Feuerwehrausschuss
 KITA,Kindertagesstätte
 IV,Informationsvorlage
+Miniwald,Tiny Forest
+Miniwälder,Tiny Forests

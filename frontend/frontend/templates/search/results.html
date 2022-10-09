@@ -1,24 +1,28 @@
 <div class="facets mb3">
-    <select class="facet bn pa2 mr3">
-        <option>Beliebige Zeit (stub)</option>
-        <option>Letzte Woche</option>
-        <option>Letzter Monat</option>
-        <option>Letztes Jahr</option>
-    </select>
+{#    <select class="facet bn pa2 mr3">#}
+{#        <option selected="selected">Beliebige Zeit (stub)</option>#}
+{#        <option>Letzte Woche</option>#}
+{#        <option>Letzter Monat</option>#}
+{#        <option>Letztes Jahr</option>#}
+{#    </select>#}
+{##}
+{#    <select class="facet bn pa2 mr3">#}
+{#        <option value="">Beliebiges Dokument</option>#}
+{#        {% for consultation_type in result.facets.consultation_type %}#}
+{#            <option value="{{ consultation_type.0 }}">{{ consultation_type.0 }} ({{ consultation_type.1 }})</option>#}
+{#        {% endfor %}#}
+{#    </select>#}
+{##}
+{#    <select class="facet bn pa2 mr3">#}
+{#        <option>Beliebiges Gremium (stub)</option>#}
+{#        <option>Stadtverordnetenversammlung</option>#}
+{#        <option>Ausschuss Jugend, Kultur, Soziales</option>#}
+{#        <option>Umweltausschuss</option>#}
+{#    </select>#}
 
-
-    <select class="facet bn pa2 mr3">
-        <option value="">Beliebiges Dokument</option>
-        {% for consultation_type in result.facets.consultation_type %}
-            <option value="{{ consultation_type.0 }}">{{ consultation_type.0 }} ({{ consultation_type.1 }})</option>
-        {% endfor %}
-    </select>
-
-    <select class="facet bn pa2 mr3">
-        <option>Beliebiges Gremium (stub)</option>
-        <option>Stadtverordnetenversammlung</option>
-        <option>Ausschuss Jugend, Kultur, Soziales</option>
-        <option>Umweltausschuss</option>
+    <select class="facet bn pa2 mr3" name="sort" form="search" up-autosubmit>
+        <option selected="selected" value="relevance">Sortierung: Relevanz</option>
+        <option value="date">Sortierung: Datum</option>
     </select>
 </div>
 

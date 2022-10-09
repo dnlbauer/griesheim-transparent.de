@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 
 import math
 
@@ -10,6 +11,9 @@ from frontend import settings
 def pairwise(iterable):
     return list(zip(iterable[0::2], iterable[1::2]))
 
+class SortOrder(Enum):
+    relevance = "relevance"
+    date = "date"
 
 class SearchResult:
     def __init__(self, title, highlight, link, download_link,
@@ -139,9 +143,13 @@ class SolrService:
             "start": start
         }
 
-    def search(self, query, page, hl=True, facet=True):
+    def search(self, query, sort, page, hl=True, facet=True):
         args = self.SOLR_ARGS
         args |= self.solr_page(page-1, self.NUM_ROWS)
+        if sort == SortOrder.date:
+            args['sort'] = "last_seen desc"
+        else:
+            args['sort'] = "score desc"
         if hl:
             args |= self.HL_ARGS
         else:

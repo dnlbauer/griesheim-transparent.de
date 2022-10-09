@@ -1,11 +1,12 @@
 import logging
+from enum import Enum
 
 from django.views.generic import TemplateView
 
 from django.shortcuts import render, redirect
 
 from frontend import settings
-from frontend.solr import SolrService
+from frontend.solr import SolrService, SortOrder
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,10 @@ class MainView(TemplateView):
         context = base_context()
 
         query = request.GET.get("query", None)
+        sort = SortOrder(request.GET.get("sort", "relevance"))
         page = parse_page(request)
         if query is not None:
-            result = SolrService().search(query, page)
+            result = SolrService().search(query, sort, page)
         else:
             result = []
             context['num_docs'] = SolrService().search("*:*", page).hits

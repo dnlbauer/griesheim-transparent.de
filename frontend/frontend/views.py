@@ -45,6 +45,9 @@ class MainView(TemplateView):
             context['num_docs'] = SolrService().search("*:*").hits
 
         context['query'] = query
+        context['organization'] = organization
+        context['doc_type'] = doc_type
+        context['sort'] = sort.value
         context['result'] = result
 
         return render(request, self.template_name, context=context)

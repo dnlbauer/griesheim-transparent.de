@@ -11,7 +11,7 @@
         <select class="facet bn pa2 mr3 w-25" name="doc_type" form="search" up-autosubmit>
             <option value="*">Beliebiges Dokument</option>
             {% for field in result.facets.doc_type %}
-                <option value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
+                <option {% if doc_type == field.0 %}selected{% endif %} value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
             {% endfor %}
         </select>
     {% endif %}
@@ -20,14 +20,14 @@
         <select class="facet bn pa2 mr3 w-25" name="organization" form="search" up-autosubmit>
             <option value="*">Beliebiges Gremium</option>
             {% for field in result.facets.organization %}
-                <option value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
+                <option {% if organization == field.0 %}selected{% endif %} value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
             {% endfor %}
         </select>
     {% endif %}
 
     <select class="facet bn pa2 mr3 w-25" name="sort" form="search" up-autosubmit>
-        <option selected="selected" value="relevance">Sortierung: Relevanz</option>
-        <option value="date">Sortierung: Datum</option>
+        <option {% if sort == "relevance" %}selected{% endif %} value="relevance">Sortierung: Relevanz</option>
+        <option {% if sort == "date" %}selected{% endif %} value="date">Sortierung: Datum</option>
     </select>
 </div>
 

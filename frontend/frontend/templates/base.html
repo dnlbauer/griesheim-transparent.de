@@ -5,6 +5,9 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/tachyons.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
     <script src="{% static 'js/unpoly.js' %}"></script>
     <script>
         {% if DEBUG %}
@@ -15,4 +18,4 @@
     <body class="sans-serif">
         {% block content %}{% endblock %}
     </body>
-    </html>
+</html>

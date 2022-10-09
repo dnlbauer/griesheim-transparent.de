@@ -1,5 +1,4 @@
 import logging
-from enum import Enum
 
 from django.views.generic import TemplateView
 
@@ -36,12 +35,14 @@ class MainView(TemplateView):
 
         query = request.GET.get("query", None)
         sort = SortOrder(request.GET.get("sort", "relevance"))
+        doc_type = request.GET.get("doc_type", "*")
+        organization = request.GET.get("organization", "*")
         page = parse_page(request)
         if query is not None:
-            result = SolrService().search(query, sort, page)
+            result = SolrService().search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
         else:
             result = []
-            context['num_docs'] = SolrService().search("*:*", page).hits
+            context['num_docs'] = SolrService().search("*:*").hits
 
         context['query'] = query
         context['result'] = result

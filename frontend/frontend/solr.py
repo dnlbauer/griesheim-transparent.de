@@ -56,6 +56,10 @@ class SolrService:
     solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
 
     NUM_ROWS = 10
+    FACET_FIELDS = {
+        "doc_type": "consultation_type_s",
+        "organization": "meeting_organization_name_s"
+    }
 
     SOLR_ARGS = {
         "search_handler": "/select",
@@ -78,7 +82,10 @@ class SolrService:
 
     FACET_ARGS = {
         "facet": "true",
-        "facet.field": "consultation_type_s",
+        "facet.field": ["{!ex=facetignore}" + i for i in FACET_FIELDS.values()],
+        "facet.missing": "false",
+        "facet.sort": "count",
+        "facet.mincount": 1
     }
 
     def _parse_highlights(self, highlights):
@@ -143,24 +150,40 @@ class SolrService:
             "start": start
         }
 
-    def search(self, query, sort, page, hl=True, facet=True):
-        args = self.SOLR_ARGS
+    def search(self, query, page=1, sort=SortOrder.relevance, facet_filter={}, hl=True, facet=True):
+        args = dict(self.SOLR_ARGS)
         args |= self.solr_page(page-1, self.NUM_ROWS)
         if sort == SortOrder.date:
             args['sort'] = "last_seen desc"
         else:
             args['sort'] = "score desc"
+        fq = list(filter(lambda fq: fq[-2] != "*", map(lambda name: "{!tag=facetignore}"f"{self.FACET_FIELDS[name]}:\"{facet_filter[name]}\"", facet_filter.keys())))
+        if len(fq) > 0:
+            args['fq'] = fq
+
         if hl:
             args |= self.HL_ARGS
         else:
             args['hl'] = 'false'
         if facet:
             args |= self.FACET_ARGS
-            args |= {"fq": query}
-        result = self.solr.search(query, **self.SOLR_ARGS)
+
+        result = self.solr.search(query, **args)
 
         documents = [self._parse_search_result(doc, result) for doc in result.docs]
+        facets = self._parse_facets(result.facets, result.hits)
 
-        return SearchResults(documents, None, page, self.NUM_ROWS, result.hits, result.qtime)
+        return SearchResults(documents, facets, page, self.NUM_ROWS, result.hits, result.qtime)
+
+    def _parse_facets(self, facets, hits):
+        parsed_results = {}
+        if "facet_fields" in facets:
+            for name in self.FACET_FIELDS:
+                field_name = self.FACET_FIELDS[name]
+                if field_name in facets['facet_fields']:
+                    parsed_results[name] = pairwise(facets['facet_fields'][field_name])
+        return parsed_results
+
+
 
 

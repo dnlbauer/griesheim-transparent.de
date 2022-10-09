@@ -55,6 +55,8 @@
     <field name="meeting_title_short" type="string" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_date" type="pdate" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_organization_name" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_organization_name_s" type="string" indexed="true" stored="true" multiValued="true" />
+    <copyField source="meeting_organization_name" dest="meeting_organization_name_s"/>
     <field name="meeting_count" type="pint" indexed="true" stored="true" />
 
     <uniqueKey>id</uniqueKey>

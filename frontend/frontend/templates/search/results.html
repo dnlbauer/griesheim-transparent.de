@@ -1,4 +1,5 @@
 <div class="facets mb3">
+
 {#    <select class="facet bn pa2 mr3">#}
 {#        <option selected="selected">Beliebige Zeit (stub)</option>#}
 {#        <option>Letzte Woche</option>#}
@@ -6,21 +7,25 @@
 {#        <option>Letztes Jahr</option>#}
 {#    </select>#}
 {##}
-{#    <select class="facet bn pa2 mr3">#}
-{#        <option value="">Beliebiges Dokument</option>#}
-{#        {% for consultation_type in result.facets.consultation_type %}#}
-{#            <option value="{{ consultation_type.0 }}">{{ consultation_type.0 }} ({{ consultation_type.1 }})</option>#}
-{#        {% endfor %}#}
-{#    </select>#}
-{##}
-{#    <select class="facet bn pa2 mr3">#}
-{#        <option>Beliebiges Gremium (stub)</option>#}
-{#        <option>Stadtverordnetenversammlung</option>#}
-{#        <option>Ausschuss Jugend, Kultur, Soziales</option>#}
-{#        <option>Umweltausschuss</option>#}
-{#    </select>#}
+    {% if result.facets.doc_type %}
+        <select class="facet bn pa2 mr3 w-25" name="doc_type" form="search" up-autosubmit>
+            <option value="*">Beliebiges Dokument</option>
+            {% for field in result.facets.doc_type %}
+                <option value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
+            {% endfor %}
+        </select>
+    {% endif %}
 
-    <select class="facet bn pa2 mr3" name="sort" form="search" up-autosubmit>
+    {% if result.facets.organization %}
+        <select class="facet bn pa2 mr3 w-25" name="organization" form="search" up-autosubmit>
+            <option value="*">Beliebiges Gremium</option>
+            {% for field in result.facets.organization %}
+                <option value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+
+    <select class="facet bn pa2 mr3 w-25" name="sort" form="search" up-autosubmit>
         <option selected="selected" value="relevance">Sortierung: Relevanz</option>
         <option value="date">Sortierung: Datum</option>
     </select>

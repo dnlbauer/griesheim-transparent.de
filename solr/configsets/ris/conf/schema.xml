@@ -161,8 +161,8 @@
                     preserveOriginal="1"
                     protected="protwords.txt,lang/protwords_de.txt"/>
             <filter class="solr.LowerCaseFilterFactory"/>
-            <filter class="solr.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml"
-                    dictionary="lang/dictionary-de.txt" onlyLongestMatch="true" minSubwordSize="4"/>
+<!--            <filter class="solr.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml"-->
+<!--                    dictionary="lang/dictionary-de.txt" onlyLongestMatch="true" minSubwordSize="4"/>-->
             <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt,lang/stopwords_de.txt" format="snowball" ignoreCase="true"/>
             <filter class="solr.PatternReplaceFilterFactory" pattern="(?:^[¿'`´“”&quot;‚„\(\[\{]+|[\.,;:\!\?'`´“”&quot;\)\}\]]+$)" replacement=""/>
             <filter class="solr.StemmerOverrideFilterFactory" dictionary="lang/stemdict_de.tsv" ignoreCase="true"/>

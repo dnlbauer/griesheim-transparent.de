@@ -1,19 +1,18 @@
 from datetime import datetime
 from enum import Enum
-
 import math
-
 import pysolr
-
 from frontend import settings
 
 
 def pairwise(iterable):
     return list(zip(iterable[0::2], iterable[1::2]))
 
+
 class SortOrder(Enum):
     relevance = "relevance"
     date = "date"
+
 
 class SearchResult:
     def __init__(self, title, highlight, link, download_link,
@@ -53,7 +52,8 @@ class SearchResults:
 
 class SolrService:
 
-    solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
+    def __init__(self, solr=None):
+        self.solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
 
     NUM_ROWS = 10
     FACET_FIELDS = {
@@ -77,7 +77,7 @@ class SolrService:
         "hl.fragsizeIsMinimum": "true",
         "hl.tag.ellipsis": "…",
         "hl.bs.type": "WORD",
-        # "hl.defaultSummary": "true",
+        "hl.defaultSummary": "true",
     }
 
     FACET_ARGS = {

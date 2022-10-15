@@ -75,6 +75,11 @@ class Command(BaseCommand):
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
+        if 'doc_type' in solr_doc and solr_doc['doc_type'] == 'Niederschrift':
+            solr_doc['doc_title'] = meeting.title
+        elif "consultation_name" in solr_doc:
+            solr_doc['doc_title'] = solr_doc['consultation_topic']
+
         if doc.creation_date is not None:
             solr_doc['creation_date'] = doc.creation_date.strftime(self.DATE_FORMAT),
         if doc.last_modified is not None:

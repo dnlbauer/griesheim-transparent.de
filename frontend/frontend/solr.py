@@ -105,12 +105,9 @@ class SolrService:
 
     def _parse_search_result(self, doc, response):
         download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
-        if "consultation_id" in doc:
-            link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
-            title = doc['consultation_topic']
-            short_name = doc['consultation_name']
+        if "doc_title" in doc:
+            title = doc['doc_title']
         else:
-            link = download_link
             if "content" in doc:
                 title = doc['content'][:100] + "..."
             elif "content_ocr" in doc:
@@ -118,10 +115,16 @@ class SolrService:
             else:
                 title = None
 
+        if "consultation_id" in doc:
+            link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
+            short_name = doc['consultation_name']
+        else:
+            link = download_link
             if "meeting_title_short" in doc and len(doc['meeting_title_short']) == 1:
                 short_name = doc['meeting_title_short'][0]
             else:
                 short_name = None
+
         if "doc_type" in doc:
             doc_type = doc['doc_type']
         else:

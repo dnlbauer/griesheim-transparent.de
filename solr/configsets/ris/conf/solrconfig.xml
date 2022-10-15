@@ -769,6 +769,7 @@
       -->
       <str name="qf">
         document_id^10
+        doc_title^10
         content^1 content_hp^1.2 content_hr^0.8
         content_ocr^1 content_ocr_hp^1.2 content_ocr_hr^0.8
 
@@ -786,7 +787,8 @@
     </lst>
     <lst name="appends">
       <str name="fl">
-        document_id doc_type
+        id
+        document_id doc_type doc_title
         content_type
         consultation_id consultation_topic consultation_name consultation_type
         meeting_id meeting_title meeting_title_short meeting_date meeting_organization_name meeting_count

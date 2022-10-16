@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 
 from frontend import settings
-from frontend.solr import SolrService, SortOrder
+from frontend import solr
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ def base_context():
     return {
         "DEBUG": settings.DEBUG
     }
+
 
 def parse_page(request):
     page = request.GET.get("page", "1")
@@ -34,15 +35,15 @@ class MainView(TemplateView):
         context = base_context()
 
         query = request.GET.get("query", None)
-        sort = SortOrder(request.GET.get("sort", "relevance"))
+        sort = solr.SortOrder(request.GET.get("sort", "relevance"))
         doc_type = request.GET.get("doc_type", "*")
         organization = request.GET.get("organization", "*")
         page = parse_page(request)
         if query is not None:
-            result = SolrService().search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
+            result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
         else:
             result = []
-            context['num_docs'] = SolrService().search("*:*").hits
+            context['num_docs'] = solr.search("*:*").hits
 
         context['query'] = query
         context['organization'] = organization

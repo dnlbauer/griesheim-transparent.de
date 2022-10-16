@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<ul class="suggestions">
+{% for suggestion in suggestions %}
+<li>{{ suggestion }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

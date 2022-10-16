@@ -84,8 +84,8 @@ FACET_ARGS = {
 }
 
 
-def solr_connection():
-    return pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
+def solr_connection(handler='/select'):
+    return pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}", search_handler=handler)
 
 
 def _parse_highlights(highlights):
@@ -189,3 +189,13 @@ def search(query, page=1, sort=SortOrder.relevance, facet_filter={}, hl=True, fa
     facets = _parse_facets(result.facets)
 
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
+
+def suggest(query, solr_conn=solr_connection('/suggest')):
+    PARAMS = {
+        "suggest": "true",
+        "suggest.build": "true",
+    }
+    response = solr_conn.search(query, **PARAMS)
+    suggestions = response.raw_response['suggest']['default'][query]['suggestions']
+    return list(map(lambda s: s['term'], suggestions))
+

@@ -60,7 +60,24 @@
     <copyField source="meeting_organization_name" dest="meeting_organization_name_s"/>
     <field name="meeting_count" type="pint" indexed="true" stored="true" />
 
+    <field name="suggest_text" type="suggest_text" stored="true" multiValued="true"/>
+<!--    <copyField source="content" dest="suggest_text" />-->
+<!--    <copyField source="content_ocr" dest="suggest_text" />-->
+    <copyField source="doc_title" dest="suggest_text" />
+    <copyField source="consultation_name" dest="suggest_text" />
+    <copyField source="consultation_topic" dest="suggest_text" />
+    <copyField source="consultation_text" dest="suggest_text" />
+    <copyField source="meeting_title" dest="suggest_text" />
+    <copyField source="meeting_organization_name" dest="suggest_text" />
+
     <uniqueKey>id</uniqueKey>
+
+    <fieldType name="suggest_text" class="solr.TextField" positionIncrementGap="100">
+        <analyzer>
+            <tokenizer class="solr.WhitespaceTokenizerFactory" />
+            <filter class="solr.LowerCaseFilterFactory"/>
+        </analyzer>
+    </fieldType>
 
 
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" />

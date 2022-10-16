@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 
 from frontend import settings
 from frontend import solr
+from solr import suggest
 
 logger = logging.getLogger(__name__)
 
@@ -63,3 +64,15 @@ class SearchView(MainView):
             return redirect("main")
         else:
             return super().get(request, **kwargs)
+
+class SuggestView(TemplateView):
+    template_name = "suggestions.html"
+
+    def get(self, request, **kwargs):
+        query = request.GET.get("query", None)
+        if query is None:
+            suggestions = []
+        else:
+            suggestions = suggest(query)
+        return render(request, self.template_name, context={"suggestions": suggestions})
+

@@ -12,3 +12,22 @@ div.searchresult-head > a > span.title:hover {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.input-field {
+    position: relative;
+}
+
+.autocomplete-list {
+    position: absolute;
+    border: 1px solid red;
+    background: white;
+    top: 100%;
+    left: 0;
+    right: 0;
+    visibility: visible;
+    z-index: 99;
+}
+
+.selected {
+    background-color: blue
+}

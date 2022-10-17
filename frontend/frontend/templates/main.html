@@ -1,29 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <script>up.form.config.submitSelectors.push(['form'])</script>
     <div class="vh-75 w-100 dt">
         <div class="dtc v-mid">
             <h1 class="tc">Griesheim, aber transparent.</h1>
-            <form class="w-30 center" action="{% url 'search' %}" method="get" id="search">
-                <script>
-                    window.showSuggestions = function(selectedValue) {
-                        console.log(`Called with ${selectedValue}`)
-                        up.navigate({url: `/suggest?query=${selectedValue}`, layer: 'new'})
-                    }
-                </script>
-                <input class="w-100 f5 pa2 br-pill"
-                       type="text"
-                       name="query"
-                       placeholder="Suche nach Dokumenten, Inhalten, ..."
-                       autocomplete="off"
-                       required
-                       autofocus
-                       up-observe="showSuggestions(value)"
-                       up-delay="200"
-                />
-            </form>
-            <div class="mt3 w-30 center">Volltextsuche in <strong class="f4">{{ num_docs }}</strong> Dokumenten: z.B. <a href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a href="/search?query=Miniwälder"><em>Miniwälder</em></a></div>
+            <div class="w-30 center">
+                <form action="{% url 'search' %}" method="get" id="search">
+                    <div class="input-field pa2">
+                        <input class="w-100 f5 br-pill"
+                               type="text"
+                               name="query"
+                               placeholder="Suche nach Dokumenten, Inhalten, ..."
+                               autocomplete="off"
+                               required
+                               autofocus
+                               id="search-box"
+                        />
+                        {% include "suggestions.html" %}
+                    </div>
+                </form>
+                <p>Volltextsuche in <strong class="f4">{{ num_docs }}</strong> Dokumenten: z.B. <a href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
+            </div>
         </div>
     </div>
+
+    {% load static %}
+    <script src="{% static 'js/autocomplete.js' %}"></script>
 {% endblock %}
+
+

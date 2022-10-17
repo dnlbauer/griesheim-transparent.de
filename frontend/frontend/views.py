@@ -68,7 +68,7 @@ class SearchView(MainView):
             return super().get(request, **kwargs)
 
 class SuggestView(TemplateView):
-    template_name = "suggestions.html"
+    template_name = "components/suggestions.html"
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)

@@ -6,7 +6,7 @@
             <h1 class="tc">Griesheim, aber transparent.</h1>
             <div class="w-30 center">
                 <form action="{% url 'search' %}" method="get" id="search">
-                {% include "input.html" %}
+                {% include "components/input.html" %}
                 </form>
                 <p>Volltextsuche in <strong class="f4">{{ num_docs }}</strong> Dokumenten: z.B. <a href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
             </div>

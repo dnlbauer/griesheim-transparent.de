@@ -31,6 +31,7 @@ def parse_page(request):
 
 class MainView(TemplateView):
     template_name = "main.html"
+    autofocus = True
 
     def get(self, request, **kwargs):
         context = base_context()
@@ -51,12 +52,13 @@ class MainView(TemplateView):
         context['doc_type'] = doc_type
         context['sort'] = sort.value
         context['result'] = result
-
+        context['autofocus'] = self.autofocus
         return render(request, self.template_name, context=context)
 
 
 class SearchView(MainView):
     template_name = "search/search.html"
+    autofocus = False
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)
@@ -74,5 +76,8 @@ class SuggestView(TemplateView):
             suggestions = []
         else:
             suggestions = suggest(query)
-        return render(request, self.template_name, context={"suggestions": suggestions})
+        status = 200
+        if (len(suggestions) == 0):
+            status = 404
+        return render(request, self.template_name, context={"suggestions": suggestions}, status=status)
 

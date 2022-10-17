@@ -4,19 +4,8 @@
     <script>up.form.config.submitSelectors.push(['form'])</script>
     <div class="w-100">
         <div class="mw9 center">
-            <form class="ma3 w-30r p3" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults">
-                <div class="input-field">
-                    <input class="w-60 f5 pa2 br-pill"
-                           type="text"
-                           name="query"
-                           placeholder="Suche nach Dokumenten, Inhalten, ..."
-                           {% if query %}value="{{ query }}"{% endif %}
-                           autocomplete="off"
-                           required
-                           autofocus
-                    />
-                    {% include "suggestions.html" %}
-                </div>
+            <form class="ma3 w-60 p3 debug-grid" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults">
+                {% include "input.html" %}
             </form>
         </div>
     </div>
@@ -28,7 +17,4 @@
             </div>
         </div>
     </div>
-
-    {% load static %}
-    <script src="{% static 'js/autocomplete.js' %}"></script>
 {% endblock %}

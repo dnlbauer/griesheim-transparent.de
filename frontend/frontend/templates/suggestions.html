@@ -1,8 +1,5 @@
-<ul class="autocomplete-list"
-    style="list-style: none;"
-    {% if suggestions|length == 0 %}hidden{% endif %}
-    >
+<ul class="autocomplete-list br bl bb bw1" {% if suggestions|length == 0 %}hidden{% endif %}>
     {% for suggestion in suggestions %}
-        <li class="autocomplete-item">{{ suggestion }}</li>
+        <li class="autocomplete-item f5 pa2">{{ suggestion }}</li>
     {% endfor %}
 </ul>

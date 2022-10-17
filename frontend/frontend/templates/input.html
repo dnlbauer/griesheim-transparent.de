@@ -1,0 +1,20 @@
+<div class="input-field">
+    <input class="w-100 pa2 f5 search-box"
+           type="text"
+           name="query"
+           placeholder="Suche nach Dokumenten, Inhalten, ..."
+           autocomplete="off"
+           required
+           {% if autofocus %}
+           autofocus
+           {% endif %}
+           {% if query %}
+           value="{{ query }}"
+           {% endif %}
+           id="search-box"
+    />
+    {% include "suggestions.html" %}
+
+    {% load static %}
+    <script src="{% static 'js/autocomplete.js' %}"></script>
+</div>

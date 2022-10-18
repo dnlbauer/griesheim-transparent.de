@@ -41,4 +41,5 @@ div.searchresult-head > a > span.title:hover {
 
 .selected {
     background-color: lightgray;
+    border-radius: 10px;
 }

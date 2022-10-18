@@ -939,7 +939,7 @@
     <lst name="suggester">
       <str name="name">default</str>
       <str name="lookupImpl">FuzzyLookupFactory</str>
-      <str name="suggestAnalyzerFieldType">string</str>
+      <str name="suggestAnalyzerFieldType">suggester</str>
       <str name="field">suggest_text</str>
       <str name="buildOnStartup">true</str>
       <str name="buildOnCommit">true</str>

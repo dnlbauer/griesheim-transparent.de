@@ -66,7 +66,7 @@
     <copyField source="doc_title" dest="suggest_text" />
     <copyField source="consultation_name" dest="suggest_text" />
     <copyField source="consultation_topic" dest="suggest_text" />
-    <copyField source="consultation_text" dest="suggest_text" />
+<!--    <copyField source="consultation_text" dest="suggest_text" />-->
     <copyField source="meeting_title" dest="suggest_text" />
     <copyField source="meeting_organization_name" dest="suggest_text" />
 
@@ -74,7 +74,17 @@
 
     <fieldType name="suggest_text" class="solr.TextField" positionIncrementGap="100">
         <analyzer>
-            <tokenizer class="solr.WhitespaceTokenizerFactory" />
+            <!-- Split at whitespace-->
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <!-- Remove word hyphens; Hyph-enated=>Hyphenated -->
+            <filter class="solr.HyphenatedWordsFilterFactory"/>
+            <filter class="solr.PatternReplaceFilterFactory" pattern="(?:^[¿'`´“”&quot;‚„\(\[\{]+|[\.,;:\!\?'`´“”&quot;\)\}\]]+$)" replacement=""/>
+        </analyzer>
+    </fieldType>
+
+    <fieldType name="suggester" class="solr.TextField" positionIncrementGap="100">
+        <analyzer>
+            <tokenizer class="solr.KeywordTokenizerFactory" />
             <filter class="solr.LowerCaseFilterFactory"/>
         </analyzer>
     </fieldType>

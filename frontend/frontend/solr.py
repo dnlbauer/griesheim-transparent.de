@@ -193,7 +193,6 @@ def search(query, page=1, sort=SortOrder.relevance, facet_filter={}, hl=True, fa
 def suggest(query, solr_conn=solr_connection('/suggest')):
     PARAMS = {
         "suggest": "true",
-        "suggest.build": "true",
     }
     response = solr_conn.search(query, **PARAMS)
     suggestions = response.raw_response['suggest']['default'][query]['suggestions']

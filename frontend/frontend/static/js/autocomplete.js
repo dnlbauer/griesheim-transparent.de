@@ -1,12 +1,11 @@
 let cachedInput = null  // hold the actual user input
-const selectedClass = "selected"
 
 function autocompleteNavigation(event, searchBox) {
     let elements = up.element.all(".autocomplete-item")
 
     // find currently selected element
     let currentElementIdx = -1
-    let currentElement = up.element.get('.' + selectedClass)
+    let currentElement = up.element.get('.selected')
     if (currentElement != null) {
         currentElementIdx = Array.prototype.indexOf.call(elements, currentElement)
     }
@@ -29,7 +28,7 @@ function incrSelection(incr, currentElement, currentElementIdx, elements, search
         if (nextElementIdx >= 0) {
             let newSelectedElement = elements[nextElementIdx]
             let newValue = newSelectedElement.textContent
-            up.element.toggleClass(newSelectedElement, selectedClass)
+            up.element.toggleClass(newSelectedElement, 'selected')
             console.log(`Selected ${newValue}`)
             if (!cachedInput)
                 cachedInput = searchBox.value
@@ -38,11 +37,13 @@ function incrSelection(incr, currentElement, currentElementIdx, elements, search
             searchBox.value = cachedInput
         }
         if (currentElement) {
-            up.element.toggleClass(currentElement, selectedClass)
+            up.element.toggleClass(currentElement, 'selected')
         }
         event.preventDefault()
     }
 }
+
+
 
 function hideSuggestions() {
     up.element.hide(up.element.get(".autocomplete-list"))
@@ -50,8 +51,6 @@ function hideSuggestions() {
 }
 
 function loadSuggestions(value) {
-    if (value.length <= 3) // no suggestions for < 3 letters
-        return
     console.log(`Loading suggestions: ${value}`)
     // load suggestions, change search box style; hide suggestions if loading failed
     up.render({target: '.autocomplete-list', url: `/suggest?query=${value}`})
@@ -60,7 +59,7 @@ function loadSuggestions(value) {
 }
 
 up.on('keydown', 'input', autocompleteNavigation)
-up.on('focusout', 'input', hideSuggestions)
+// up.on('focusout', 'input', hideSuggestions)
 up.on('focusin', 'input', (_, element) => { loadSuggestions(element.value) })
 up.observe('input', {delay: 200}, (value) => loadSuggestions(value))
 // up.on('keyup', 'input', function(event, element) {

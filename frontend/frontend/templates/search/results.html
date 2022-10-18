@@ -1,12 +1,5 @@
 <div class="facets mb3">
 
-{#    <select class="facet bn pa2 mr3">#}
-{#        <option selected="selected">Beliebige Zeit (stub)</option>#}
-{#        <option>Letzte Woche</option>#}
-{#        <option>Letzter Monat</option>#}
-{#        <option>Letztes Jahr</option>#}
-{#    </select>#}
-{##}
     {% if result.facets.doc_type %}
         <select class="facet bn pa2 mr3 w-25" name="doc_type" form="search" up-autosubmit>
             <option value="*">Beliebiges Dokument</option>
@@ -45,30 +38,30 @@
         <div class="mw8 center">
             <nav class="cf pa3 pa4-ns" data-name="pagination-numbers">
                 {% if result.has_previous %}
-                    <a class="fl dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page={{ result.page|add:"-1" }}" title="Zurück" up-scroll up-target=".searchresults">&larr; Zurück</a>
+                    <a class="fl dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="Zurück" up-scroll up-target=".searchresults">&larr; Zurück</a>
                 {% endif %}
                 {% if result.has_next %}
-                    <a class="fr dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page={{ result.page|add:"1" }}" title="Weiter" up-scroll up-target=".searchresults">Weiter &rarr;</a>
+                    <a class="fr dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"1" }}" title="Weiter" up-scroll up-target=".searchresults">Weiter &rarr;</a>
                 {% endif %}
                 <div class="overflow-hidden center db tc">
                     {% if result.page|add:"-3" >= 1 %}
-                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page=1" title="1" up-scroll up-target=".searchresults">1</a>
+                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page=1" title="1" up-scroll up-target=".searchresults">1</a>
                     {% endif %}
                     {% if result.page|add:"-4" >= 1 %}
                         ...
                     {% endif %}
                     {% if result.page|add:"-2" >= 1 %}
-                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page={{ result.page|add:"-2" }}" title="{{ result.page|add:"-2" }}" up-scroll up-target=".searchresults">{{ result.page|add:"-2" }}</a>
+                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-2" }}" title="{{ result.page|add:"-2" }}" up-scroll up-target=".searchresults">{{ result.page|add:"-2" }}</a>
                     {% endif %}
                     {% if result.page|add:"-1" >= 1 %}
-                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page={{ result.page|add:"-1" }}" title="{{ result.page|add:"-1" }}" up-scroll up-target=".searchresults">{{ result.page|add:"-1" }}</a>
+                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="{{ result.page|add:"-1" }}" up-scroll up-target=".searchresults">{{ result.page|add:"-1" }}</a>
                     {% endif %}
                     <a class="dib link dim white bg-blue br2 f6 f5-ns b pa2" href="#" title="{{ result.page }}" up-scroll>{{ result.page }}</a>
                     {% if result.page|add:1 <= result.max_page %}
-                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page={{ result.page|add:1 }}" title="{{ result.page|add:1 }}" up-scroll up-target=".searchresults">{{ result.page|add:1 }}</a>
+                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:1 }}" title="{{ result.page|add:1 }}" up-scroll up-target=".searchresults">{{ result.page|add:1 }}</a>
                     {% endif %}
                     {% if result.page|add:2 <= result.max_page %}
-                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query }}&page={{ result.page|add:2 }}" title="{{ result.page|add:2 }}" up-scroll up-target=".searchresults">{{ result.page|add:2 }}</a>
+                        <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:2 }}" title="{{ result.page|add:2 }}" up-scroll up-target=".searchresults">{{ result.page|add:2 }}</a>
                     {% endif %}
                     {% if result.page|add:3 <= result.max_page %}
                         ...

@@ -1,6 +1,6 @@
 <ul class="autocomplete-list br bl bb bw1" {% if suggestions|length == 0 %}hidden{% endif %}>
     {% for suggestion in suggestions %}
-        <li class="autocomplete-item f5 pa2"><a href="/search?query={{ suggestion }}" style="display: block; color: inherit; text-decoration: none">{{ suggestion }}</a></li>
+        <li class="autocomplete-item f5"><a class="pa2" href="/search?query={{ suggestion|urlencode }}" style="display: block; color: inherit; text-decoration: none">{{ suggestion }}</a></li>
     {% endfor %}
 </ul>
 
@@ -15,4 +15,5 @@
             up.element.toggleClass(currentSelection, 'selected', false)
         up.element.toggleClass(element, 'selected', true)
     }
+
 </script>

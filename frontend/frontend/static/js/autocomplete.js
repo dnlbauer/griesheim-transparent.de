@@ -17,6 +17,8 @@ function autocompleteNavigation(event, searchBox) {
     else if(event.keyCode === 27) { // escape: hide suggestions
         hideSuggestions()
         event.preventDefault()
+    } else if (event.keyCode === 13) { // enter
+        setTimeout(hideSuggestions, 100)
     } else {  // normal letter: reset cached input
         cachedInput = null
     }
@@ -43,9 +45,8 @@ function incrSelection(incr, currentElement, currentElementIdx, elements, search
     }
 }
 
-
-
 function hideSuggestions() {
+    console.log("hide autocomplete results")
     up.element.hide(up.element.get(".autocomplete-list"))
     up.element.toggleClass(up.element.get('input'), 'search-box-active', false)
 }
@@ -54,14 +55,36 @@ function loadSuggestions(value) {
     console.log(`Loading suggestions: ${value}`)
     // load suggestions, change search box style; hide suggestions if loading failed
     up.render({target: '.autocomplete-list', url: `/suggest?query=${value}`})
-        .then(up.element.toggleClass(up.element.get('input'), 'search-box-active', true))
-        .catch(hideSuggestions())
+        .then(
+            up.element.toggleClass(up.element.get('input'), 'search-box-active', true),
+            up.element.toggleClass(up.element.get('input'), 'search-box-active', false)
+            )
+        .catch(hideSuggestions)
 }
 
+// navigate in suggestions
 up.on('keydown', 'input', autocompleteNavigation)
-// up.on('focusout', 'input', hideSuggestions)
-up.on('focusin', 'input', (_, element) => { loadSuggestions(element.value) })
-up.observe('input', {delay: 200}, (value) => loadSuggestions(value))
+
+// hide suggestions when input focus is lost
+up.on('focusout', 'input', (event) => {
+    // only if clicked outside suggestion area
+    let target = event.relatedTarget
+    let links = up.element.subtree(up.element.get(".input-field"), '*')
+    if (!target || !Array.prototype.indexOf.call(target, links))
+        hideSuggestions()
+})
+
+// show suggestions on focus gain
+up.on('focusin', 'input', (_, element) => {
+    console.log("focus")
+    loadSuggestions(element.value)
+})
+
+// autoload suggestions while typing
+up.observe('input', {delay: 200}, (value, element) => {
+    console.log("input " + value)
+    loadSuggestions(value)
+})
 // up.on('keyup', 'input', function(event, element) {
 //     if (event.keyCode === 13) {
 //         console.log("test")

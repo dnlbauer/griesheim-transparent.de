@@ -11,7 +11,7 @@
     <script src="{% static 'js/unpoly.js' %}"></script>
     <script>
         {% if DEBUG %}
-            up.log.enable()
+            up.log.disable()
         {% endif %}
         up.fragment.config.autoHistoryTargets.push(".searchresults")
     </script>

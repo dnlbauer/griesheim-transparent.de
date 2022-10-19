@@ -3,7 +3,9 @@
 {% block content %}
     <div class="vh-75 w-100 dt">
         <div class="dtc v-mid">
-            <h1 class="tc">Griesheim, aber transparent.</h1>
+            <h1 class="tc">Griesheimer Politik durchsuchbar.
+                <a class="f4 fa-solid fa-circle-question v-top blue grow pointer no-underline" href="/why" up-history="false" up-size="small" up-layer="new popup" up-class="modal"></a>
+            </h1>
             <div class="w-30 center">
                 <form action="{% url 'search' %}" method="get" id="search">
                 {% include "components/input.html" %}

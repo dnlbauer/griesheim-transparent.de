@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
 
 from frontend.views import MainView, SearchView, SuggestView
 
@@ -22,5 +23,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", MainView.as_view(), name="main"),
     path("search", SearchView.as_view(), name="search"),
-    path("suggest", SuggestView.as_view(), name="suggest")
+    path("suggest", SuggestView.as_view(), name="suggest"),
+    path("why", TemplateView.as_view(template_name="why.html"), name="why")
 ]

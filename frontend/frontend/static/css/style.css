@@ -43,3 +43,8 @@ div.searchresult-head > a > span.title:hover {
     background-color: lightgray;
     border-radius: 10px;
 }
+
+.modal {
+    background: white;
+    box-shadow: 3px 3px 10px;
+}

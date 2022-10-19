@@ -787,7 +787,7 @@
   <searchComponent name="suggest" class="solr.SuggestComponent">
     <lst name="suggester">
       <str name="name">default</str>
-      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
       <str name="suggestAnalyzerFieldType">suggester</str>
       <str name="field">suggest_text</str>
       <str name="buildOnStartup">true</str>
@@ -805,7 +805,6 @@
       <str>suggest</str>
     </arr>
   </requestHandler>
-
 
   <!-- Update Request Processors
        https://solr.apache.org/guide/update-request-processors.html

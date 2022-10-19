@@ -24,5 +24,6 @@ urlpatterns = [
     path("", MainView.as_view(), name="main"),
     path("search", SearchView.as_view(), name="search"),
     path("suggest", SuggestView.as_view(), name="suggest"),
-    path("why", TemplateView.as_view(template_name="why.html"), name="why")
+    path("why", TemplateView.as_view(template_name="why.html"), name="why"),
+    path("impressum", TemplateView.as_view(template_name="impressum.html"), name="impressum")
 ]

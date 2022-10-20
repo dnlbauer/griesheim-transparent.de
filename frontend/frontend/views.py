@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 
 from frontend import settings
 from frontend import solr
-from solr import suggest
+from .solr import suggest
 
 logger = logging.getLogger(__name__)
 

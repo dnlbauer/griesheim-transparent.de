@@ -161,5 +161,5 @@ cython_debug/
 *.iml
 out
 
-docker/.env
+*/.env
 docker/solr_data

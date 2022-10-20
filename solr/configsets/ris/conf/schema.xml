@@ -51,6 +51,9 @@
     <copyField source="consultation_topic" dest="consultation_topic_hp"/>
 
     <!-- Meeting -->
+    <field name="agenda_item_id" type="pint" indexed="false" stored="true" multiValued="true" />
+    <field name="agenda_item_title" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="agenda_item_text" type="text" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_id" type="pint" indexed="false" stored="true" multiValued="true" />
     <field name="meeting_title" type="keyword" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_title_short" type="string" indexed="true" stored="true" multiValued="true" />

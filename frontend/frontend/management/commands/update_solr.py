@@ -31,6 +31,9 @@ class Command(BaseCommand):
             content_ocr=doc.content_text_ocr,
             author=doc.author,
             content_type=doc.content_type,
+            agenda_item_id=[],
+            agenda_item_title=[],
+            agenda_item_text=[],
             meeting_id=[],
             meeting_title=[],
             meeting_title_short=[],
@@ -39,6 +42,7 @@ class Command(BaseCommand):
             filename=doc.file_name
         )
         meetings = []
+        agenda_items = []
         consultations = doc.consultations.all()
         consultation = None
         if len(consultations) > 1:
@@ -53,12 +57,20 @@ class Command(BaseCommand):
             solr_doc["consultation_text"] = consultation.text
             solr_doc['doc_type'] = consultation.type
 
-            agenda_items = consultation.agenda_items.all()
-            for item in agenda_items:
+            consultation_agenda_items = consultation.agenda_items.all()
+            for item in consultation_agenda_items:
+                agenda_items.append(item)
                 meetings.append(item.meeting)
         if 'doc_type' not in solr_doc:
             if (doc.content_text and "niederschrift" in doc.content_text[:100].lower()) or (doc.content_text_ocr and "niederschrift" in doc.content_text_ocr[:100].lower()):
                 solr_doc['doc_type'] = "Niederschrift"
+
+        agenda_items += doc.agenda_items.all()
+        for agenda_item in agenda_items:
+            if agenda_item.agenda_item_id not in solr_doc['agenda_item_id']:
+                solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
+                solr_doc['agenda_item_title'].append(agenda_item.title.split(":")[-1].strip())
+                solr_doc['agenda_item_text'].append(agenda_item.text)
 
         meetings += doc.meetings.all()
         for meeting in meetings:
@@ -79,6 +91,8 @@ class Command(BaseCommand):
             solr_doc['doc_title'] = meeting.title
         elif "consultation_name" in solr_doc:
             solr_doc['doc_title'] = solr_doc['consultation_topic']
+        elif len(solr_doc['agenda_item_title']) != 0:
+            solr_doc['doc_title'] = solr_doc['agenda_item_title'][-1]
 
         if doc.creation_date is not None:
             solr_doc['creation_date'] = doc.creation_date.strftime(self.DATE_FORMAT),

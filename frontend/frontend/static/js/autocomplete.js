@@ -52,6 +52,10 @@ function hideSuggestions() {
 }
 
 function loadSuggestions(value) {
+    if (value.length === 0) {
+        hideSuggestions()
+        return
+    }
     console.log(`Loading suggestions: ${value}`)
     // load suggestions, change search box style; hide suggestions if loading failed
     up.render({target: '.autocomplete-list', url: `/suggest?query=${value}`})

@@ -18,7 +18,7 @@
 #fooaaa,baraaa,bazaaa
 Fotovoltaik,Photovoltaik
 Straße,strasse
-Protokoll,Niederschrift,NS
+Protokoll => Protokoll,Niederschrift,NS
 SVV,STVV,Stadtverordnetenversammlung
 JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
 WF,WIFI,Wirtschafts und Finanzausschuss,Wirtschaftsauschuss,Finanzausschuss,Wirtschaftsausschuss und Finanzausschuss
@@ -36,3 +36,4 @@ KITA,Kindertagesstätte
 IV,Informationsvorlage
 Miniwald,Tiny Forest
 Miniwälder,Tiny Forests
+Sachstandsbericht => Sachstand,Sachstandsbericht,Sachstandbericht

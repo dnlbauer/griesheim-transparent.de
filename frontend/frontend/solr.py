@@ -130,8 +130,11 @@ def _parse_search_result(doc, response):
     else:
         doc_type = None
 
-    date = doc['last_seen']
-    date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+    if "last_seen" in doc:
+        date = doc['last_seen']
+        date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+    else:
+        date = None
 
     hl = _parse_highlights(response.highlighting[doc['id']])
 

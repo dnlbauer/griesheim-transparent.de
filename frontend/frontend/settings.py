@@ -29,7 +29,7 @@ SECRET_KEY = env('SECRET_KEY', default="django-insecure-$vob9+fgpc=h_2e57lc=3*vs
 DEBUG = env.bool('DEBUG', default=False)
 
 
-ALLOWED_HOSTS = [host for host in env("ALLOWED_HOSTS").split(",") if len(host) > 0]
+ALLOWED_HOSTS = [host for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
 
 
 # Application definition

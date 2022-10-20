@@ -1,6 +1,6 @@
 <ul class="autocomplete-list br bl bb bw1" {% if suggestions|length == 0 %}hidden{% endif %}>
     {% for suggestion in suggestions %}
-        <li class="autocomplete-item f5"><a class="pa2" href="/search?query={{ suggestion|urlencode }}" style="display: block; color: inherit; text-decoration: none">{{ suggestion|safe }}</a></li>
+        <li class="autocomplete-item f5"><a class="pa2" href="/search?query={{ suggestion|striptags|urlencode }}" style="display: block; color: inherit; text-decoration: none">{{ suggestion|safe }}</a></li>
     {% endfor %}
 </ul>
 

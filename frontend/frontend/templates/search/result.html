@@ -1,9 +1,9 @@
 <article class="searchresult mt3 f5 pb3" style="line-height: 1.6">
-    <div class="searchresult-head overflow">
-        <a class="f6 grow no-underline br-pill ba ph2 mb2 dib black mr2" href="{{ document.download_link }}">Runterladen ↓</a>
+    <div class="searchresult-head overflow-x-hidden">
+        <a class="f6-ns grow no-underline br-pill ba ph2 mb2 dib black mr2" href="{{ document.download_link }}">Runterladen ↓</a>
         <a href="{{ document.link }}">
             {{ document.link }}<br />
-            <span class="f4 blue fw4">
+            <span class="blue fw4 f4 measure">
                 {{ document.title.strip }}
             </span>
         </a>
@@ -14,7 +14,7 @@
         </div>
     {% endif %}
     <div class="metadata">
-        <small class="f5">
+        <small class="f5 measure">
             {% if document.doc_type %}
                 {% if document.doc_type == "Niederschrift" %}
                     <span class="f5 fa-solid fa-file-signature"></span>

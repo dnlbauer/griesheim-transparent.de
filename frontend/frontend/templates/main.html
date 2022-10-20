@@ -4,10 +4,21 @@
     <a href="/impressum" class="f6 blue" style="position: fixed; right: 10px; top: 10px;">Impressum & Datenschutz</a>
     <div class="vh-75 w-100 dt">
         <div class="dtc v-mid">
-            <h1 class="tc">Griesheimer Politik durchsuchbar.
-                <a class="f4 fa-solid fa-circle-question v-top blue grow pointer no-underline" href="/why" up-history="false" up-size="small" up-layer="new popup" up-class="modal"></a>
+            <h1 class="tc">Griesheimer Politik, durchsuchbar.
+                <a class="f4 fa-solid fa-circle-question v-top blue grow pointer no-underline" href="/why" ></a>
+                <script>
+                    if (window.matchMedia("(min-width: 60em)").matches) {
+                        link = up.element.subtree(up.element.get("h1"), "a")[0]
+                        up.element.setAttrs(link, {
+                            "up-history": "false",
+                            "up-size": "large",
+                            "up-layer": "new popup",
+                            "up-class": "modal"
+                        })
+                }
+                </script>
             </h1>
-            <div class="w-30 center">
+            <div class="w-30-l w-90 center">
                 <form action="{% url 'search' %}" method="get" id="search">
                 {% include "components/input.html" %}
                 </form>

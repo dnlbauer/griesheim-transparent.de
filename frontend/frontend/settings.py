@@ -42,7 +42,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "frontend",
-    "fontawesomefree"
+    "fontawesomefree",
+    "django_crontab"
+]
+
+CRONJOBS = [
+    (env("UPDATE_SOLR_CRON", default="0 */3 * * *"), "django.core.management.call_command", ["update_solr"])
 ]
 
 MIDDLEWARE = [

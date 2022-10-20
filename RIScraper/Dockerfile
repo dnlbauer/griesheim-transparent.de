@@ -8,6 +8,8 @@ WORKDIR /
 COPY requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 COPY RIScraper /RIScraper
+COPY crontab crontab
 COPY config.yaml /
 
+RUN crontab crontab
 ENTRYPOINT ["python", "RIScraper/Scraper.py"]

@@ -14,7 +14,6 @@ association_document_consultation = Table(
     Column("consultation_id", ForeignKey("consultations.id"), primary_key=True),
 )
 
-
 class Consultation(Base):
     __tablename__ = "consultations"
 
@@ -28,4 +27,3 @@ class Consultation(Base):
                              secondary=association_document_consultation,
                              backref="consultations")
     agendaItems = relationship("AgendaItem", back_populates="consultation")
-

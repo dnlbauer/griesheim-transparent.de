@@ -20,6 +20,14 @@ association_document_agenda_item = Table(
     Column("agenda_item_id", ForeignKey("agendaitems.id"), primary_key=True),
 )
 
+association_consultation_meeting = Table(
+    "consultation_meeting",
+    Base.metadata,
+    Column("consultation_id", ForeignKey("consultations.id"), primary_key=True),
+    Column("meeting_id", ForeignKey("meetings.id"), primary_key=True),
+)
+
+
 class Meeting(Base):
     __tablename__ = "meetings"
 
@@ -34,6 +42,7 @@ class Meeting(Base):
     documents = relationship("Document",
                              secondary=association_document_meeting,
                              backref="meetings")
+    consultations = relationship("Consultation", secondary=association_consultation_meeting, backref="meetings")
 
 
 class AgendaItem(Base):

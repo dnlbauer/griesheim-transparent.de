@@ -146,12 +146,16 @@ def scrape_meeting(id, config, db, queue, lock):
         agenda_item_ids.append(link_id)
     agenda_item_ids = [agenda_item_id for agenda_item_id in agenda_item_ids if agenda_item_id is not None]
 
+    # scrape conultation list: required because agenda items are not available sometimes (i.e. future meetings)
+    consultation_ids = scrape_dom_for_consultations(dom, config, db, queue, lock)
+
     # insert into db
     lock.acquire()
     with db.create_transaction() as t:
         repository = Repository(t.session)
         documents = [repository.find_document_by_id(i) for i in document_ids]
         agenda_items = [repository.find_agenda_item_by_agenda_item_id(i) for i in agenda_item_ids]
+        consultations = [repository.find_consultation_by_consultation_id(i) for i in consultation_ids]
         organization_id = None
         organization = repository.find_organization_by_name(organization)
         if organization != None:
@@ -170,6 +174,7 @@ def scrape_meeting(id, config, db, queue, lock):
             if document not in meeting.documents:
                 meeting.documents.append(document)
         meeting.agendaItems = agenda_items
+        meeting.consultations = consultations
         meeting.organization_id = organization_id
         repository.add_meeting(meeting)
         repository.commit()
@@ -202,16 +207,12 @@ def scrape_agenda_item(id, config, db, queue, lock):
     else:
         vote = clean_string("".join(vote[0].itertext()).split(":", 1)[-1])
 
-    links = dom.xpath("//a/@href")
-    links = list(set([l for l in links if config["consultation_url_link_suffix"] in l]))
-    assert len(links) < 2
-    if (len(links)) == 1:
-        parsed_link = urlparse(links[0])
-        query_params = parse_qs(parsed_link.query)
-        link_id = query_params["__kvonr"][0]
-        consultation_id = scrape_consultation(link_id, config, db, queue, lock)
-    else:
+    consultation_ids = scrape_dom_for_consultations(dom, config, db, queue, lock)
+    assert(len(consultation_ids) <= 1)
+    if len(consultation_ids) == 0:
         consultation_id = None
+    else:
+        consultation_id = consultation_ids[0]
 
     text = dom.xpath(config["xml_selectors"]["agenda_item_text"])
     if len(text) == 0:
@@ -231,6 +232,8 @@ def scrape_agenda_item(id, config, db, queue, lock):
     with db.create_transaction() as t:
         repository = Repository(t.session)
         documents = [repository.find_document_by_id(doc_id) for doc_id in document_ids]
+        if consultation_id != None:
+            consultation_id = repository.find_consultation_by_consultation_id(consultation_id).id
         if repository.has_agenda_item_by_agenda_item_id(id):
             item = repository.find_agenda_item_by_agenda_item_id(id)
         else:
@@ -245,6 +248,19 @@ def scrape_agenda_item(id, config, db, queue, lock):
         repository.add_agenda_item(item)
         repository.commit()
     lock.release()
+
+
+def scrape_dom_for_consultations(dom, config, db, queue, lock):
+    consultation_ids = []
+    links = dom.xpath("//a/@href")
+    links = list(set([l for l in links if config["consultation_url_link_suffix"] in l]))
+    for link in links:
+        parsed_link = urlparse(link)
+        query_params = parse_qs(parsed_link.query)
+        link_id = query_params["__kvonr"][0]
+        consultation_id = scrape_consultation(link_id, config, db, queue, lock)
+        consultation_ids.append(link_id)
+    return consultation_ids
 
 
 def scrape_consultation(id, config, db, queue, lock):
@@ -322,7 +338,6 @@ def scrape_dom_for_documents(dom, config, db, queue, lock):
 
 
 def scrape_document(id, config, db, queue, lock, title=None):
-    print(title)
     logger.info(f"Scraping document id {id}")
     exists = False
     lock.acquire()
@@ -636,7 +651,9 @@ def scrape(config):
             [process.terminate() for process in processes]
 
     # scrape meetings
-    if config["systematic"]:
+    if config['meeting']:
+        queue.put(QueueItem('meeting', config['meeting']))
+    elif config["systematic"]:
         init_queue_meetings_systematic(1, 10000, queue)
         init_queue_documents_systematic(1, 5000, queue)
     else:

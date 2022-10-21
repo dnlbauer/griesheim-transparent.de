@@ -97,6 +97,16 @@ def test_scrape_meeting(config, db, queue, lock):
             has_doc = True
     assert(has_doc)
 
+    # consultations should be associated with meeting
+    consultations = meeting.consultations
+    assert(len(consultations) == 9)
+    has_consultation = False
+    for consultation in consultations:
+        print(consultation.name)
+        if "AG/2022/0064" in consultation.name:
+            has_consultation = True
+    assert(has_consultation)
+
 
 def test_download_document(config):
     doc = download_document(38940, config)

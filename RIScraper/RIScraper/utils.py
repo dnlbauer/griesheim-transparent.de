@@ -31,6 +31,7 @@ def parse_args():
     parser.add_argument("--end", dest="end", action="store", default=f"{date.today().month}/{date.today().year}")
     parser.add_argument("--nscraper", dest="nscraper", action="store", type=int, default=multiprocessing.cpu_count())
     parser.add_argument("--nanalyzer", dest="nanalyzer", action="store", type=int, default=max(1, int(multiprocessing.cpu_count() / 4)))
+    parser.add_argument("--meeting", dest="meeting", action="store", default=None)
     args = parser.parse_args()
     return args
 
@@ -49,6 +50,7 @@ def parse_config_and_args(filename, args):
         config["scrape"] = args.scrape
         config["organizations"] = args.organizations
         config["persons"] = args.persons
+        config['meeting'] = args.meeting
         config["systematic"] = args.systematic
         config["analyze"] = args.analyze
         config["start_year"] = int(args.start.split("/")[-1])

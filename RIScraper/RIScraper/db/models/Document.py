@@ -19,6 +19,7 @@ class Document(Base):
     creation_date = Column(DateTime)
     last_modified = Column(DateTime)
     last_saved = Column(DateTime)
+    title = Column(String)
     content_text = Column(String)
     content_text_ocr = Column(String)
 

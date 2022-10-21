@@ -73,6 +73,7 @@ class Document(models.Model):
     creation_date = models.DateTimeField()
     last_modified = models.DateTimeField()
     last_saved = models.DateTimeField()
+    title = models.TextField()
     content_text = models.TextField()
     content_text_ocr = models.TextField()
     consultations = models.ManyToManyField(Consultation, through="DocumentConsulation", related_name="document_id")

@@ -71,19 +71,31 @@ def test_scrape_calendar_month(config, queue):
 
 def test_scrape_meeting(config, db, queue, lock):
     session = db.create_session()
-    Repository(session).add_organization(Organization(org_id=1, name="Stadtverordnetenversammlung"))
+    Repository(session).add_organization(Organization(org_id=1, name="Wirtschafts- und Finanzausschuss"))
     session.commit()
-    scrape_meeting(6793, config, db, queue, lock)
+    scrape_meeting(8825, config, db, queue, lock)
 
     meeting = Repository(db.create_session()).get_all_meetings()[0]
-    assert (meeting.meeting_id == 6793)
-    assert ("Stadtverordnetenversammlung" in meeting.title)
-    assert (meeting.title_short == "STVV/2022/0011")
+    assert (meeting.meeting_id == 8825)
+    assert ("Wirtschafts- und Finanzausschuss" in meeting.title)
+    assert (meeting.title_short == "WF/2022/0013")
     assert (meeting.date is not None)
     expected_organization_id = db.create_session().query(
         Organization.id
     ).limit(1).one()[0]
     assert (meeting.organization_id == expected_organization_id)
+
+    # assert documents are scraped with their respective title and are associated with the meeting
+    document = Repository(db.create_session()).find_document_by_id(44130)
+    assert(document.title == "Sachstand Digitalisierung")
+
+    # documents from main should be associated with meeting
+    documents = meeting.documents
+    has_doc = False
+    for doc in documents:
+        if doc.document_id == 44130:
+            has_doc = True
+    assert(has_doc)
 
 
 def test_download_document(config):
@@ -187,6 +199,10 @@ def test_scrape_consultation(config, db, queue, lock):
     assert (item.type == "Antragsvorlage")
     assert ("Die lokale Energiewende" in item.topic)
     assert (len(item.documents) == 3)
+    document_titles = [doc.title for doc in item.documents]
+    assert("AG 2022 0051" in document_titles)
+    assert("ÄAG 2022 0051 B90" in document_titles)
+
 
 
 def test_scrape_consultation_exists(config, db, queue, lock):

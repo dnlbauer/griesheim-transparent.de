@@ -306,21 +306,23 @@ def scrape_consultation(id, config, db, queue, lock):
 
 def scrape_dom_for_documents(dom, config, db, queue, lock):
     links = dom.xpath(config["xml_selectors"]["document_link"])
-    links = [link for link in links if "getfile.asp" in link]
+    links = [(link.text_content(), link.xpath('./@href')[0]) for link in links]
+    links = [link for link in links if "getfile.asp" in link[1] and len(link[0]) > 0]
     links = set(links)
     logger.debug(f"Found {len(links)} attachments")
     document_ids = []
-    for link in links:
+    for (link_title, link) in links:
         parsed_link = urlparse(link)
         query_params = parse_qs(parsed_link.query)
         link_id = query_params["id"][0]
-        scrape_document(link_id, config, db, queue, lock)
+        scrape_document(link_id, config, db, queue, lock, title=link_title)
         document_ids.append(link_id)
 
     return document_ids
 
 
-def scrape_document(id, config, db, queue, lock):
+def scrape_document(id, config, db, queue, lock, title=None):
+    print(title)
     logger.info(f"Scraping document id {id}")
     exists = False
     lock.acquire()
@@ -333,7 +335,7 @@ def scrape_document(id, config, db, queue, lock):
     if exists:
         return
     try:
-        document = download_document(id, config)
+        document = download_document(id, config, title)
     except urllib.error.URLError as e:
         if e.code == 403 or e.code == 404:
             return
@@ -350,7 +352,7 @@ def scrape_document(id, config, db, queue, lock):
     lock.release()
 
 
-def download_document(id, config):
+def download_document(id, config, title=None):
     url = f'{config["base_url"]}{config["meeting_document_link_suffix"]}?{urlencode({"id": id})}'
     logger.debug(url)
     response = urllib.request.urlopen(url)
@@ -369,6 +371,7 @@ def download_document(id, config):
         content_type=content_type,
         content_binary=content,
         size=len(content),
+        title=title
     )
 
 

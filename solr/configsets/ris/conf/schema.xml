@@ -8,7 +8,7 @@
     <!-- Document data -->
     <field name="document_id" type="pint" indexed="false" stored="true" required="true" />
     <field name="doc_type" type="string" indexed="true" stored="true" required="false" />
-    <field name="doc_title" type="keyword" indexed="true" stored="true" required="false" />
+    <field name="doc_title" type="text" indexed="true" stored="true" required="false" />
 
     <field name="content" type="text" indexed="true" stored="true" />
     <field name="content_hr" type="text_hr" indexed="true" stored="false" />
@@ -24,7 +24,7 @@
 
     <field name="size" type="pint" indexed="false" stored="true" required="true" />
     <field name="content_type" type="string" indexed="false" stored="true" required="true" />
-    <field name="filename" type="keyword" indexed="false" stored="true" required="true" />
+    <field name="filename" type="string" indexed="false" stored="true" required="true" />
     <field name="first_seen" type="pdate" indexed="true" stored="true" />
     <field name="last_seen" type="pdate" indexed="true" stored="true" />
 
@@ -35,8 +35,8 @@
 
     <!-- Consultation -->
     <field name="consultation_id" type="pint" indexed="false" stored="true" />
-    <field name="consultation_name" type="keyword" indexed="true" stored="true" />
-    <field name="consultation_type" type="keyword" indexed="true" stored="true" />
+    <field name="consultation_name" type="string" indexed="true" stored="true" />
+    <field name="consultation_type" type="text" indexed="true" stored="true" />
     <field name="consultation_type_s" type="string" indexed="true" stored="true" />
     <copyField source="consultation_type" dest="consultation_type_s"/>
     <field name="consultation_topic" type="text" indexed="true" stored="true" />
@@ -52,13 +52,13 @@
 
     <!-- Meeting -->
     <field name="agenda_item_id" type="pint" indexed="false" stored="true" multiValued="true" />
-    <field name="agenda_item_title" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="agenda_item_title" type="text" indexed="true" stored="true" multiValued="true" />
     <field name="agenda_item_text" type="text" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_id" type="pint" indexed="false" stored="true" multiValued="true" />
-    <field name="meeting_title" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_title" type="text" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_title_short" type="string" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_date" type="pdate" indexed="true" stored="true" multiValued="true" />
-    <field name="meeting_organization_name" type="keyword" indexed="true" stored="true" multiValued="true" />
+    <field name="meeting_organization_name" type="text" indexed="true" stored="true" multiValued="true" />
     <field name="meeting_organization_name_s" type="string" indexed="true" stored="true" multiValued="true" />
     <copyField source="meeting_organization_name" dest="meeting_organization_name_s"/>
     <field name="meeting_count" type="pint" indexed="true" stored="true" />
@@ -70,6 +70,8 @@
     <copyField source="consultation_name" dest="suggest_text" />
     <copyField source="consultation_topic" dest="suggest_text" />
 <!--    <copyField source="consultation_text" dest="suggest_text" />-->
+    <copyField source="agenda_item_title" dest="suggest_text" />
+<!--    <copyField source="agenda_item_text" dest="suggest_text" />-->
     <copyField source="meeting_title_short" dest="suggest_text" />
     <copyField source="meeting_title" dest="suggest_text" />
     <copyField source="meeting_organization_name" dest="suggest_text" />
@@ -219,31 +221,5 @@
             <filter class="solr.FlattenGraphFilterFactory"/>
         </analyzer>
     </fieldType>
-
-    <fieldType name="keyword" class="solr.TextField" sortMissingLast="true" omitNorms="true" positionIncrementGap="100">
-        <analyzer type="index">
-            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-            <filter class="solr.HyphenatedWordsFilterFactory"/>
-            <filter class="solr.StemmerOverrideFilterFactory" dictionary="lang/stemdict_de.tsv" ignoreCase="true"/>
-            <filter class="solr.GermanLightStemFilterFactory"/>
-            <filter class="solr.LowerCaseFilterFactory"/>
-            <filter class="solr.GermanNormalizationFilterFactory"/>
-            <filter class="solr.ASCIIFoldingFilterFactory"/>
-            <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-            <filter class="solr.FlattenGraphFilterFactory"/>
-        </analyzer>
-        <analyzer type="query">
-            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-            <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt,lang/synonyms_de.txt" ignoreCase="true" expand="true" />
-            <filter class="solr.StemmerOverrideFilterFactory" dictionary="lang/stemdict_de.tsv" ignoreCase="true"/>
-            <filter class="solr.GermanLightStemFilterFactory"/>
-            <filter class="solr.LowerCaseFilterFactory"/>
-            <filter class="solr.GermanNormalizationFilterFactory"/>
-            <filter class="solr.ASCIIFoldingFilterFactory"/>
-            <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-            <filter class="solr.ConcatenateGraphFilterFactory" preservePositionIncrements="false"/>
-        </analyzer>
-    </fieldType>
-
 
 </schema>

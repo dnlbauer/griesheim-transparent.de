@@ -755,7 +755,7 @@
         consultation_text^2 consultation_text^2.4 consultation_text_hr^0.8
         consultation_type^10
 
-        agenda_item_title^10
+        agenda_item_title^5
         agenda_item_text^1
 
         meeting_title^1

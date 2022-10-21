@@ -35,5 +35,5 @@ FW,Feuerwehrausschuss
 KITA,Kindertagesstätte
 IV,Informationsvorlage
 Miniwald,Tiny Forest
-Miniwälder,Tiny Forests
-Sachstandsbericht => Sachstand,Sachstandsbericht,Sachstandbericht
+Sachstand => Sachstand,Sachstandsbericht,Sachstandbericht
+Betriebskomission,Betriebskomision

@@ -321,17 +321,26 @@ def scrape_consultation(id, config, db, queue, lock):
 
 
 def scrape_dom_for_documents(dom, config, db, queue, lock):
-    links = dom.xpath(config["xml_selectors"]["document_link"])
-    links = [(link.text_content(), link.xpath('./@href')[0]) for link in links]
+    links_elements = dom.xpath(config["xml_selectors"]["document_link"])
+    links = []
+    # filter links: href attribute and link text is required
+    for l in links_elements:
+        link_text = l.text_content()
+        if len(link_text) == 0 or len(l.xpath('./@href')) == 0:
+            continue
+        else:
+            links.append((link_text, l.xpath('./@href')[0]))
+
+    # only keep links pointing to a file
     links = [link for link in links if "getfile.asp" in link[1] and len(link[0]) > 0]
     links = set(links)
     logger.debug(f"Found {len(links)} attachments")
     document_ids = []
-    for (link_title, link) in links:
+    for (link_text, link) in links:
         parsed_link = urlparse(link)
         query_params = parse_qs(parsed_link.query)
         link_id = query_params["id"][0]
-        scrape_document(link_id, config, db, queue, lock, title=link_title)
+        scrape_document(link_id, config, db, queue, lock, title=link_text)
         document_ids.append(link_id)
 
     return document_ids

@@ -31,6 +31,7 @@ class Command(BaseCommand):
             content_ocr=doc.content_text_ocr,
             author=doc.author,
             content_type=doc.content_type,
+            doc_title=doc.title,
             agenda_item_id=[],
             agenda_item_title=[],
             agenda_item_text=[],
@@ -86,13 +87,6 @@ class Command(BaseCommand):
                     solr_doc['first_seen'] = solr_doc['meeting_date'][-1]
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
-
-        if 'doc_type' in solr_doc and solr_doc['doc_type'] == 'Niederschrift':
-            solr_doc['doc_title'] = meeting.title
-        elif "consultation_name" in solr_doc:
-            solr_doc['doc_title'] = solr_doc['consultation_topic']
-        elif len(solr_doc['agenda_item_title']) != 0:
-            solr_doc['doc_title'] = solr_doc['agenda_item_title'][-1]
 
         if doc.creation_date is not None:
             solr_doc['creation_date'] = doc.creation_date.strftime(self.DATE_FORMAT),

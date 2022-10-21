@@ -344,7 +344,12 @@ def scrape_document(id, config, db, queue, lock, title=None):
     with db.create_transaction() as t:
         repository = Repository(t.session)
         if repository.has_document_by_id(id):
-            logger.debug(f"Document with id {id} already in database. Download skipped")
+            logger.debug(f"Document with id {id} already in database. Download will be skipped")
+            # even if doc exists, update metadata
+            document = repository.find_document_by_id(id)
+            document.title = title
+            repository.add_document(document)
+            repository.commit()
             exists = True
     lock.release()
     if exists:

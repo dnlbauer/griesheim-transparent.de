@@ -17,6 +17,14 @@ def chunks(lst, n):
 def clean_string(s):
     return re.sub(r"\s+", " ", s).strip()
 
+def _future_month(add=0):
+    month = date.today().month
+    year = date.today().year
+    month += add
+    while (month > 12):
+        month -= 12
+        year += 1
+    return f"{month}/{year}"
 
 def parse_args():
     parser = argparse.ArgumentParser("RIScraper")
@@ -28,7 +36,7 @@ def parse_args():
     parser.add_argument("--systematic", dest="systematic", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--analyze", dest="analyze", action="store", default="new", choices=["all", "new", "none"])
     parser.add_argument("--start", dest="start", action="store", default="01/2010")
-    parser.add_argument("--end", dest="end", action="store", default=f"{date.today().month}/{date.today().year}")
+    parser.add_argument("--end", dest="end", action="store", default=_future_month(3))
     parser.add_argument("--nscraper", dest="nscraper", action="store", type=int, default=multiprocessing.cpu_count())
     parser.add_argument("--nanalyzer", dest="nanalyzer", action="store", type=int, default=max(1, int(multiprocessing.cpu_count() / 4)))
     parser.add_argument("--meeting", dest="meeting", action="store", default=None)

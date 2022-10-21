@@ -25,6 +25,7 @@ class Meeting(models.Model):
     date = models.DateTimeField()
     organization = models.ForeignKey(Organization, on_delete=models.RESTRICT, related_name="meetings")
     documents = models.ManyToManyField("Document", through="DocumentMeeting", related_name="meeting_id")
+    consultations = models.ManyToManyField("Consultation", through="ConsultationMeeting", related_name="meeting_id")
 
 
 class Consultation(models.Model):
@@ -39,6 +40,7 @@ class Consultation(models.Model):
     topic = models.TextField()
     type = models.TextField()
     text = models.TextField()
+    meetings = models.ManyToManyField("Meeting", through="ConsultationMeeting", related_name="consultation_id")
 
 
 class AgendaItem(models.Model):
@@ -108,4 +110,14 @@ class DocumentMeeting(models.Model):
         db_table = 'document_meeting'
 
     document = models.ForeignKey(Document, on_delete=models.RESTRICT)
+    meeting = models.ForeignKey(Meeting, on_delete=models.RESTRICT)
+
+
+class ConsultationMeeting(models.Model):
+    class Meta:
+        managed = False
+        abstract = False
+        db_table = "consultation_meeting"
+
+    consultation = models.ForeignKey(Consultation, on_delete=models.RESTRICT)
     meeting = models.ForeignKey(Meeting, on_delete=models.RESTRICT)

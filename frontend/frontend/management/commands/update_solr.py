@@ -23,6 +23,28 @@ class Command(BaseCommand):
         return solr
 
     def _to_solr(self, doc):
+        # find corresponding consultation
+        consultations = doc.consultations.all()
+        consultation = None
+        if len(consultations) > 1:
+            raise ValueError("Associated consultation objects > 1. This is unexpected")
+        elif len(consultations) == 1:
+            consultation = consultations[0]
+
+        # find associated meetings and agenda items
+        meetings = set(doc.meetings.all())
+        agenda_items = set(doc.agenda_items.all())
+
+        if consultation is not None:
+            consultation_agenda_items = consultation.agenda_items.all()
+            for item in consultation_agenda_items:
+                agenda_items.add(item)
+                meetings.add(item.meeting)
+            consultation_meetings = consultation.meetings.all()
+            for item in consultation_meetings:
+                meetings.add(item)
+
+        # create document
         solr_doc = dict(
             id=str(doc.id),
             document_id=doc.document_id,
@@ -42,14 +64,7 @@ class Command(BaseCommand):
             meeting_organization_name=[],
             filename=doc.file_name
         )
-        meetings = []
-        agenda_items = []
-        consultations = doc.consultations.all()
-        consultation = None
-        if len(consultations) > 1:
-            raise ValueError("Associated consultation objects > 1. This is unexpected")
-        elif len(consultations) == 1:
-            consultation = consultations[0]
+
         if consultation is not None:
             solr_doc["consultation_id"] = consultation.consultation_id
             solr_doc["consultation_name"] = consultation.name
@@ -58,22 +73,17 @@ class Command(BaseCommand):
             solr_doc["consultation_text"] = consultation.text
             solr_doc['doc_type'] = consultation.type
 
-            consultation_agenda_items = consultation.agenda_items.all()
-            for item in consultation_agenda_items:
-                agenda_items.append(item)
-                meetings.append(item.meeting)
-        if 'doc_type' not in solr_doc:
+        # Niederschrift recognized by content
+        if 'doc_type' not in solr_doc or solr_doc['doc_type'] is None:
             if (doc.content_text and "niederschrift" in doc.content_text[:100].lower()) or (doc.content_text_ocr and "niederschrift" in doc.content_text_ocr[:100].lower()):
                 solr_doc['doc_type'] = "Niederschrift"
 
-        agenda_items += doc.agenda_items.all()
         for agenda_item in agenda_items:
             if agenda_item.agenda_item_id not in solr_doc['agenda_item_id']:
                 solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
                 solr_doc['agenda_item_title'].append(agenda_item.title.split(":")[-1].strip())
                 solr_doc['agenda_item_text'].append(agenda_item.text)
 
-        meetings += doc.meetings.all()
         for meeting in meetings:
             if meeting.meeting_id not in solr_doc['meeting_id']:
                 solr_doc['meeting_id'].append(meeting.meeting_id)

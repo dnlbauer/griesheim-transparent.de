@@ -105,15 +105,6 @@ def _parse_highlights(highlights):
 
 def _parse_search_result(doc, response):
     download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
-    if "doc_title" in doc:
-        title = doc['doc_title']
-    else:
-        if "content" in doc:
-            title = doc['content'][:100] + "..."
-        elif "content_ocr" in doc:
-            title = doc['content_ocr'][:100] + "..."
-        else:
-            title = None
 
     if "consultation_id" in doc:
         link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
@@ -129,6 +120,20 @@ def _parse_search_result(doc, response):
         doc_type = doc['doc_type']
     else:
         doc_type = None
+
+    title = None
+    if doc_type:
+        if doc_type in ["Antragsvorlage", "Beschlussvorlage", "Informationsvorlage"] and len(doc["consultation_topic"]) != 0:
+            title = doc['consultation_topic']
+        elif doc_type == "Niederschrift" and len(doc['meeting_title']) != 0:
+            title = doc['meeting_title'][0]
+    if title is None:
+        if "doc_title" in doc:
+            title = doc['doc_title']
+        elif "content" in doc:
+            title = doc['content'][:100] + "..."
+        elif "content_ocr" in doc:
+            title = doc['content_ocr'][:100] + "..."
 
     if "last_seen" in doc:
         date = doc['last_seen']

@@ -23,6 +23,6 @@
                 {% endif %}
                 {{ document.doc_type }} |
             {% endif %}
-            {{ document.short_name }}{% if document.date %} | {{ document.date|date:'d. M o' }}{% endif %}</small>
+            {% if document.short_name %}{{ document.short_name }}{% endif %}{% if document.date %} | {{ document.date|date:'d. M o' }}{% endif %}</small>
     </div>
 </article>

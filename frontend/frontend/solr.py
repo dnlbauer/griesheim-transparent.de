@@ -106,20 +106,20 @@ def _parse_highlights(highlights):
 def _parse_search_result(doc, response):
     download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
 
+    short_name = None
+    link = None
     if "consultation_id" in doc:
         link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
         short_name = doc['consultation_name']
-    else:
-        link = download_link
+    elif "meeting_id" in doc:
+        link = f"https://sessionnet.krz.de/griesheim/bi/si0050.asp?__ksinr={doc['meeting_id'][0]}"
         if "meeting_title_short" in doc and len(doc['meeting_title_short']) == 1:
             short_name = doc['meeting_title_short'][0]
-        else:
-            short_name = None
 
     if "doc_type" in doc:
         doc_type = doc['doc_type']
     else:
-        doc_type = None
+        doc_type = "Anlage"
 
     title = None
     if doc_type:

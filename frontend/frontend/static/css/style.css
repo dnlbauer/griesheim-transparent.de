@@ -57,3 +57,7 @@ div.searchresult-head > a > span.title:hover {
     background: white;
     box-shadow: 3px 3px 10px;
 }
+
+.fa-aligned {
+    vertical-align: middle;
+}

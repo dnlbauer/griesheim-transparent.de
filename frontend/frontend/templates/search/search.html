@@ -4,7 +4,7 @@
     <script>up.form.config.submitSelectors.push(['form'])</script>
     <div class="w-100">
         <div class="mw9 center">
-            <form class="ma3 w-60-l p3" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults">
+            <form class="ma3 w-80-l p3" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults">
                 {% include "components/input.html" %}
             </form>
         </div>
@@ -12,7 +12,7 @@
     <hr />
     <div class="w-100">
         <div class="mw9 center">
-            <div class="w-60-l pa3">
+            <div class="w-80-l pa3">
                 {% include "search/results.html" %}
             </div>
         </div>

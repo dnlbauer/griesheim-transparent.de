@@ -1,5 +1,5 @@
-<article class="searchresult mt3 f5 pb3" style="line-height: 1.6">
-    <div class="searchresult-head overflow-x-hidden">
+<article class="searchresult mt3 f5 pb3 mt3" style="line-height: 1.6">
+    <div class="searchresult-head overflow-x-hidden mb1">
         <a class="f6-ns grow no-underline br-pill ba ph2 mb2 dib black mr2" href="{{ document.download_link }}">Runterladen ↓</a>
         <a href="{{ document.link }}">
             {{ document.link }}<br />
@@ -9,7 +9,7 @@
         </a>
     </div>
     {% if document.highlight %}
-        <div class="gray" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
+        <div class="gray mb1 f5" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
             {{ document.highlight.strip|safe }}
         </div>
     {% endif %}

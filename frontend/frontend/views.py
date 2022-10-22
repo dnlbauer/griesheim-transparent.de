@@ -1,11 +1,14 @@
 import logging
+from datetime import datetime
 
+import pytz as pytz
 from django.views.generic import TemplateView
 
 from django.shortcuts import render, redirect
 
 from frontend import settings
 from frontend import solr
+from .models import Query
 from .solr import suggest
 
 logger = logging.getLogger(__name__)
@@ -42,6 +45,7 @@ class MainView(TemplateView):
         organization = request.GET.get("organization", "*")
         page = parse_page(request)
         if query is not None:
+            Query(query=query).save()
             result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
         else:
             result = []

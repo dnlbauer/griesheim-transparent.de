@@ -88,7 +88,7 @@ WSGI_APPLICATION = "frontend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": env("DATABASE_PATH", default=BASE_DIR / "db.sqlite3"),
     },
     "ris": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -126,7 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "de-de"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Berlin"
 
 USE_I18N = True
 

@@ -1,7 +1,5 @@
 import logging
-from datetime import datetime
 
-import pytz as pytz
 from django.views.generic import TemplateView
 
 from django.shortcuts import render, redirect

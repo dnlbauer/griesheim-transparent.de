@@ -1,7 +1,7 @@
 <article class="searchresult mt3 f5 pb3 mt3" style="line-height: 1.6">
     <div class="searchresult-head overflow-x-hidden mb1">
         <a href="{{ document.download_link }}">
-            {{ document.link }}<br />
+{#            {{ document.doc_type }}<br />#}
             <span class="blue fw4 f4 measure">
                 {{ document.title.strip }}
             </span>
@@ -24,10 +24,11 @@
                         <span class="f5 fa-regular fa-file"></span>
                     {% endif %}
                 {% endif %}
-                {{ document.doc_type }} |
+                {{ document.doc_type }}
             {% endif %}
-            {% if document.short_name %}{{ document.short_name }}{% endif %}{% if document.date %} | {{ document.date|date:'d. M o' }}{% endif %}</small>
-            <a class="f6-ns grow no-underline br-pill ba ph2 mb2 dib bg-blue mr2 bg-light-blue black" href="{{ document.link }}"><span class="fa fa-circle-chevron-right"></span><span class="ml1">Quelle</span></a>
-        </a>
+            {% if document.date %} vom {{ document.date|date:'d. M o' }}{% endif %}</small>
+        {% if document.link %}
+            <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb2 dib bg-blue bg-light-blue dark-gray" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
+        {% endif %}
     </div>
 </article>

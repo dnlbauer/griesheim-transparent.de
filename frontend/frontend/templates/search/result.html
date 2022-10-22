@@ -1,33 +1,40 @@
 <article class="searchresult mt3 f5 pb3 mt3" style="line-height: 1.6">
-    <div class="searchresult-head overflow-x-hidden mb1">
-        <a href="{{ document.download_link }}">
+    <div style="display: flex">
+        <a href="{{ document.download_link }}" class="ba bw1 mr3 w-40">
+            <img src="{{ document.preview_image }}" alt="Preview image: {{ document.title.strip }}" style="outline: none !important;"/>
+        </a>
+        <div>
+            <div class="searchresult-head overflow-x-hidden mb1">
+                <a href="{{ document.download_link }}">
             <span class="blue fw4 f4 measure">
                 {{ document.title.strip }}
             </span>
-        </a>
-    </div>
-    {% if document.highlight %}
-        <div class="gray mb1 f5" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
-            {{ document.highlight.strip|safe }}
-        </div>
-    {% endif %}
-    <div class="metadata">
-        <small class="f5 measure">
-            {% if document.doc_type %}
-                {% if document.doc_type == "Anlage"%}
-                    <span class="f5 fa-solid fa-paperclip"></span>
-                {% else %}
-                    {% if document.doc_type == "Niederschrift" %}
-                        <span class="f5 fa-solid fa-file-signature"></span>
-                    {% else %}
-                        <span class="f5 fa-regular fa-file"></span>
-                    {% endif %}
-                {% endif %}
-                {{ document.doc_type }}
+                </a>
+            </div>
+            {% if document.highlight %}
+                <div class="gray mb1 f5" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
+                    {{ document.highlight.strip|safe }}
+                </div>
             {% endif %}
-            {% if document.date %} vom {{ document.date|date:'d. M o' }}{% endif %}</small>
-        {% if document.link %}
-            <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb2 dib bg-blue bg-light-blue dark-gray" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
-        {% endif %}
+            <div class="metadata">
+                <small class="f5 measure">
+                    {% if document.doc_type %}
+                        {% if document.doc_type == "Anlage"%}
+                            <span class="f5 fa-solid fa-paperclip"></span>
+                        {% else %}
+                            {% if document.doc_type == "Niederschrift" %}
+                                <span class="f5 fa-solid fa-file-signature"></span>
+                            {% else %}
+                                <span class="f5 fa-regular fa-file"></span>
+                            {% endif %}
+                        {% endif %}
+                        {{ document.doc_type }}
+                    {% endif %}
+                    {% if document.date %} vom {{ document.date|date:'d. M o' }}{% endif %}</small>
+                {% if document.link %}
+                    <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb2 dib bg-blue bg-light-blue dark-gray" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </article>

@@ -10,6 +10,8 @@
     <field name="doc_type" type="string" indexed="true" stored="true" required="false" />
     <field name="doc_title" type="text" indexed="true" stored="true" required="false" />
 
+    <field name="preview_image" type="string" indexed="false" stored="true" />
+
     <field name="content" type="text" indexed="true" stored="true" />
     <field name="content_hr" type="text_hr" indexed="true" stored="false" />
     <field name="content_hp" type="text_hp" indexed="true" stored="false" />

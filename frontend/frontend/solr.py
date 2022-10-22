@@ -16,7 +16,7 @@ class SortOrder(Enum):
 
 class SearchResult:
     def __init__(self, title, highlight, link, download_link,
-                 doc_type, short_name, date):
+                 doc_type, short_name, date, preview_image):
         self.title = title
         self.highlight = highlight
         self.link = link
@@ -24,6 +24,7 @@ class SearchResult:
         self.doc_type = doc_type
         self.short_name = short_name
         self.date = date
+        self.preview_image = preview_image
 
 
 class SearchResults:
@@ -58,7 +59,7 @@ FACET_FIELDS = {
 
 SOLR_ARGS = {
     "search_handler": "/select",
-    "fl": "id,content,content_ocr,first_seen"
+    "fl": "id,content,content_ocr,first_seen,preview_image"
 }
 
 HL_ARGS = {
@@ -143,6 +144,11 @@ def _parse_search_result(doc, response):
 
     hl = _parse_highlights(response.highlighting[doc['id']])
 
+    if "preview_image" in doc:
+        preview_image = doc['preview_image']
+    else:
+        preview_image = None
+
     return SearchResult(
         title,
         hl,
@@ -150,7 +156,8 @@ def _parse_search_result(doc, response):
         download_link,
         doc_type,
         short_name,
-        date
+        date,
+        preview_image
     )
 
 

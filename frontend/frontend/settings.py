@@ -145,3 +145,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SOLR_HOST = env("SOLR_HOST", default="http://localhost:8983/solr")
 SOLR_COLLECTION = env('SOLR_COLLECTION', default="ris")
+
+PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:8080")
+PREVIEW_RESOLUTION = "256x256"

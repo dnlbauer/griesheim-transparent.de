@@ -5,6 +5,7 @@ from django.core.management import BaseCommand
 
 from frontend import settings
 from frontend.risdb.models import Document
+from utils import get_preview_image_for_doc
 
 
 class Command(BaseCommand):
@@ -62,7 +63,8 @@ class Command(BaseCommand):
             meeting_title_short=[],
             meeting_date=[],
             meeting_organization_name=[],
-            filename=doc.file_name
+            filename=doc.file_name,
+            preview_image=get_preview_image_for_doc(doc.document_id)
         )
 
         if consultation is not None:

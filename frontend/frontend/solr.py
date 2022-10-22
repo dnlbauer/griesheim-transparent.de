@@ -58,7 +58,7 @@ FACET_FIELDS = {
 
 SOLR_ARGS = {
     "search_handler": "/select",
-    "fl": "id,content,content_ocr"
+    "fl": "id,content,content_ocr,first_seen"
 }
 
 HL_ARGS = {
@@ -136,7 +136,7 @@ def _parse_search_result(doc, response):
             title = doc['content_ocr'][:100] + "..."
 
     if "last_seen" in doc:
-        date = doc['last_seen']
+        date = doc['first_seen']
         date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     else:
         date = None

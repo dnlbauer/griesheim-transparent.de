@@ -8,8 +8,9 @@ from frontend.risdb.models import Document
 
 def get_preview_image_for_doc(document_id):
     doc = Document.objects.get(document_id=int(document_id))
-    response = requests.post(f"{settings.PREVIEW_HOST}/preview/{settings.PREVIEW_RESOLUTION}",
-                             files=dict(file=doc.content_binary))
+    url = f"{settings.PREVIEW_HOST}/preview/{settings.PREVIEW_RESOLUTION}",
+    print(url)
+    response = requests.post(url, files=dict(file=doc.content_binary))
     if response.status_code == 200:
         response_content = response.content
         response_content = base64.b64encode(response_content).decode('utf-8')

@@ -109,7 +109,7 @@ class Command(BaseCommand):
         return solr_doc
 
     def handle(self, *args, **options):
-        self.stdout.write(f"Updating {len(Document.objects.all())} documents")
+        self.stdout.write(f"Updating {Document.objects.all().count()} documents")
         processed = 0
         chunk_size = self.DEFAULT_CHUNK_SIZE
         if options['chunk_size']:

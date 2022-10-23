@@ -7,6 +7,19 @@ div.searchresult-head > a > span.title:hover {
     text-decoration: underline;
 }
 
+div.searchresult-preview {
+    position: relative;
+    max-width: 100px;
+}
+
+.searchresult-preview > a > img {
+    min-width: 100px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    border-color: black;
+}
+
 .overflow {
     overflow: hidden;
     text-overflow: ellipsis;

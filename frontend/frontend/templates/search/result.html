@@ -1,14 +1,16 @@
-<article class="searchresult mt3 f5 pb3 mt3 flex" style="line-height: 1.6;">
+<article class="searchresult mt4 mb4 f5 pb2 flex" style="line-height: 1.6;">
+        {% if document.preview_image %}
         <div class="mr3 searchresult-preview">
             <a href="{{ document.download_link }}">
                 <div class="searchresult-preview-image">
-                    <img src="{{ document.preview_image }}" class="ba bw" alt="Preview image: {{ document.title.strip }}"/>
-                    <i class="fa-regular fa-file-pdf dark-red bg-white f3" style="position: absolute; top:-8px; right:-8px"></i>
+                    <img src="{{ document.preview_image }}" class="ba bw shadow-1" style="border-color: black" alt="Preview image: {{ document.title.strip }}"/>
+                    <span class="fa-regular fa-file-pdf dark-red bg-white f3" style="position: absolute; top:-8px; right:-8px"></span>
                 </div>
             </a>
         </div>
+        {% endif %}
         <div>
-            <div class="searchresult-head overflow-x-hidden mb1">
+            <div class="searchresult-head overflow-x-hidden">
                 <a href="{{ document.download_link }}">
             <span class="blue fw4 f4 measure">
                 {{ document.title.strip }}
@@ -16,7 +18,7 @@
                 </a>
             </div>
             {% if document.highlight %}
-                <div class="gray mb1 f5" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
+                <div class="gray mb2 f5" style="overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; display: -webkit-box">
                     {{ document.highlight.strip|safe }}
                 </div>
             {% endif %}
@@ -36,7 +38,7 @@
                     {% endif %}
                     {% if document.date %} vom {{ document.date|date:'d. M o' }}{% endif %}
                     {% if document.link %}
-                        <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb2 dib bg-blue bg-light-blue dark-gray" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
+                        <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb22 dib bg-blue bg-light-blue dark-gray" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
                     {% endif %}
                 </small>
             </div>

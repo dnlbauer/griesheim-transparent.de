@@ -12,7 +12,7 @@ div.searchresult-preview {
     max-width: 100px;
 }
 
-.searchresult-preview > a > img {
+.searchresult-preview-image {
     min-width: 100px;
     position: relative;
     top: 50%;

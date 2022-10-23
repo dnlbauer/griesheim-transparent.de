@@ -1,7 +1,10 @@
 <article class="searchresult mt3 f5 pb3 mt3 flex" style="line-height: 1.6;">
-        <div class="mr3 searchresult-preview" style="position: relative; max-width: 100px">
+        <div class="mr3 searchresult-preview">
             <a href="{{ document.download_link }}">
-                <img src="{{ document.preview_image }}" class="ba bw" alt="Preview image: {{ document.title.strip }}"/>
+                <div class="searchresult-preview-image">
+                    <img src="{{ document.preview_image }}" class="ba bw" alt="Preview image: {{ document.title.strip }}"/>
+                    <i class="fa-regular fa-file-pdf dark-red bg-white f3" style="position: absolute; top:-8px; right:-8px"></i>
+                </div>
             </a>
         </div>
         <div>

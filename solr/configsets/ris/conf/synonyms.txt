@@ -16,3 +16,24 @@
 #bbbfoo => bbbfoo bbbbar
 #cccfoo => cccbar cccbaz
 #fooaaa,baraaa,bazaaa
+Fotovoltaik,Photovoltaik
+Straße,strasse
+Protokoll => Protokoll,Niederschrift,NS
+SVV,STVV,Stadtverordnetenversammlung
+JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
+WF,WIFI,Wirtschafts und Finanzausschuss,Wirtschaftsauschuss,Finanzausschuss,Wirtschaftsausschuss und Finanzausschuss
+UEM,Ausschuss für Umwelt Energie und Mobilität,Umweltausschuss,Energieausschuss,Mobilitätsausschuss
+SB,Stadtplanungs und Bauausschuss,Stadtplanungsausschuss,Bauausschuss
+Griesheim Nord, Flüsseviertel
+Griesheim,Griesm,Griesem
+Darmstadt,DA
+BV,Beschlussvorlage
+AG,Änderungsantrag
+Griesheimer Anger,Konversion Südost
+SWBA,Schwimmbadausschuss
+FW,Feuerwehrausschuss
+KITA,Kindertagesstätte
+IV,Informationsvorlage
+Miniwald,Tiny Forest
+Sachstand => Sachstand,Sachstandsbericht,Sachstandbericht
+Betriebskomission,Betriebskomision

@@ -186,9 +186,8 @@
                     stemEnglishPossessive="0"
                     preserveOriginal="1"
                     protected="protwords.txt,lang/protwords_de.txt"/>
-            <filter class="solr.LowerCaseFilterFactory"/>
-            <filter class="solr.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml"
-                    dictionary="lang/dictionary-de.txt" onlyLongestMatch="true" minSubwordSize="4"/>
+            <filter class="io.redlink.lucene.analysis.compound.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml" ignoreCase="true"
+                    dictionary="lang/dictionary-de.txt,dictionary.txt" onlyLongestMatch="false" minSubwordSize="4" epenthesis="es,s,en,n"/>
             <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt,lang/stopwords_de.txt" format="snowball" ignoreCase="true"/>
             <filter class="solr.PatternReplaceFilterFactory" pattern="(?:^[¿'`´“”&quot;‚„\(\[\{]+|[\.,;:\!\?'`´“”&quot;\)\}\]]+$)" replacement=""/>
             <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt,lang/synonyms_de.txt" ignoreCase="true" expand="true" />
@@ -198,6 +197,7 @@
             <filter class="solr.ASCIIFoldingFilterFactory"/>
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
             <filter class="solr.FlattenGraphFilterFactory"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.WhitespaceTokenizerFactory"/>
@@ -209,9 +209,8 @@
                     stemEnglishPossessive="0"
                     preserveOriginal="1"
                     protected="protwords.txt,lang/protwords_de.txt"/>
-            <filter class="solr.LowerCaseFilterFactory"/>
-<!--            <filter class="solr.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml"-->
-<!--                    dictionary="lang/dictionary-de.txt" onlyLongestMatch="true" minSubwordSize="4"/>-->
+<!--            <filter class="io.redlink.lucene.analysis.compound.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml" ignoreCase="true" -->
+<!--                    dictionary="lang/dictionary-de.txt,dictionary.txt" onlyLongestMatch="true" minSubwordSize="4" epenthesis="es,s,en,n"/>-->
             <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt,lang/stopwords_de.txt" format="snowball" ignoreCase="true"/>
             <filter class="solr.PatternReplaceFilterFactory" pattern="(?:^[¿'`´“”&quot;‚„\(\[\{]+|[\.,;:\!\?'`´“”&quot;\)\}\]]+$)" replacement=""/>
             <filter class="solr.StemmerOverrideFilterFactory" dictionary="lang/stemdict_de.tsv" ignoreCase="true"/>
@@ -221,6 +220,7 @@
             <filter class="solr.ASCIIFoldingFilterFactory"/>
             <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
             <filter class="solr.FlattenGraphFilterFactory"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
         </analyzer>
     </fieldType>
 

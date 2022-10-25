@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <a href="/impressum" class="f6 blue" style="position: fixed; right: 10px; top: 10px;">Impressum & Datenschutz</a>
-    <div class="vh-75 w-100 dt">
+    <div class="vh-100-m vh-50 dt-m">
+    <a href="/impressum" class="f6 blue" style="position: absolute; right: 10px; top: 10px;">Impressum & Datenschutz</a>
+    <div class="vh-50 w-100 dt">
         <div class="dtc v-mid">
             <h1 class="tc">Griesheimer Politik, durchsuchbar.
                 <a class="f4 fa-solid fa-circle-question v-top blue grow pointer no-underline" href="/why" ></a>
@@ -24,7 +25,15 @@
                 </form>
                 <p>Volltextsuche in <strong class="f4">{{ num_docs }}</strong> Dokumenten: z.B. <a class="blue" href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a class="blue" href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
             </div>
+
+
         </div>
+
+    </div>
+    </div>
+    <div class="mt6-m w-40-l w-90 center newest">
+        <h1 class="f4">Aktuelles:</h1>
+        {% include "search/results.html" %}
     </div>
 {% endblock %}
 

@@ -179,11 +179,10 @@ def _parse_facets(facets):
     return parsed_results
 
 
-def search(query, page=1, sort=SortOrder.relevance, facet_filter={}, hl=True, facet=True, solr_conn=solr_connection()):
+def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter={}, hl=True, facet=True, solr_conn=solr_connection()):
     args = dict(SOLR_ARGS)
-    args |= solr_page(page-1, NUM_ROWS)
     if sort == SortOrder.date:
-        args['sort'] = "last_seen desc"
+        args['sort'] = "first_seen desc"
     else:
         args['sort'] = "score desc"
     fq = list(filter(lambda fq: fq[-2] != "*", map(lambda name: "{!tag=facetignore}"f"{FACET_FIELDS[name]}:\"{facet_filter[name]}\"", facet_filter.keys())))
@@ -197,6 +196,11 @@ def search(query, page=1, sort=SortOrder.relevance, facet_filter={}, hl=True, fa
     if facet:
         args |= FACET_ARGS
         args['facet.query'] = query
+    if limit is not None:
+        args['rows'] = int(limit)
+    else:
+        args['rows'] = NUM_ROWS
+    args |= solr_page(page-1, args['rows'])
 
     result = solr_conn.search(query, **args)
 

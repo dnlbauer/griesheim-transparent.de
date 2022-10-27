@@ -1,1 +1,2 @@
-* */3 * * * python /RIScraper/Scraper.py
+* 2 * * * python /RIScraper/Scraper.py --start 01/2010
+0 5-23/3 * * * python /RIScraper/Scraper.py

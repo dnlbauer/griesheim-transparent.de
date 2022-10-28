@@ -12,7 +12,7 @@
         <div>
             <div class="searchresult-head overflow-x-hidden">
                 <a href="{{ document.download_link }}">
-            <span class="blue fw4 f4 measure">
+            <span class="secondary-color fw4 f4 measure">
                 {{ document.title.strip }}
             </span>
                 </a>
@@ -38,7 +38,7 @@
                     {% endif %}
                     {% if document.date %} vom {{ document.date|date:'d. M o' }}{% endif %}
                     {% if document.link %}
-                        <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb22 dib bg-blue bg-light-blue dark-gray" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
+                        <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb22 dib bg-blue bg-main-color black" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
                     {% endif %}
                 </small>
             </div>

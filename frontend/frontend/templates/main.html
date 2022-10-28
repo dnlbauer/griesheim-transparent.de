@@ -1,40 +1,47 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-    <div class="vh-100-m vh-50 dt-m">
-    <a href="/impressum" class="f6 blue" style="position: absolute; right: 10px; top: 10px;">Impressum & Datenschutz</a>
-    <div class="vh-50 w-100 dt">
-        <div class="dtc v-mid">
-            <h1 class="tc">Griesheimer Politik, durchsuchbar.
-                <a class="f4 fa-solid fa-circle-question v-top blue grow pointer no-underline" href="/why" ></a>
-                <script>
-                    if (window.matchMedia("(min-width: 60em)").matches) {
-                        link = up.element.subtree(up.element.get("h1"), "a")[0]
-                        up.element.setAttrs(link, {
-                            "up-history": "false",
-                            "up-size": "large",
-                            "up-layer": "new popup",
-                            "up-class": "modal"
-                        })
+    <div class="vh-50 dt w-100" style="background-image: url({% static 'header_25.webp' %}); background-position: bottom; background-repeat: no-repeat; background-size: cover; ">
+        {#<img class="w-100" src="{% static 'header.jpg' %}" alt="Bild des Rathauses" copyright="(c) Stadt Griesheim" />#}
+        <h1 class="f1 dtc v-btm tc white-90 pb6" style="text-shadow: 2px 2px 4px black">Griesheimer Politik, durchsuchbar.
+            <a class="f3 fa-solid fa-circle-question v-top white grow pointer main-color no-underline" href="/why" ></a>
+            <script>
+                if (window.matchMedia("(min-width: 60em)").matches) {
+                    link = up.element.subtree(up.element.get("h1"), "a")[0]
+                    up.element.setAttrs(link, {
+                        "up-history": "false",
+                        "up-size": "large",
+                        "up-layer": "new popup",
+                        "up-class": "modal"
+                    })
                 }
-                </script>
-            </h1>
-            <div class="w-30-l w-90 center">
-                <form action="{% url 'search' %}" method="get" id="search">
-                {% include "components/input.html" %}
-                </form>
-                <p>Volltextsuche in <strong class="f4">{{ num_docs }}</strong> Dokumenten: z.B. <a class="blue" href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a class="blue" href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
+            </script>
+        </h1>
+    </div>
+    <div class="vh-25 w-100 dt bg-main-color">
+            <div class="v-mid dtc">
+                <div class="w-40-l w-90 center ma4">
+                    <p class="f3-l f4">Volltextsuche in <strong>{{ num_docs }}</strong> Dokumenten
+                    <form action="{% url 'search' %}" method="get" id="search">
+                        {% include "components/input.html" %}
+                    </form>
+                    <p>z.B. nach <a href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
+                </div>
             </div>
-
-
         </div>
+    </div>
+    <div class="newest pa2 bg-light-gray">
+        <div class="w-60-l w-90 center">
+            <h1 class="f3">Neuste Dokumente:</h1>
+            {% include "search/results.html" %}
+        </div>
+    </div>
+    <div class="footer pa3 overflow-scroll bg-main-color">
+        <a href="/impressum" class="f6" >Impressum & Datenschutz</a>
+        <a href="/why" class="ml3 f6" >Warum gibt es das?</a>
+    </div>
 
-    </div>
-    </div>
-    <div class="mt6-m w-40-l w-90 center newest">
-        <h1 class="f4">Aktuelles:</h1>
-        {% include "search/results.html" %}
-    </div>
 {% endblock %}
 
 

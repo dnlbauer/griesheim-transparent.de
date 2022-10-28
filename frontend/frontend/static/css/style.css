@@ -1,3 +1,28 @@
+:root {
+    --main-color:#E8DFB7;
+    --secondary-color:#00449e;
+}
+
+.bg-main-color {
+    background-color: var(--main-color);
+}
+
+.main-color {
+    color: var(--main-color)
+}
+
+.secondary-color {
+    color: var(--secondary-color)
+}
+
+.bg-secondary-color {
+    background-color: var(--secondary-color)
+}
+
+a {
+    color: var(--secondary-color)
+}
+
 div.searchresult-head > a {
     text-decoration: none;
     color: inherit

@@ -4,7 +4,7 @@
     <script>up.form.config.submitSelectors.push(['form'])</script>
     <div class="w-100">
         <div class="mw9 center">
-            <form class="ma3 w-80-l p3" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults-container">
+            <form class="ma3 w-80-l" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults-container">
                 {% include "components/input.html" %}
             </form>
         </div>
@@ -64,7 +64,7 @@
                                 {% if result.page|add:"-1" >= 1 %}
                                     <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="{{ result.page|add:"-1" }}" up-scroll up-target=".searchresults-container">{{ result.page|add:"-1" }}</a>
                                 {% endif %}
-                                <a class="dib link dim white bg-blue br2 f6 f5-ns b pa2" href="#" title="{{ result.page }}" up-scroll>{{ result.page }}</a>
+                                <a class="dib link dim bg-main-color black br2 f6 f5-ns b pa2" href="#" title="{{ result.page }}" up-scroll>{{ result.page }}</a>
                                 {% if result.page|add:1 <= result.max_page %}
                                     <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:1 }}" title="{{ result.page|add:1 }}" up-scroll up-target=".searchresults-container">{{ result.page|add:1 }}</a>
                                 {% endif %}

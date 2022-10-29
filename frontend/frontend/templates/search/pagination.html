@@ -1,32 +1,66 @@
-<nav class="cf pa3 pa4-ns" data-name="pagination-numbers">
+<div class="cf pa3 pa4-ns" data-name="pagination-numbers">
+{#    <input type="hidden" id="page" name="page" form="search" value="{{ result.page }}" up-autosubmit />#}
     {% if result.has_previous %}
-        <a class="fl dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="Zurück" up-scroll up-target=".searchresults-container">&larr; Zurück</a>
+        <button id="nav-back"
+               class="fl dib link dim black f6 f5-ns b pa2 nav"
+               value="{{ result.page|add:"-1" }}">&larr; Zurück</button>
     {% endif %}
     {% if result.has_next %}
-        <a class="fr dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"1" }}" title="Weiter" up-scroll up-target=".searchresults-container">Weiter &rarr;</a>
+        <button id="nav-next"
+               class="fr dib link dim black f6 f5-ns b pa2 nav"
+               value="{{ result.page|add:"+1" }}">Weiter &rarr;</button>
     {% endif %}
     <div class="overflow-hidden center db tc">
         {% if result.page|add:"-3" >= 1 %}
-            <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page=1" title="1" up-scroll up-target=".searchresults-container">1</a>
+            <button id="nav-start"
+                    class="dib link dim black f6 f5-ns b pa2 nav"
+                    value="1">1</button>
         {% endif %}
         {% if result.page|add:"-4" >= 1 %}
             ...
         {% endif %}
         {% if result.page|add:"-2" >= 1 %}
-            <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-2" }}" title="{{ result.page|add:"-2" }}" up-scroll up-target=".searchresults-container">{{ result.page|add:"-2" }}</a>
+            <button id="nav--2"
+                    class="dib link dim black f6 f5-ns b pa2 nav"
+                    value="{{ result.page|add:"-2" }}">{{ result.page|add:"-2" }}</button>
         {% endif %}
         {% if result.page|add:"-1" >= 1 %}
-            <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="{{ result.page|add:"-1" }}" up-scroll up-target=".searchresults-container">{{ result.page|add:"-1" }}</a>
+            <button id="nav--1"
+                    class="dib link dim black f6 f5-ns b pa2 nav"
+                    value="{{ result.page|add:"-1" }}">{{ result.page|add:"-1" }}</button>
         {% endif %}
-        <a class="dib link dim bg-main-color black br2 f6 f5-ns b pa2" href="#" title="{{ result.page }}" up-scroll>{{ result.page }}</a>
+        <button id="nav--0" disabled
+                class="dib link dim black br2 f6 f5-ns b pa2 nav-selected"
+                value="{{ result.page|add:"0" }}">{{ result.page|add:"0" }}</button>
         {% if result.page|add:1 <= result.max_page %}
-            <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:1 }}" title="{{ result.page|add:1 }}" up-scroll up-target=".searchresults-container">{{ result.page|add:1 }}</a>
+            <button id="nav-1"
+                    class="dib link dim black f6 f5-ns b pa2 nav"
+                    value="{{ result.page|add:"1" }}">{{ result.page|add:"1" }}</button>
         {% endif %}
         {% if result.page|add:2 <= result.max_page %}
-            <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:2 }}" title="{{ result.page|add:2 }}" up-scroll up-target=".searchresults-container">{{ result.page|add:2 }}</a>
+            <button id="nav-2"
+                    class="dib link dim black f6 f5-ns b pa2 nav"
+                    value="{{ result.page|add:"2" }}">{{ result.page|add:"2" }}</button>
         {% endif %}
         {% if result.page|add:3 <= result.max_page %}
             ...
         {% endif %}
     </div>
-</nav>
+
+    <script>
+        function update_page(value) {
+            var url = new URL(window.location.href)
+            url.searchParams.set("page", value)
+            url = url.toString()
+            up.navigate(".searchresults-container", {url: url, scroll: "target"})
+        }
+        up.on('click', '#nav-next', (event, elem) => update_page(elem.value))
+        up.on('click', '#nav-back', (event, elem) => update_page(elem.value))
+        up.on('click', '#nav-start', (event, elem) => update_page(elem.value))
+        up.on('click', '#nav--1', (event, elem) => update_page(elem.value))
+        up.on('click', '#nav--2', (event, elem) => update_page(elem.value))
+        up.on('click', '#nav-1', (event, elem) => update_page(elem.value))
+        up.on('click', '#nav-2', (event, elem) => update_page(elem.value))
+
+    </script>
+</div>

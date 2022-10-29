@@ -18,10 +18,10 @@ def base_context():
     }
 
 
-def parse_page(request):
-    page = request.GET.get("page", "1")
-    if not page.isnumeric():
-        return 1
+def parse_page(request, default=1):
+    page = request.GET.get("page", default)
+    if type(page) != int and not page.isnumeric():
+        return default
     else:
         page = int(page)
         if page < 1:
@@ -41,7 +41,7 @@ class MainView(TemplateView):
         sort = solr.SortOrder(request.GET.get("sort", "relevance"))
         doc_type = request.GET.get("doc_type", "*")
         organization = request.GET.get("organization", "*")
-        page = parse_page(request)
+        page = parse_page(request, 1)
         if query is not None:
             Query(query=query).save()
             result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))

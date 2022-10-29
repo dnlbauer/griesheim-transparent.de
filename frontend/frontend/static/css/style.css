@@ -99,3 +99,14 @@ div.searchresult-preview {
 .fa-aligned {
     vertical-align: middle;
 }
+
+.nav {
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
+}
+
+.nav-selected {
+    background-color: var(--main-color);
+    border: transparent;
+}

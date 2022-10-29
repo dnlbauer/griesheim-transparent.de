@@ -25,5 +25,6 @@ urlpatterns = [
     path("search", SearchView.as_view(), name="search"),
     path("suggest", SuggestView.as_view(), name="suggest"),
     path("why", TemplateView.as_view(template_name="why.html"), name="why"),
-    path("impressum", TemplateView.as_view(template_name="impressum.html"), name="impressum")
+    path("impressum", TemplateView.as_view(template_name="impressum.html"), name="impressum"),
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
 ]

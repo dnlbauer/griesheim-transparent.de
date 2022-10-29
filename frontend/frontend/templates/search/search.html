@@ -13,69 +13,14 @@
     <div class="w-100">
         <div class="mw9 center">
             <div class="w-80-l pa3 searchresults-container">
-                <div class="facets mb3 flex flex-wrap ">
-
-                    {% if result.facets.doc_type %}
-                        <select class="facet bn pa2 mr3 mw5" name="doc_type" form="search" up-autosubmit>
-                            <option value="*">Beliebiges Dokument</option>
-                            {% for field in result.facets.doc_type %}
-                                <option {% if doc_type == field.0 %}selected{% endif %} value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
-                            {% endfor %}
-                        </select>
-                    {% endif %}
-
-                    {% if result.facets.organization %}
-                        <select class="facet bn pa2 mr3 mw5" name="organization" form="search" up-autosubmit>
-                            <option value="*">Beliebiges Gremium</option>
-                            {% for field in result.facets.organization %}
-                                <option {% if organization == field.0 %}selected{% endif %} value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
-                            {% endfor %}
-                        </select>
-                    {% endif %}
-
-                    <select class="facet bn pa2 mr3 mw5" name="sort" form="search" up-autosubmit>
-                        <option {% if sort == "relevance" %}selected{% endif %} value="relevance">Sortierung: Relevanz</option>
-                        <option {% if sort == "date" %}selected{% endif %} value="date">Sortierung: Datum</option>
-                    </select>
-                </div>
+                {% include "search/facets.html" %}
 
                 <small class="f5"><em>{{ result.hits }} Ergebnisse gefunden ({{ result.qtime }} ms)</em></small>
                 {% include "search/results.html" %}
 
                 {% if result.has_previous or result.has_next  %}
                     <div class="mw8 center">
-                        <nav class="cf pa3 pa4-ns" data-name="pagination-numbers">
-                            {% if result.has_previous %}
-                                <a class="fl dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="Zurück" up-scroll up-target=".searchresults-container">&larr; Zurück</a>
-                            {% endif %}
-                            {% if result.has_next %}
-                                <a class="fr dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"1" }}" title="Weiter" up-scroll up-target=".searchresults-container">Weiter &rarr;</a>
-                            {% endif %}
-                            <div class="overflow-hidden center db tc">
-                                {% if result.page|add:"-3" >= 1 %}
-                                    <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page=1" title="1" up-scroll up-target=".searchresults-container">1</a>
-                                {% endif %}
-                                {% if result.page|add:"-4" >= 1 %}
-                                    ...
-                                {% endif %}
-                                {% if result.page|add:"-2" >= 1 %}
-                                    <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-2" }}" title="{{ result.page|add:"-2" }}" up-scroll up-target=".searchresults-container">{{ result.page|add:"-2" }}</a>
-                                {% endif %}
-                                {% if result.page|add:"-1" >= 1 %}
-                                    <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:"-1" }}" title="{{ result.page|add:"-1" }}" up-scroll up-target=".searchresults-container">{{ result.page|add:"-1" }}</a>
-                                {% endif %}
-                                <a class="dib link dim bg-main-color black br2 f6 f5-ns b pa2" href="#" title="{{ result.page }}" up-scroll>{{ result.page }}</a>
-                                {% if result.page|add:1 <= result.max_page %}
-                                    <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:1 }}" title="{{ result.page|add:1 }}" up-scroll up-target=".searchresults-container">{{ result.page|add:1 }}</a>
-                                {% endif %}
-                                {% if result.page|add:2 <= result.max_page %}
-                                    <a class="dib link dim black f6 f5-ns b pa2" href="{{ request.path }}?query={{ query|urlencode }}&page={{ result.page|add:2 }}" title="{{ result.page|add:2 }}" up-scroll up-target=".searchresults-container">{{ result.page|add:2 }}</a>
-                                {% endif %}
-                                {% if result.page|add:3 <= result.max_page %}
-                                    ...
-                                {% endif %}
-                            </div>
-                        </nav>
+                        {% include "search/pagination.html" %}
                     </div>
                 {% endif %}
             </div>

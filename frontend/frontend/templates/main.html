@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block content %}
-    <div class="vh-50 dt w-100" style="background-image: url({% static 'header_25.webp' %}); background-position: bottom; background-repeat: no-repeat; background-size: cover; ">
-        {#<img class="w-100" src="{% static 'header.jpg' %}" alt="Bild des Rathauses" copyright="(c) Stadt Griesheim" />#}
-        <h1 class="f1 dtc v-btm tc white-90 pb6" style="text-shadow: 2px 2px 4px black">Griesheimer Politik, durchsuchbar.
+    <div class="vh-50 dt w-100"
+         style="background-image: url({% static 'header_25.webp' %}); background-position: bottom; background-repeat: no-repeat; background-size: cover; ">
+        <h1 class="f1 dtc v-btm tc white-90 pb6 text-shadow">Griesheimer Politik, durchsuchbar.
             <a class="f3 fa-solid fa-circle-question v-top white grow pointer main-color no-underline" href="/why" ></a>
             <script>
                 if (window.matchMedia("(min-width: 60em)").matches) {
@@ -20,14 +20,13 @@
         </h1>
     </div>
     <div class="vh-25 w-100 dt bg-main-color">
-            <div class="v-mid dtc">
-                <div class="w-40-l w-90 center ma4">
-                    <p class="f3-l f4">Volltextsuche in <strong>{{ num_docs }}</strong> Dokumenten
-                    <form action="{% url 'search' %}" method="get" id="search">
-                        {% include "components/input.html" %}
-                    </form>
-                    <p>z.B. nach <a href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
-                </div>
+        <div class="v-mid dtc">
+            <div class="w-40-l w-90 center ma4">
+                <p class="f3-l f4">Volltextsuche in <strong>{{ num_docs }}</strong> Dokumenten
+                <form action="{% url 'search' %}" method="get" id="search">
+                    {% include "components/input.html" %}
+                </form>
+                <p>z.B. nach <a href="/search?query=Integriertes%20Klimaschutzkonzept"><em>Klimaschutzkonzept</em></a> oder <a href="/search?query=Miniwälder"><em>Miniwälder</em></a></p>
             </div>
         </div>
     </div>

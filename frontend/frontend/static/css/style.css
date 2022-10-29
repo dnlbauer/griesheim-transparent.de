@@ -37,12 +37,20 @@ div.searchresult-preview {
     max-width: 100px;
 }
 
+div.searchresult-preview > img {
+    border-color: black;
+}
+
 .searchresult-preview-image {
     min-width: 100px;
     position: relative;
     top: 0;
     /*top: 50%;*/
     /*transform: translateY(-50%);*/
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 4px black
 }
 
 .overflow {
@@ -86,6 +94,12 @@ div.searchresult-preview {
     border-bottom-right-radius: 10px;
 }
 
+.autocomplete-item > a {
+    display: block;
+    color: inherit;
+    text-decoration: none
+}
+
 .selected {
     background-color: lightgray;
     border-radius: 10px;
@@ -109,4 +123,13 @@ div.searchresult-preview {
 .nav-selected {
     background-color: var(--main-color);
     border: transparent;
+}
+
+.highlight-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box
 }

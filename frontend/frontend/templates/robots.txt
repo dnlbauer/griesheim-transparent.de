@@ -2,6 +2,7 @@ User-agent: *
 
 # No search result pages
 Disallow: /search
+Disallow: /suggest
 
 # Protect impressum data
 Disallow: /impressum

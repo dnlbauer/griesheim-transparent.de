@@ -2,14 +2,16 @@
 
 {% block content %}
     <script>up.form.config.submitSelectors.push(['form'])</script>
-    <div class="w-100">
-        <div class="mw9 center">
-            <form class="ma3 w-80-l" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults-container">
-                {% include "components/input.html" %}
-            </form>
+    <div class="w-100 bb bg-main-color">
+        <div class="mw9 center pa3">
+            <div class="dt w-80-l">
+                <a class="mr3 fa fa-home grow v-mid f3 black pa2" style="text-decoration: none; display: table-cell!important;" href="/"></a>
+                <form class="dtc w-100 v-mid" action="{% url 'search' %}" method="get" id="search" up-target=".searchresults-container">
+                    {% include "components/input.html" %}
+                </form>
+            </div>
         </div>
     </div>
-    <hr />
     <div class="w-100">
         <div class="mw9 center">
             <div class="w-80-l pa3 searchresults-container">

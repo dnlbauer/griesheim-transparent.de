@@ -1,13 +1,13 @@
-<article class="searchresult mt4 mb4 f5 pb2 flex" style="line-height: 1.6;">
+<article class="searchresult mt4 mb4 f5 pa3 flex" style="line-height: 1.6;">
         {% if document.preview_image %}
-        <div class="mr3 searchresult-preview">
-            <a href="{{ document.download_link }}">
-                <div class="searchresult-preview-image">
-                    <img src="{{ document.preview_image }}" class="ba bw shadow-1" alt="Preview image: {{ document.title.strip }}"/>
-                    <span class="fa-regular fa-file-pdf dark-red bg-white f3" style="position: absolute; top:-8px; right:-8px"></span>
-                </div>
-            </a>
-        </div>
+            <div class="mr3 searchresult-preview">
+                <a href="{{ document.download_link }}">
+                    <div class="searchresult-preview-image">
+                        <img src="{{ document.preview_image }}" class="ba bw shadow-1" alt="Preview image: {{ document.title.strip }}"/>
+                        <span class="fa-regular fa-file-pdf dark-red bg-white f3" style="position: absolute; top:-8px; right:-8px"></span>
+                    </div>
+                </a>
+            </div>
         {% endif %}
         <div>
             <div class="searchresult-head overflow-x-hidden">

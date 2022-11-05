@@ -3,7 +3,7 @@
             <div class="mr3 searchresult-preview">
                 <a href="{{ document.download_link }}">
                     <div class="searchresult-preview-image">
-                        <img src="{{ document.preview_image }}" class="ba bw shadow-1" alt="Preview image: {{ document.title.strip }}"/>
+                        <img src="{{ document.preview_image }}" class="ba bw shadow-1 mw3 mw4-l" alt="Preview image: {{ document.title.strip }}"/>
                         <span class="fa-regular fa-file-pdf dark-red bg-white f3" style="position: absolute; top:-8px; right:-8px"></span>
                     </div>
                 </a>
@@ -12,26 +12,26 @@
         <div>
             <div class="searchresult-head overflow-x-hidden">
                 <a href="{{ document.download_link }}">
-            <span class="secondary-color fw4 f4 measure">
+            <span class="secondary-color fw4 f5 f4-l measure">
                 {{ document.title.strip }}
             </span>
                 </a>
             </div>
             {% if document.highlight %}
-                <div class="gray mb2 f5 highlight-text">
+                <div class="gray mb2 f5-l f6 highlight-text">
                     {{ document.highlight.strip|safe }}
                 </div>
             {% endif %}
             <div class="metadata">
-                <small class="f5 measure">
+                <small class="f5-l f6 measure">
                     {% if document.doc_type %}
                         {% if document.doc_type == "Anlage"%}
-                            <span class="f5 fa-solid fa-paperclip"></span>
+                            <span class="fa-solid fa-paperclip"></span>
                         {% else %}
                             {% if document.doc_type == "Niederschrift" %}
-                                <span class="f5 fa-solid fa-file-signature"></span>
+                                <span class="fa-solid fa-file-signature"></span>
                             {% else %}
-                                <span class="f5 fa-regular fa-file"></span>
+                                <span class="fa-regular fa-file"></span>
                             {% endif %}
                         {% endif %}
                         {{ document.doc_type }}

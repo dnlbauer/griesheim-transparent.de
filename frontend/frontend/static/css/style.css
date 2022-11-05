@@ -34,7 +34,6 @@ div.searchresult-head > a > span.title:hover {
 
 div.searchresult-preview {
     position: relative;
-    max-width: 100px;
 }
 
 div.searchresult-preview > img {
@@ -42,7 +41,6 @@ div.searchresult-preview > img {
 }
 
 .searchresult-preview-image {
-    min-width: 100px;
     position: relative;
     top: 0;
     /*top: 50%;*/

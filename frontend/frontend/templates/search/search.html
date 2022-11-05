@@ -17,7 +17,7 @@
             <div class="w-80-l pa3 searchresults-container">
                 {% include "search/facets.html" %}
 
-                <small class="f5"><em>{{ result.hits }} Ergebnisse gefunden ({{ result.qtime }} ms)</em></small>
+                <small class="f5-l f6"><em>{{ result.hits }} Ergebnisse gefunden ({{ result.qtime }} ms)</em></small>
                 {% include "search/results.html" %}
 
                 {% if result.has_previous or result.has_next  %}

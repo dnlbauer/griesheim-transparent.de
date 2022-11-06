@@ -131,3 +131,9 @@ div.searchresult-preview > img {
     /*-webkit-box-orient: vertical;*/
     /*display: -webkit-box*/
 }
+
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

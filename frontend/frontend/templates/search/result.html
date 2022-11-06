@@ -23,22 +23,30 @@
                 </div>
             {% endif %}
             <div class="metadata">
-                <small class="f5-l f6 measure">
+                <small class="f5-l f6 measure flex flex-wrap">
                     {% if document.doc_type %}
-                        {% if document.doc_type == "Anlage"%}
-                            <span class="fa-solid fa-paperclip"></span>
-                        {% else %}
-                            {% if document.doc_type == "Niederschrift" %}
-                                <span class="fa-solid fa-file-signature"></span>
+                        <div class="mr2">
+                            {% if document.doc_type == "Anlage"%}
+                                <span class="fa-solid fa-paperclip"></span>
                             {% else %}
-                                <span class="fa-regular fa-file"></span>
+                                {% if document.doc_type == "Niederschrift" %}
+                                    <span class="fa-solid fa-file-signature"></span>
+                                {% else %}
+                                    <span class="fa-regular fa-file"></span>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                        {{ document.doc_type }}
+                            {{ document.doc_type }}
+                        </div>
                     {% endif %}
-                    {% if document.date %} vom {{ document.date|date:'d. M o' }}{% endif %}
+                    {% if document.doc_type and document.date %}<div class="mr2">|</div>{% endif %}
+                    {% if document.date %}
+                        <div class="mr2">{{ document.date|date:"d. M 'y" }}</div>
+                    {% endif %}
                     {% if document.link %}
-                        <a class="ml2 f6-ns grow no-underline br-pill ba ph2 mb22 dib bg-blue bg-main-color black" href="{{ document.link }}"><span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span><span class="ml1">{{ document.short_name }}</span></a>
+                            <a class="f6-l f7 grow no-underline br-pill ba ph2 mb22 dib bg-blue bg-main-color black" href="{{ document.link }}">
+                                <span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span>
+                                <span class="ml1">{{ document.short_name }}</span>
+                            </a>
                     {% endif %}
                 </small>
             </div>

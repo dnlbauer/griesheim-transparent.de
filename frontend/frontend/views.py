@@ -31,7 +31,7 @@ def parse_page(request, default=1):
 
 
 class MainView(TemplateView):
-    template_name = "main.html"
+    template_name = "main/main.html"
     autofocus = True
 
     def get(self, request, **kwargs):

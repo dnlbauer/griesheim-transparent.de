@@ -30,12 +30,7 @@
             </div>
         </div>
     </div>
-    <div class="newest pa2 bg-light-gray">
-        <div class="w-60-l w-90 center">
-            <h1 class="f3">Neuste Dokumente:</h1>
-            {% include "search/results.html" %}
-        </div>
-    </div>
+    {% include 'main/newest.html' %}
     <div class="footer pa3 bg-main-color">
         <a href="/impressum" class="f6" >Impressum & Datenschutz</a>
         <a href="/faq" class="ml3 f6" >Warum gibt es das?</a>

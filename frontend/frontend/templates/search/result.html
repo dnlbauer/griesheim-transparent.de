@@ -19,7 +19,11 @@
             </div>
             {% if document.highlight %}
                 <div class="gray mb2 f5-l f6 highlight-text">
-                    {{ document.highlight.strip|safe }}
+                    {% if hl_maxchars %}
+                        {{ document.highlight.strip|safe|truncatechars:hl_maxchars }}
+                    {% else %}
+                        {{ document.highlight.strip|safe }}
+                   {% endif %}
                 </div>
             {% endif %}
             <div class="metadata">

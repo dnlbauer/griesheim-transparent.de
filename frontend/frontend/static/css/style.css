@@ -126,8 +126,8 @@ div.searchresult-preview > img {
 .highlight-text {
     overflow: hidden;
     text-overflow: ellipsis;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    display: -webkit-box
+    /*-webkit-line-clamp: 3;*/
+    /*line-clamp: 3;*/
+    /*-webkit-box-orient: vertical;*/
+    /*display: -webkit-box*/
 }

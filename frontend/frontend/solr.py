@@ -66,14 +66,17 @@ HL_ARGS = {
     "hl.encoder": "html",
     "hl.tag.pre": "<strong>",
     "hl.tag.post": "</strong>",
-    "hl.fl": "content content_ocr consultation_text",
+    "hl.fl": "content consultation_text",
+    "hl.alternateField": "content_ocr",
     "hl.method": "unified",
-    "hl.snippets": "3",
-    "hl.fragsize": "250",
-    "hl.fragsizeIsMinimum": "true",
-    "hl.tag.ellipsis": "…",
+    "hl.snippets": "5",
+    "hl.fragsize": "150",
+    "hl.fragsizeIsMinimum": "false",
     "hl.bs.type": "WORD",
-    "hl.defaultSummary": "true",
+    "hl.defaultSummary": "false",
+    "hl.mergeContiguous": "true",
+    "hl.bs.country": "DE",
+    "hl.bs.language": "de",
 }
 
 FACET_ARGS = {
@@ -89,7 +92,7 @@ def solr_connection(handler='/select'):
     return pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}", search_handler=handler)
 
 
-def _parse_highlights(highlights):
+def _parse_highlights(highlights, max_len=200):
     if highlights is None or len(highlights) == 0:
         return None
 
@@ -100,8 +103,17 @@ def _parse_highlights(highlights):
         hl += highlights['content']
     elif "content_ocr" in highlights:
         hl += highlights['content_ocr']
-    hl = "...".join(hl)
-    return hl
+
+    separator = " ... "
+    hl_concatenated = ""
+    for i in hl:
+        if len(hl_concatenated) > max_len:
+            break
+        if len(hl_concatenated) == 0:
+            hl_concatenated = i
+        else:
+            hl_concatenated += separator + i
+    return hl_concatenated
 
 
 def _parse_search_result(doc, response):

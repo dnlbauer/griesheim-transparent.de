@@ -73,7 +73,7 @@ HL_ARGS = {
     "hl.fragsize": "250",
     "hl.fragsizeIsMinimum": "false",
     "hl.bs.type": "WORD",
-    "hl.defaultSummary": "false",
+    "hl.defaultSummary": "true",
     "hl.mergeContiguous": "false",
     "hl.bs.country": "DE",
     "hl.bs.language": "de",

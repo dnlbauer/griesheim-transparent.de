@@ -70,7 +70,7 @@ HL_ARGS = {
     "hl.content.alternateField": "content_ocr",
     "hl.method": "unified",
     "hl.snippets": "5",
-    "hl.fragsize": "200",
+    "hl.fragsize": "250",
     "hl.fragsizeIsMinimum": "false",
     "hl.bs.type": "WORD",
     "hl.defaultSummary": "false",

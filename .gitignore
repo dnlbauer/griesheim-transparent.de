@@ -164,3 +164,5 @@ out
 */.env
 docker/solr_data
 docker/django_db
+
+test

@@ -121,7 +121,7 @@ celerybeat.pid
 
 # Environments
 ../.env
-.venv
+venv
 env/
 RIScraper/venv/
 ENV/
@@ -162,7 +162,7 @@ cython_debug/
 out
 
 */.env
-docker/solr_data
-docker/django_db
+deployment/solr_data
+deployment/django_db
 
 test

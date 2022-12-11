@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = "Update solr from risdb"
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-    DEFAULT_CHUNK_SIZE = 100
+    DEFAULT_CHUNK_SIZE = 10
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -109,7 +109,8 @@ class Command(BaseCommand):
         return solr_doc
 
     def handle(self, *args, **options):
-        self.stdout.write(f"Updating {Document.objects.all().count()} documents")
+        total = Document.objects.all().count()
+        self.stdout.write(f"Updating {total} documents")
         processed = 0
         chunk_size = self.DEFAULT_CHUNK_SIZE
         if options['chunk_size']:
@@ -121,8 +122,8 @@ class Command(BaseCommand):
             solr_docs.append(solr_doc)
             if len(solr_docs) >= chunk_size:
                 solr.add(solr_docs, commit=True)
-                self.stdout.write(f"Submitted {chunk_size} documents to solr.")
                 processed += len(solr_docs)
+                self.stdout.write(f"Submitted {chunk_size} documents to solr. (Total={processed}/{total})")
                 solr_docs = []
         solr.add(solr_docs, commit=True)
         processed += len(solr_docs)

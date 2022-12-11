@@ -8,13 +8,13 @@ set -e
 # Apply database migrations
 echo "Apply database migrations"
 python manage.py migrate --noinput
-echo "Collect static files"
-python manage.py collectstatic --no-input --clear
-
 
 if [ "$1" = crond ]; then
   echo "Registering cron job"
   python manage.py crontab add
+else
+  echo "Collect static files"
+  python manage.py collectstatic --no-input --clear
 fi
 
 # running command

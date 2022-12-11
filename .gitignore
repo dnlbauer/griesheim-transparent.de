@@ -162,7 +162,5 @@ cython_debug/
 out
 
 */.env
-deployment/solr_data
-deployment/django_db
-
+deployment/data
 test

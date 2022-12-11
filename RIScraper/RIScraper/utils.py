@@ -38,8 +38,8 @@ def parse_args():
     parser.add_argument("--analyze", dest="analyze", action="store", default="new", choices=["all", "new", "none"])
     parser.add_argument("--start", dest="start", action="store", default=_month_from_now(-3))
     parser.add_argument("--end", dest="end", action="store", default=_month_from_now(3))
-    parser.add_argument("--nscraper", dest="nscraper", action="store", type=int, default=multiprocessing.cpu_count())
-    parser.add_argument("--nanalyzer", dest="nanalyzer", action="store", type=int, default=max(1, int(multiprocessing.cpu_count() / 4)))
+    parser.add_argument("--nscraper", dest="nscraper", action="store", type=int)
+    parser.add_argument("--nanalyzer", dest="nanalyzer", action="store", type=int)
     parser.add_argument("--meeting", dest="meeting", action="store", default=None)
     args = parser.parse_args()
     return args
@@ -66,8 +66,18 @@ def parse_config_and_args(filename, args):
         config["start_month"] = int(args.start.split("/")[0])
         config["end_year"] = int(args.end.split("/")[-1])
         config["end_month"] = int(args.end.split("/")[0])
-        config["nscraper"] = args.nscraper
-        config["nanalyzer"] = args.nanalyzer
+
+        config["nscraper"] = multiprocessing.cpu_count()
+        if "nscraper" in args and args.nscraper is not None:
+            config["nscraper"] = int(args.nscraper)
+        elif "NSCRAPER" in os.environ:
+            config["nscraper"] = int(os.environ.get("NSCRAPER"))
+
+        config["nanalyzer"] = int(multiprocessing.cpu_count()/4)
+        if "nanalyzer" in args and args.nanalyzer is not None:
+            config["nanalyzer"] = int(args.nanalyzer)
+        elif "NANALYZER" in os.environ:
+            config["nanalyzer"] = int(os.environ.get("NANALYZER"))
         if "db" in args and args.db is not None:
             config["database_url"] = args.db
         if "tika" in args and args.tika is not None:

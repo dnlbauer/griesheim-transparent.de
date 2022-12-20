@@ -1,5 +1,7 @@
 import base64
 import logging
+import os
+import sys
 
 from django.contrib.auth import authenticate
 from django.core.management import call_command
@@ -47,7 +49,9 @@ def is_auth(request):
 def update(request):
     if is_auth(request):
         chunk_size = int(request.GET.get("chunk_size", 10))
-        call_command("update_solr", chunk_size=chunk_size)
+        if os.fork() == 0:
+            call_command("update_solr", chunk_size=chunk_size)
+            sys.exit(0)
         return HttpResponse("ok", content_type="text/plain")
     return HttpResponse("Unauthorized", status=401, content_type="text/plain")
 

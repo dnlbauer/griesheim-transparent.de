@@ -1,7 +1,7 @@
 FROM python:3.9-alpine
 
 RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev \
+    && apk add postgresql-dev gcc python3-dev musl-dev coreutils \
     && pip install psycopg2-binary
 
 WORKDIR /

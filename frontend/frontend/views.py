@@ -1,5 +1,9 @@
+import base64
 import logging
 
+from django.contrib.auth import authenticate
+from django.core.management import call_command
+from django.http import HttpResponse
 from django.views.generic import TemplateView
 
 from django.shortcuts import render, redirect
@@ -28,6 +32,24 @@ def parse_page(request, default=1):
             return 1
         else:
             return page
+
+
+def is_auth(request):
+    if "HTTP_AUTHORIZATION" in request.META:
+        auth = request.META["HTTP_AUTHORIZATION"].split()
+        if len(auth) == 2 and auth[0] == "Basic":
+            username, passwd = base64.b64decode(auth[1]).decode("utf-8").split(":")
+            user = authenticate(username=username, password=passwd)
+            return user is not None and user.is_superuser and user.is_active
+    return False
+
+
+def update(request):
+    if is_auth(request):
+        chunk_size = int(request.GET.get("chunk_size", 10))
+        call_command("update_solr", chunk_size=chunk_size)
+        return HttpResponse("ok", content_type="text/plain")
+    return HttpResponse("Unauthorized", status=401, content_type="text/plain")
 
 
 class MainView(TemplateView):

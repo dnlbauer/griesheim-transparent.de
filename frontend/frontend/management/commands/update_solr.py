@@ -123,10 +123,11 @@ class Command(BaseCommand):
             if len(solr_docs) >= chunk_size:
                 solr.add(solr_docs, commit=True)
                 processed += len(solr_docs)
-                self.stdout.write(f"Submitted {chunk_size} documents to solr. (Total={processed}/{total})")
+                self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Total={processed}/{total})")
                 solr_docs = []
         solr.add(solr_docs, commit=True)
         processed += len(solr_docs)
+        self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Total={processed}/{total})")
         self.stdout.write(f"{processed} documents processed.")
 
 

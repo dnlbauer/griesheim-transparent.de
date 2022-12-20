@@ -8,6 +8,7 @@ services:
     depends_on:
       - database
       - solr
+      - previewservice
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr

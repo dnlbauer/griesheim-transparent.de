@@ -2,6 +2,7 @@ import base64
 import logging
 import os
 import sys
+from multiprocessing import Process
 
 from django.contrib.auth import authenticate
 from django.core.management import call_command
@@ -46,13 +47,24 @@ def is_auth(request):
     return False
 
 
+update_proc = None
 def update(request):
     if is_auth(request):
+        global update_proc
+        # check if update process is already running, kill it if yes
+        if update_proc is not None and update_proc.is_alive():
+            update_proc.kill()
+
+        # start update in a new process
         chunk_size = int(request.GET.get("chunk_size", 10))
-        if os.fork() == 0:
-            call_command("update_solr", chunk_size=chunk_size)
-            sys.exit(0)
+
+        def proc(chunk_size):
+            call_command("update_solr", chunk_size=10)
+        update_proc = Process(target=proc, args=(chunk_size,))
+        update_proc.start()
+
         return HttpResponse("ok", content_type="text/plain")
+
     return HttpResponse("Unauthorized", status=401, content_type="text/plain")
 
 

@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  frontend: &frontend
+  frontend:
     image: griesheimtransparent-frontend
     container_name: griesheimtransparent-frontend
     build: "./../frontend"
@@ -22,6 +22,9 @@ services:
       - UPDATE_SOLR_CRON=0 */3 * * *
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DATABASE_PATH=/django_db/db.sqlite
+      - DJANGO_SU_NAME
+      - DJANGO_SU_PASSWD
+      - DJANGO_SU_EMAIL
     volumes:
       - django_db:/django_db
       - django_staticfiles:/app/staticfiles
@@ -31,16 +34,6 @@ services:
     networks:
       - griesheimtransparent
     restart: ${RESTART_RULE}
-  frontend_cron:
-    <<: *frontend
-    container_name: griesheimtransparent-frontend_cron
-    command: crond -f
-    ports: []
-    restart: ${RESTART_RULE}
-    depends_on:
-      - database
-      - solr
-      - previewservice
   database:
     image: postgres
     container_name: griesheimtransparent-postgres

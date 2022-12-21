@@ -28,9 +28,9 @@ class Command(BaseCommand):
         parser.add_argument("--force",
                             help="force update for all documents",
                             action="store_true")
-        parser.add_argument("--ocr",
+        parser.add_argument("--no-ocr",
                             help="allow ocr for documents (takes a long time)",
-                            action="store_true")
+                            action="store_false")
 
     def log(self, message):
         self.stdout.write(message)
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         return solr
 
-    def _to_solr(self, doc, tika_result, tika_result_ocr):
+    def _to_solr(self, doc, tika_result):
         # find corresponding consultation
         consultations = doc.consultations.all()
         consultation = None
@@ -124,8 +124,6 @@ class Command(BaseCommand):
                 if i in metadata:
                     return metadata[i]
 
-        if tika_result_ocr is not None and tika_result_ocr["content"] is not None:
-            solr_doc["content_ocr"] = clean_string(tika_result_ocr["content"])
         if tika_result is not None:
             if tika_result["content"] is not None:
                 solr_doc["content"] = clean_string(tika_result["content"])
@@ -177,9 +175,10 @@ class Command(BaseCommand):
                 requestOptions={'timeout': 30*60}
             )
 
-            if ocr:
+            # Only run OCR/tesseract if there is no content from tika w/o ocr
+            if ocr and (parsed["content"] is None or len(parsed["content"]) == 0):
                 self.log("Send document to tika/ocr")
-                parsed_ocr = parser.from_file(
+                parsed = parser.from_file(
                     temp_file.name,
                     serverEndpoint=settings.TIKA_HOST,
                     headers={
@@ -189,11 +188,9 @@ class Command(BaseCommand):
                     },
                     requestOptions={'timeout': 30*60}
                 )
-            else:
-                parsed_ocr = None
 
             self.log("Tika result collected")
-            return parsed, parsed_ocr
+            return parsed
         finally:
             os.unlink(temp_file.name)
 
@@ -204,7 +201,7 @@ class Command(BaseCommand):
         if options['chunk_size']:
             chunk_size = options['chunk_size']
         force = options["force"]
-        ocr = options["ocr"]
+        ocr = options["no_ocr"]
 
         total = Document.objects.all().count()
         self.log(f"Processing {total} documents...")
@@ -228,11 +225,11 @@ class Command(BaseCommand):
             self.log(f"Processing {document.file_name} ({str(document.id)})")
 
             # analyze document with tika
-            tika_result, tika_result_ocr = self._analyze_document_tika(document.content_binary, ocr)
+            tika_result = self._analyze_document_tika(document.content_binary, ocr)
 
             # generate solr document from data
             self.log("Creating solr document")
-            solr_doc = self._to_solr(document, tika_result, tika_result_ocr)
+            solr_doc = self._to_solr(document, tika_result)
             solr_docs.append(solr_doc)
 
             # write chunks to solr

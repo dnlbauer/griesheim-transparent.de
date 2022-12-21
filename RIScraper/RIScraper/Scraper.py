@@ -1,7 +1,5 @@
 import multiprocessing
-import os
 import re
-import tempfile
 import threading
 import time
 import logging
@@ -18,17 +16,12 @@ import mechanize as mechanize
 import structlog
 from lxml import html
 from nameparser import HumanName
-from sqlalchemy import and_
 from structlog import get_logger
-from tika import parser
 
 from db import Repository
 from db.Schema import Schema
 from db.models import *
 from utils import chunks, clean_string, parse_args, parse_config_and_args
-
-import tika
-tika.TikaClientOnly = True
 
 logger = get_logger()
 
@@ -403,86 +396,6 @@ def download_document(id, config, title=None):
         title=title
     )
 
-
-def analyze_document(document_id, db, config):
-    logger.info(f"Analyzing document {document_id}")
-
-    with db.create_transaction() as t:
-        repository = Repository(t.session)
-        doc = repository.find_document_by_id(document_id)
-
-        if "pdf" not in doc.content_type.lower():
-            return
-        temp_file = tempfile.NamedTemporaryFile("wb", suffix=".pdf", delete=False)
-        temp_file.write(doc.content_binary)
-        temp_file.close()
-
-    logger.info(f"Extract content for {document_id}/{doc.file_name} with tika")
-    parsed = parser.from_file(temp_file.name, serverEndpoint=config['tika'], headers={
-        "X-Tika-PDFOcrStrategy": "no_ocr",
-    }, requestOptions={'timeout': 30*60})
-
-    metadata = parsed["metadata"]
-    content = parsed['content']
-    if content is None or len(content) == 0:
-        logger.warn(f"Empty content for {document_id}")
-
-    logger.info(f"OCR for {document_id}/{doc.file_name} with tika")
-    parsed_ocr = parser.from_file(temp_file.name, serverEndpoint=config['tika'], headers={
-        "X-Tika-PDFOcrStrategy": "OCR_ONLY",
-        "X-Tika-OCRLanguage": "deu"
-    }, requestOptions={'timeout': 30*60})
-    content_ocr = parsed_ocr["content"]
-    if content_ocr is None or len(content_ocr) == 0:
-        logger.warn(f"Empty OCR content for {document_id}")
-
-
-    os.unlink(temp_file.name)
-
-    if content is not None:
-        content = clean_string(content)
-    if content_ocr is not None:
-        content_ocr = clean_string(content_ocr)
-
-    author_fields = ["Author", "creator", "dc:creator", "meta:author", "pdf:docinfo:creator"]
-    creation_date_fields = ["Creation-Date", "created", "dcterms:created", "meta:creation-date",
-                            "pdf:docinfo:created"]
-    last_modified_fields = ["Last-Modified", "dcterms:modified", "modified", "pdf:docinfo:modified"]
-    last_save_date_fields = ["Last-Save-Date", "meta:save-date"]
-
-    def getMetadate(metadata, fields):
-        for i in fields:
-            if i in metadata:
-                return metadata[i]
-
-    author = getMetadate(metadata, author_fields)
-
-    try:
-        creation_date = datetime.strptime(getMetadate(metadata, creation_date_fields), "%Y-%m-%dT%H:%M:%SZ")
-    except:
-        creation_date = None
-    try:
-        last_modified_date = datetime.strptime(getMetadate(metadata, last_modified_fields),
-                                               "%Y-%m-%dT%H:%M:%SZ")
-    except:
-        last_modified_date = None
-    try:
-        last_save_date = datetime.strptime(getMetadate(metadata, last_save_date_fields), "%Y-%m-%dT%H:%M:%SZ")
-    except:
-        last_save_date = None
-
-    with db.create_transaction() as t:
-        repository = Repository(t.session)
-        doc = repository.find_document_by_id(document_id)
-        doc.author = author
-        doc.content_text = content
-        doc.content_text_ocr = content_ocr
-        doc.creation_date = creation_date
-        doc.last_modified = last_modified_date
-        doc.last_saved = last_save_date
-        repository.session.commit()
-
-
 def get_dom(url):
     browser = mechanize.Browser()
     browser.set_handle_robots(False)
@@ -573,23 +486,6 @@ def scrape_organization(org_id, config, db, lock):
     lock.release()
 
 
-def init_queue_for_analyze(queue, config, db):
-    if config["analyze"] == "all":
-        with db.create_transaction() as t:
-            ids = t.session.query(Document.document_id)\
-                .where(Document.content_type == "application/pdf")\
-                .all()
-    elif config["analyze"] == "new":
-        with db.create_transaction() as t:
-            ids = t.session.query(Document.document_id)\
-                .where(and_(Document.content_text_ocr == None, Document.content_text == None), Document.content_type == "application/pdf")\
-                .all()
-    else:
-        ids = []
-    for document_id, in ids:
-        queue.put(QueueItem("analyze", document_id))
-
-
 class QueueItem:
     def __init__(self, type, id):
         self.type = type
@@ -619,8 +515,6 @@ def processor(queue, config, loglevel, timeout, lock):
                 scrape_meeting(item.id, config, db, queue, lock)
             elif item.type == "document":
                 scrape_document(item.id, config, db, queue, lock)
-            elif item.type == "analyze":
-                analyze_document(item.id, db, config)
             elif item.type == "calendar":
                 scrape_calendar_month(*item.id, config, queue)
             elif item.type == "consultation":
@@ -689,28 +583,6 @@ def scrape(config):
     logger.info(f"Scraping done in {time.time() - start}s")
 
 
-def analyze(config):
-    start = time.time()
-    manager = multiprocessing.Manager()
-    queue = manager.Queue()
-    num_threads = config["nanalyzer"]
-
-    db = Schema(config["database_url"], verbose=False)
-    init_queue_for_analyze(queue, config, db)
-
-    logger.info(f"Analyzing {queue.qsize()} pdf documents with {num_threads} threads ...")
-    processors = []
-    pool = multiprocessing.Pool(num_threads)
-    for i in range(num_threads):
-        processors.append(pool.apply_async(processor, (queue, config, loglevel, 1, None)))
-
-    try:
-        [p.get() for p in processors]
-    except KeyboardInterrupt:
-        exit(1)
-
-    logger.info(f"Analyzing done in {time.time() - start}s")
-
 if __name__ == '__main__':
     args = parse_args()
     config = parse_config_and_args("../config.yaml", args)
@@ -724,6 +596,3 @@ if __name__ == '__main__':
 
     if config["scrape"]:
         scrape(config)
-
-    if config["analyze"] != "none":
-        analyze(config)

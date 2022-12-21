@@ -2,7 +2,6 @@ import argparse
 import multiprocessing
 import os
 from datetime import date
-from pprint import pprint
 
 import yaml
 import re
@@ -30,16 +29,13 @@ def _month_from_now(add=0):
 def parse_args():
     parser = argparse.ArgumentParser("RIScraper")
     parser.add_argument("--db", dest="db", action="store")
-    parser.add_argument("--tika", dest="tika", action="store")
     parser.add_argument("--scrape", dest="scrape", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--organizations", dest="organizations", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--persons", dest="persons", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--systematic", dest="systematic", action=argparse.BooleanOptionalAction, default=False)
-    parser.add_argument("--analyze", dest="analyze", action="store", default="new", choices=["all", "new", "none"])
     parser.add_argument("--start", dest="start", action="store", default=_month_from_now(-3))
     parser.add_argument("--end", dest="end", action="store", default=_month_from_now(3))
     parser.add_argument("--nscraper", dest="nscraper", action="store", type=int)
-    parser.add_argument("--nanalyzer", dest="nanalyzer", action="store", type=int)
     parser.add_argument("--meeting", dest="meeting", action="store", default=None)
     args = parser.parse_args()
     return args
@@ -52,8 +48,6 @@ def parse_config_and_args(filename, args):
         config['database_url'] = os.environ.get('DATABASE_CONN')
     elif "POSTGRES_USER" in os.environ and "POSTGRES_PASSWORD" in os.environ and "POSTGRES_DB" in os.environ and "POSTGRES_HOST" in os.environ:
         config['database_url'] = f"postgresql+psycopg2://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}/{os.environ.get('POSTGRES_DB')}"
-    if "TIKA" in os.environ:
-        config["tika"] = os.environ.get("TIKA")
 
     if args is not None:
         config["scrape"] = args.scrape
@@ -61,7 +55,6 @@ def parse_config_and_args(filename, args):
         config["persons"] = args.persons
         config['meeting'] = args.meeting
         config["systematic"] = args.systematic
-        config["analyze"] = args.analyze
         config["start_year"] = int(args.start.split("/")[-1])
         config["start_month"] = int(args.start.split("/")[0])
         config["end_year"] = int(args.end.split("/")[-1])
@@ -73,13 +66,6 @@ def parse_config_and_args(filename, args):
         elif "NSCRAPER" in os.environ:
             config["nscraper"] = int(os.environ.get("NSCRAPER"))
 
-        config["nanalyzer"] = int(multiprocessing.cpu_count()/4)
-        if "nanalyzer" in args and args.nanalyzer is not None:
-            config["nanalyzer"] = int(args.nanalyzer)
-        elif "NANALYZER" in os.environ:
-            config["nanalyzer"] = int(os.environ.get("NANALYZER"))
         if "db" in args and args.db is not None:
             config["database_url"] = args.db
-        if "tika" in args and args.tika is not None:
-            config["tika"] = args.tika
     return config

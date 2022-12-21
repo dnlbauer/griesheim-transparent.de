@@ -25,4 +25,3 @@ SQLAlchemy==1.4.40
 tomli==2.0.1
 webencodings==0.5.1
 structlog==22.1.0
-tika==1.24

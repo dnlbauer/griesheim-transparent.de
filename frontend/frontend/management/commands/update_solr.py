@@ -19,6 +19,9 @@ class Command(BaseCommand):
         parser.add_argument("--chunk_size",
                             help=f"chunk size for document processing (default: {self.DEFAULT_CHUNK_SIZE})",
                             type=int)
+        parser.add_argument("--force",
+                            help="force update for all documents",
+                            action="store_true")
 
     def _connect_solr(self):
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
@@ -112,6 +115,9 @@ class Command(BaseCommand):
         return solr_doc
 
     def is_solr_doc_outdated(self, solr, doc_id):
+        if force:
+            return True
+
         result = solr.search(f"id:{doc_id}", **{"rows": 2147483647, "fl": "version,last_analyzed"})
 
         if len(result) > 1:
@@ -123,10 +129,11 @@ class Command(BaseCommand):
         return doc["version"] < self.VERSION
 
     def handle(self, *args, **options):
-        # chunk size
+        # get arguments
         chunk_size = self.DEFAULT_CHUNK_SIZE
         if options['chunk_size']:
             chunk_size = options['chunk_size']
+        force = options["force"]
 
         total = Document.objects.all().count()
         self.stdout.write(f"Processing {total} documents...")
@@ -137,7 +144,9 @@ class Command(BaseCommand):
         solr_docs = []
         for document in Document.objects.all().iterator(chunk_size):
             processed += 1
-            if not self.is_solr_doc_outdated(solr, document.id):
+
+            # skip document if outdated
+            if not force and not self.is_solr_doc_outdated(solr, document.id, force):
                 continue
 
             solr_doc = self._to_solr(document)

@@ -149,3 +149,5 @@ SOLR_COLLECTION = env('SOLR_COLLECTION', default="ris")
 
 PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:8080")
 PREVIEW_RESOLUTION = "256x256"
+
+TIKA_HOST = env("TIKA_HOST", default="http://localhost:9998")

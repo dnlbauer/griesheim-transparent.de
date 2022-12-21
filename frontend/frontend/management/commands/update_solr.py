@@ -1,4 +1,9 @@
+import os
+import tempfile
+import tika
+from tika import parser
 from datetime import datetime
+import re
 
 import pysolr
 from django.core.management import BaseCommand
@@ -7,6 +12,7 @@ from frontend import settings
 from frontend.risdb.models import Document
 from frontend.utils import get_preview_image_for_doc
 
+tika.TikaClientOnly = True
 
 class Command(BaseCommand):
     help = "Update solr from risdb"
@@ -22,12 +28,18 @@ class Command(BaseCommand):
         parser.add_argument("--force",
                             help="force update for all documents",
                             action="store_true")
+        parser.add_argument("--ocr",
+                            help="allow ocr for documents (takes a long time)",
+                            action="store_true")
+
+    def log(self, message):
+        self.stdout.write(message)
 
     def _connect_solr(self):
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         return solr
 
-    def _to_solr(self, doc):
+    def _to_solr(self, doc, tika_result, tika_result_ocr):
         # find corresponding consultation
         consultations = doc.consultations.all()
         consultation = None
@@ -56,9 +68,6 @@ class Command(BaseCommand):
             id=str(doc.id),
             document_id=doc.document_id,
             size=doc.size,
-            content=doc.content_text,
-            content_ocr=doc.content_text_ocr,
-            author=doc.author,
             content_type=doc.content_type,
             doc_title=doc.title,
             agenda_item_id=[],
@@ -106,18 +115,41 @@ class Command(BaseCommand):
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
-        if doc.creation_date is not None:
-            solr_doc['creation_date'] = doc.creation_date.strftime(self.DATE_FORMAT),
-        if doc.last_modified is not None:
-            solr_doc['last_modified'] = doc.last_modified.strftime(self.DATE_FORMAT),
-        if doc.last_saved is not None:
-            solr_doc['last_saved'] = doc.last_saved.strftime(self.DATE_FORMAT),
+        # add data from tika
+        def clean_string(s):
+            return re.sub(r"\s+", " ", s).strip()
+
+        def get_metadata(metadata, fields):
+            for i in fields:
+                if i in metadata:
+                    return metadata[i]
+
+        if tika_result_ocr is not None and tika_result_ocr["content"] is not None:
+            solr_doc["content_ocr"] = clean_string(tika_result_ocr["content"])
+        if tika_result is not None:
+            if tika_result["content"] is not None:
+                solr_doc["content"] = clean_string(tika_result["content"])
+
+            metadata = tika_result["metadata"]
+            author = get_metadata(metadata,  ["Author", "creator", "dc:creator", "meta:author", "pdf:docinfo:creator"])
+            if author is not None:
+                solr_doc["author"] = author
+
+            creation_date = get_metadata(metadata, ["Creation-Date", "created", "dcterms:created", "meta:creation-date", "pdf:docinfo:created"])
+            if creation_date is not None:
+                solr_doc['creation_date'] = creation_date
+
+            last_modified = get_metadata(metadata, ["Last-Modified", "dcterms:modified", "modified", "pdf:docinfo:modified"])
+            if last_modified is not None:
+                solr_doc['last_modified'] = last_modified
+
+            last_save_date = get_metadata(metadata, ["Last-Save-Date", "meta:save-date"])
+            if last_save_date is not None:
+                solr_doc['last_saved'] = last_save_date
+
         return solr_doc
 
-    def is_solr_doc_outdated(self, solr, doc_id):
-        if force:
-            return True
-
+    def _is_solr_doc_outdated(self, solr, doc_id):
         result = solr.search(f"id:{doc_id}", **{"rows": 2147483647, "fl": "version,last_analyzed"})
 
         if len(result) > 1:
@@ -128,37 +160,91 @@ class Command(BaseCommand):
         doc = result.docs[0]
         return doc["version"] < self.VERSION
 
+    def _analyze_document_tika(self, binary, ocr):
+        # create tempfile
+        temp_file = tempfile.NamedTemporaryFile("wb", suffix=".pdf", delete=False)
+        temp_file.write(binary)
+        temp_file.close()
+
+        try:
+            self.log("Send document to tika")
+            parsed = parser.from_file(
+                temp_file.name,
+                serverEndpoint=settings.TIKA_HOST,
+                headers={
+                    "X-Tika-PDFOcrStrategy": "no_ocr",
+                },
+                requestOptions={'timeout': 30*60}
+            )
+
+            if ocr:
+                self.log("Send document to tika/ocr")
+                parsed_ocr = parser.from_file(
+                    temp_file.name,
+                    serverEndpoint=settings.TIKA_HOST,
+                    headers={
+                        "X-Tika-PDFOcrStrategy": "OCR_ONLY",
+                        "X-Tika-OCRLanguage": "deu",
+                        "X-Tika-OCRTimeout": str(30*60)
+                    },
+                    requestOptions={'timeout': 30*60}
+                )
+            else:
+                parsed_ocr = None
+
+            self.log("Tika result collected")
+            return parsed, parsed_ocr
+        finally:
+            os.unlink(temp_file.name)
+
+
     def handle(self, *args, **options):
         # get arguments
         chunk_size = self.DEFAULT_CHUNK_SIZE
         if options['chunk_size']:
             chunk_size = options['chunk_size']
         force = options["force"]
+        ocr = options["ocr"]
 
         total = Document.objects.all().count()
-        self.stdout.write(f"Processing {total} documents...")
+        self.log(f"Processing {total} documents...")
         processed = 0
         updated = 0
 
         solr = self._connect_solr()
         solr_docs = []
-        for document in Document.objects.all().iterator(chunk_size):
+        for document in Document.objects.all().iterator():
             processed += 1
 
             # skip document if outdated
-            if not force and not self.is_solr_doc_outdated(solr, document.id, force):
+            if not (force or self._is_solr_doc_outdated(solr, document.id)):
                 continue
 
-            solr_doc = self._to_solr(document)
+            # filter non-pdfs
+            if not document.content_type.lower().endswith("pdf"):
+                self.log(f"Skipped {document.file_name} (no pdf) ({str(document.id)}")
+                continue
+
+            self.log(f"Processing {document.file_name} ({str(document.id)})")
+
+            # analyze document with tika
+            tika_result, tika_result_ocr = self._analyze_document_tika(document.content_binary, ocr)
+
+            # generate solr document from data
+            self.log("Creating solr document")
+            solr_doc = self._to_solr(document, tika_result, tika_result_ocr)
             solr_docs.append(solr_doc)
+
+            # write chunks to solr
             if len(solr_docs) >= chunk_size:
                 solr.add(solr_docs, commit=True)
                 updated += len(solr_docs)
-                self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+                self.log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr_docs = []
+
         solr.add(solr_docs, commit=True)
         updated += len(solr_docs)
-        self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-        self.stdout.write(f"{processed} documents processed ({updated} updated).")
+        self.log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+        self.log(f"{processed} documents processed ({updated} updated).")
 
 

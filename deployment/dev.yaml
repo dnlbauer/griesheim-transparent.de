@@ -9,11 +9,11 @@ services:
       - database
       - solr
       - previewservice
+      - tika
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr
       - SOLR_COLLECTION=ris
-      - PREVIEW_HOST=http://previewservice:8000
       - RIS_DB_HOST=database
       - RIS_DB_PORT=${POSTGRES_PORT}
       - RIS_DB_NAME=${POSTGRES_DB}
@@ -23,9 +23,11 @@ services:
       - UPDATE_SOLR_CRON=0 */3 * * *
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DATABASE_PATH=/django_db/db.sqlite
-      - DJANGO_SU_NAME
-      - DJANGO_SU_PASSWD
-      - DJANGO_SU_EMAIL
+      - DJANGO_SU_NAME=${DJANGO_SU_NAME}
+      - DJANGO_SU_PASSWD=${DJANGO_SU_PASSWD}
+      - DJANGO_SU_EMAIL=${DJANGO_SU_EMAIL}
+      - PREVIEW_HOST=http://previewservice:8000
+      - TIKA_HOST=http://tika:9998
     volumes:
       - django_db:/django_db
       - django_staticfiles:/app/staticfiles
@@ -52,8 +54,6 @@ services:
     container_name: griesheimtransparent-tika
     ports:
       - ${TIKA_PORT}:9998
-    depends_on:
-      - database
     networks:
       - griesheimtransparent
     restart: ${RESTART_RULE}

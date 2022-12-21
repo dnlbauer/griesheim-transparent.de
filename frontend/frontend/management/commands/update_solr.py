@@ -13,6 +13,7 @@ class Command(BaseCommand):
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     DEFAULT_CHUNK_SIZE = 10
+    VERSION = 2  # incr. if analyze chain changes
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -47,6 +48,8 @@ class Command(BaseCommand):
 
         # create document
         solr_doc = dict(
+            version=self.VERSION,
+            last_analyzed=datetime.now().strftime(self.DATE_FORMAT),
             id=str(doc.id),
             document_id=doc.document_id,
             size=doc.size,
@@ -108,26 +111,45 @@ class Command(BaseCommand):
             solr_doc['last_saved'] = doc.last_saved.strftime(self.DATE_FORMAT),
         return solr_doc
 
+    def is_solr_doc_outdated(self, solr, doc_id):
+        result = solr.search(f"id:{doc_id}", **{"rows": 2147483647, "fl": "version,last_analyzed"})
+
+        if len(result) > 1:
+            raise ValueError(f"Expected single document for {doc_id} but found {len(result)}")
+        if len(result) == 0:
+            return True
+
+        doc = result.docs[0]
+        return doc["version"] < self.VERSION
+
     def handle(self, *args, **options):
-        total = Document.objects.all().count()
-        self.stdout.write(f"Updating {total} documents")
-        processed = 0
+        # chunk size
         chunk_size = self.DEFAULT_CHUNK_SIZE
         if options['chunk_size']:
             chunk_size = options['chunk_size']
+
+        total = Document.objects.all().count()
+        self.stdout.write(f"Processing {total} documents...")
+        processed = 0
+        updated = 0
+
         solr = self._connect_solr()
         solr_docs = []
         for document in Document.objects.all().iterator(chunk_size):
+            processed += 1
+            if not self.is_solr_doc_outdated(solr, document.id):
+                continue
+
             solr_doc = self._to_solr(document)
             solr_docs.append(solr_doc)
             if len(solr_docs) >= chunk_size:
                 solr.add(solr_docs, commit=True)
-                processed += len(solr_docs)
-                self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Total={processed}/{total})")
+                updated += len(solr_docs)
+                self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr_docs = []
         solr.add(solr_docs, commit=True)
-        processed += len(solr_docs)
-        self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Total={processed}/{total})")
-        self.stdout.write(f"{processed} documents processed.")
+        updated += len(solr_docs)
+        self.stdout.write(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+        self.stdout.write(f"{processed} documents processed ({updated} updated).")
 
 

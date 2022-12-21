@@ -5,6 +5,10 @@
     <field name="_version_" type="plong" indexed="true" stored="false" />
     <field name="id" type="string" indexed="true" stored="true" required="true" />
 
+    <!-- Used to identify if a document needs reindexing -->
+    <field name="last_analyzed" type="pdate" indexed="false" stored="true" required="true" />
+    <field name="version" type="pint" indexed="false" stored="true" required="true" />
+
     <!-- Document data -->
     <field name="document_id" type="pint" indexed="false" stored="true" required="true" />
     <field name="doc_type" type="string" indexed="true" stored="true" required="false" />

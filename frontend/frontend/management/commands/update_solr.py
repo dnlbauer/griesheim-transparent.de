@@ -167,19 +167,22 @@ class Command(BaseCommand):
         force = options["force"]
         ocr = options["no_ocr"]
 
-        total = Document.objects.all().count()
-        self.log(f"Processing {total} documents...")
+        self.log(f"Processing {Document.objects.all().count()} documents...")
         processed = 0
         updated = 0
 
         solr = self._connect_solr()
         solr_docs = []
-        for document in Document.objects.all().iterator():
-            processed += 1
 
-            # skip document if outdated
-            if not (force or self._is_solr_doc_outdated(solr, document.id)):
-                continue
+        # get all document ids to process and filter out up-to-date documents
+        document_ids = Document.objects.values_list("id", flat=True)
+        document_ids = [id for id in document_ids if force or self._is_solr_doc_outdated(solr, id)]
+        total = len(document_ids)
+        self.log(f"Outdated documents: {total}")
+
+        for document_id in document_ids:
+            document = Document.objects.get(id=document_id)
+            processed += 1
 
             # filter non-pdfs
             if not document.content_type.lower().endswith("pdf"):

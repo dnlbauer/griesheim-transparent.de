@@ -186,7 +186,7 @@ class Command(BaseCommand):
 
             # filter non-pdfs
             if not document.content_type.lower().endswith("pdf"):
-                self.log(f"Skipped {document.file_name} (no pdf) ({str(document.id)}")
+                self.log(f"Skipped {document.file_name} (no pdf) ({str(document.id)})")
                 continue
 
             self.log(f"Processing {document.file_name} ({str(document.id)})")

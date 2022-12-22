@@ -15,11 +15,4 @@ class Document(Base):
     content_type = Column(String)
     content_binary = Column(LargeBinary, nullable=False)
     size = Column(Integer, nullable=False)
-    author = Column(String)
-    creation_date = Column(DateTime)
-    last_modified = Column(DateTime)
-    last_saved = Column(DateTime)
     title = Column(String)
-    content_text = Column(String)
-    content_text_ocr = Column(String)
-

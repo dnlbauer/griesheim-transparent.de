@@ -90,11 +90,6 @@ class Command(BaseCommand):
             solr_doc["consultation_text"] = consultation.text
             solr_doc['doc_type'] = consultation.type
 
-        # Niederschrift recognized by content
-        if 'doc_type' not in solr_doc or solr_doc['doc_type'] is None:
-            if (doc.content_text and "niederschrift" in doc.content_text[:100].lower()) or (doc.content_text_ocr and "niederschrift" in doc.content_text_ocr[:100].lower()):
-                solr_doc['doc_type'] = "Niederschrift"
-
         for agenda_item in agenda_items:
             if agenda_item.agenda_item_id not in solr_doc['agenda_item_id']:
                 solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
@@ -124,6 +119,7 @@ class Command(BaseCommand):
                 if i in metadata:
                     return metadata[i]
 
+        # parse data from tika
         if tika_result is not None:
             if tika_result["content"] is not None:
                 solr_doc["content"] = clean_string(tika_result["content"])
@@ -144,6 +140,13 @@ class Command(BaseCommand):
             last_save_date = get_metadata(metadata, ["Last-Save-Date", "meta:save-date"])
             if last_save_date is not None:
                 solr_doc['last_saved'] = last_save_date
+
+
+        # Niederschrift recognized by keyword "Niederschrift" in content or title
+        if 'doc_type' not in solr_doc or solr_doc['doc_type'] is None:
+            if solr_doc["content"] and ("niederschrift" in solr_doc["content"][:100].lower() or "niederschrift" in doc.title.lower()):
+                solr_doc['doc_type'] = "Niederschrift"
+
 
         return solr_doc
 

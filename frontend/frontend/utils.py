@@ -31,7 +31,7 @@ def analyze_document_tika(binary, ocr=False):
     temp_file.write(binary)
     temp_file.close()
 
-    if ocr:
+    if not ocr:
         headers = {
             "X-Tika-PDFOcrStrategy": "no_ocr",
         }

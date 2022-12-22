@@ -1,7 +1,4 @@
-import os
-import tempfile
 import tika
-from tika import parser
 from datetime import datetime
 import re
 
@@ -10,7 +7,7 @@ from django.core.management import BaseCommand
 
 from frontend import settings
 from frontend.risdb.models import Document
-from frontend.utils import get_preview_image_for_doc
+from frontend.utils import get_preview_image_for_doc, analyze_document_tika
 
 tika.TikaClientOnly = True
 
@@ -39,7 +36,7 @@ class Command(BaseCommand):
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         return solr
 
-    def _to_solr(self, doc, tika_result):
+    def _to_solr(self, doc, tika_result, preview_image):
         # find corresponding consultation
         consultations = doc.consultations.all()
         consultation = None
@@ -79,7 +76,7 @@ class Command(BaseCommand):
             meeting_date=[],
             meeting_organization_name=[],
             filename=doc.file_name,
-            preview_image=get_preview_image_for_doc(doc.document_id)
+            preview_image=preview_image
         )
 
         if consultation is not None:
@@ -161,42 +158,6 @@ class Command(BaseCommand):
         doc = result.docs[0]
         return doc["version"] < self.VERSION
 
-    def _analyze_document_tika(self, binary, ocr):
-        # create tempfile
-        temp_file = tempfile.NamedTemporaryFile("wb", suffix=".pdf", delete=False)
-        temp_file.write(binary)
-        temp_file.close()
-
-        try:
-            self.log("Send document to tika")
-            parsed = parser.from_file(
-                temp_file.name,
-                serverEndpoint=settings.TIKA_HOST,
-                headers={
-                    "X-Tika-PDFOcrStrategy": "no_ocr",
-                },
-                requestOptions={'timeout': 30*60}
-            )
-
-            # Only run OCR/tesseract if there is no content from tika w/o ocr
-            if ocr and (parsed["content"] is None or len(parsed["content"]) == 0):
-                self.log("Send document to tika/ocr")
-                parsed = parser.from_file(
-                    temp_file.name,
-                    serverEndpoint=settings.TIKA_HOST,
-                    headers={
-                        "X-Tika-PDFOcrStrategy": "OCR_ONLY",
-                        "X-Tika-OCRLanguage": "deu",
-                        "X-Tika-OCRTimeout": str(30*60)
-                    },
-                    requestOptions={'timeout': 30*60}
-                )
-
-            self.log("Tika result collected")
-            return parsed
-        finally:
-            os.unlink(temp_file.name)
-
 
     def handle(self, *args, **options):
         # get arguments
@@ -228,11 +189,21 @@ class Command(BaseCommand):
             self.log(f"Processing {document.file_name} ({str(document.id)})")
 
             # analyze document with tika
-            tika_result = self._analyze_document_tika(document.content_binary, ocr)
+            self.log("Sending document to tika")
+            tika_result = analyze_document_tika(document.content_binary, False)
+
+            # Only run OCR/tesseract if there is no content from tika w/o ocr
+            if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
+                self.log("Sending document to tika/ocr")
+                tika_result = analyze_document_tika(document.content_binary, True)
+
+            # get preview image
+            self.log("Sending document to preview service")
+            preview_image = get_preview_image_for_doc(document.document_id)
 
             # generate solr document from data
             self.log("Creating solr document")
-            solr_doc = self._to_solr(document, tika_result)
+            solr_doc = self._to_solr(document, tika_result, preview_image)
             solr_docs.append(solr_doc)
 
             # write chunks to solr

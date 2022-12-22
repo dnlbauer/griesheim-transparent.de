@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  frontend:
+  frontend: &frontend
     image: griesheimtransparent-frontend
     container_name: griesheimtransparent-frontend
     build: "./../frontend"
@@ -37,6 +37,18 @@ services:
     networks:
       - griesheimtransparent
     restart: ${RESTART_RULE}
+  frontend_cron:
+    <<: *frontend
+    container_name: griesheimtransparent-frontend_cron
+    command: crond -f
+    expose: []
+    restart: ${RESTART_RULE}
+    depends_on:
+      - database
+      - solr
+      - previewservice
+      - tika
+
   database:
     image: postgres
     container_name: griesheimtransparent-postgres

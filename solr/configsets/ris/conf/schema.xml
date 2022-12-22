@@ -22,12 +22,6 @@
     <copyField source="content" dest="content_hr"/>
     <copyField source="content" dest="content_hp"/>
 
-    <field name="content_ocr" type="text" indexed="true" stored="true" />
-    <field name="content_ocr_hr" type="text_hr" indexed="true" stored="false" />
-    <field name="content_ocr_hp" type="text_hp" indexed="true" stored="false" />
-    <copyField source="content_ocr" dest="content_ocr_hr"/>
-    <copyField source="content_ocr" dest="content_ocr_hp"/>
-
     <field name="size" type="pint" indexed="false" stored="true" required="true" />
     <field name="content_type" type="string" indexed="false" stored="true" required="true" />
     <field name="filename" type="string" indexed="false" stored="true" required="true" />

@@ -59,7 +59,7 @@ FACET_FIELDS = {
 
 SOLR_ARGS = {
     "search_handler": "/select",
-    "fl": "id,content,content_ocr,first_seen,preview_image"
+    "fl": "id,content,first_seen,preview_image"
 }
 
 HL_ARGS = {
@@ -67,7 +67,6 @@ HL_ARGS = {
     "hl.tag.pre": "<strong>",
     "hl.tag.post": "</strong>",
     "hl.fl": "content consultation_text",
-    "hl.content.alternateField": "content_ocr",
     "hl.method": "unified",
     "hl.snippets": "5",
     "hl.fragsize": "250",
@@ -101,8 +100,6 @@ def _parse_highlights(highlights, max_len=200):
         hl += highlights['consultation_text']
     if "content" in highlights:
         hl += highlights['content']
-    elif "content_ocr" in highlights:
-        hl += highlights['content_ocr']
 
     separator = " ... "
     hl_concatenated = ""
@@ -145,8 +142,6 @@ def _parse_search_result(doc, response):
             title = doc['doc_title']
         elif "content" in doc:
             title = doc['content'][:100] + "..."
-        elif "content_ocr" in doc:
-            title = doc['content_ocr'][:100] + "..."
 
     if "last_seen" in doc:
         date = doc['first_seen']

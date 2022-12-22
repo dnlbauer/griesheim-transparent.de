@@ -726,7 +726,6 @@
       <int name="mm">2</int>
       <str name="hl">true</str>
       <str name="hl.fl">
-        content content_ocr
         consultation_text
       </str>
       <str name="hl.fragsize">100</str>
@@ -742,14 +741,13 @@
            hr 50%lower with minimum of 0.8
            keywords and numerics boosted to 5 -->
       <!--
-      main search fields: content and content_ocr with a boosting of 1
+      main search fields: content with a boosting of 1
       exact matched fields boosted by 10
       -->
       <str name="qf">
         document_id^10
         doc_title^10
         content^1 content_hp^1.2 content_hr^0.8
-        content_ocr^1 content_ocr_hp^1.2 content_ocr_hr^0.8
 
         consultation_id^10
         consultation_name^10

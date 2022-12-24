@@ -64,14 +64,10 @@
     <field name="meeting_count" type="pint" indexed="true" stored="true" />
 
     <field name="suggest_text" type="string" stored="true" multiValued="true"/>
-<!--    <copyField source="content" dest="suggest_text" />-->
-<!--    <copyField source="content_ocr" dest="suggest_text" />-->
     <copyField source="doc_title" dest="suggest_text" />
     <copyField source="consultation_name" dest="suggest_text" />
     <copyField source="consultation_topic" dest="suggest_text" />
-<!--    <copyField source="consultation_text" dest="suggest_text" />-->
     <copyField source="agenda_item_title" dest="suggest_text" />
-<!--    <copyField source="agenda_item_text" dest="suggest_text" />-->
     <copyField source="meeting_title_short" dest="suggest_text" />
     <copyField source="meeting_title" dest="suggest_text" />
     <copyField source="meeting_organization_name" dest="suggest_text" />
@@ -207,8 +203,6 @@
                     stemEnglishPossessive="0"
                     preserveOriginal="1"
                     protected="protwords.txt,lang/protwords_de.txt"/>
-<!--            <filter class="io.redlink.lucene.analysis.compound.HyphenationCompoundWordTokenFilterFactory" hyphenator="lang/de_DR.xml" ignoreCase="true" -->
-<!--                    dictionary="lang/dictionary-de.txt,dictionary.txt" onlyLongestMatch="true" minSubwordSize="4" epenthesis="es,s,en,n"/>-->
             <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt,lang/stopwords_de.txt" format="snowball" ignoreCase="true"/>
             <filter class="solr.PatternReplaceFilterFactory" pattern="(?:^[¿'`´“”&quot;‚„\(\[\{]+|[\.,;:\!\?'`´“”&quot;\)\}\]]+$)" replacement=""/>
             <filter class="solr.StemmerOverrideFilterFactory" dictionary="lang/stemdict_de.tsv" ignoreCase="true"/>

@@ -53,3 +53,17 @@ def analyze_document_tika(binary, ocr=False):
         return parsed
     finally:
         os.unlink(temp_file.name)
+
+def analyze_document_pdfact(binary):
+    response = requests.post(url="http://localhost:9996/analyze", files=dict(file=binary))
+
+    if response.status_code != 200:
+        return None
+
+    json = response.json()
+    snippets = []
+    for paragraph in json["paragraphs"]:
+        snippets.append(paragraph["paragraph"]["text"])
+    return snippets
+
+

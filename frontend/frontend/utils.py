@@ -55,7 +55,7 @@ def analyze_document_tika(binary, ocr=False):
         os.unlink(temp_file.name)
 
 def analyze_document_pdfact(binary):
-    response = requests.post(url="http://localhost:9996/analyze", files=dict(file=binary))
+    response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files=dict(file=binary))
 
     if response.status_code != 200:
         return None

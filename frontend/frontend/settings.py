@@ -151,3 +151,4 @@ PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:8080")
 PREVIEW_RESOLUTION = "256x256"
 
 TIKA_HOST = env("TIKA_HOST", default="http://localhost:9998")
+PDFACT_HOST = env("PDFACT_HOST", default="http://localhost:9997")

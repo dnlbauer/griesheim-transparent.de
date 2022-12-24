@@ -29,6 +29,7 @@ services:
       - DJANGO_SU_EMAIL=${DJANGO_SU_EMAIL}
       - PREVIEW_HOST=http://previewservice:8000
       - TIKA_HOST=http://tika:9998
+      - PDFACT_HOST=http://pdfact:80
     volumes:
       - django_db:/django_db
       - django_staticfiles:/app/staticfiles

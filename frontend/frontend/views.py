@@ -82,8 +82,8 @@ class MainView(TemplateView):
             Query(query=query).save()
             result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
         else:
-            context['num_docs'] = solr.search("*:*").hits
-            result = solr.search("*:*", sort=SortOrder.date, limit=5)
+            context['num_docs'] = solr.count("*:*")
+            result = solr.newest("*:*", limit=5)
 
         context['query'] = query
         context['organization'] = organization

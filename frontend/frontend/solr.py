@@ -15,8 +15,10 @@ class SortOrder(Enum):
 
 
 class SearchResult:
-    def __init__(self, title, highlight, link, download_link,
+    def __init__(self, id, document_id, title, highlight, link, download_link,
                  doc_type, short_name, date, preview_image):
+        self.id = id
+        self.document_id = document_id
         self.title = title
         self.highlight = highlight
         self.link = link
@@ -59,7 +61,7 @@ FACET_FIELDS = {
 
 SOLR_ARGS = {
     "search_handler": "/select",
-    "fl": "id,content,first_seen,preview_image"
+    "fl": "id,first_seen,preview_image"
 }
 
 # order matters for highlight! Only using the hl with highest prio
@@ -67,6 +69,7 @@ HL_FIELDS = "doc_title consultation_topic consultation_text content_hp content c
 HL_MAX_SNIPPETS = 3
 
 HL_ARGS = {
+    "hl": "true",
     "hl.encoder": "html",
     "hl.tag.pre": "<strong>",
     "hl.tag.post": "</strong>",
@@ -84,6 +87,18 @@ HL_ARGS = {
     "hl.requireFieldMatch": "true"
 }
 
+HL_NEWEST_ARGS = {
+    "hl": "true",
+    "hl.encoder": "html",
+    "hl.fl": "content",
+    "hl.bs.country": "DE",
+    "hl.bs.language": "de",
+    "hl.bs.type": "LINE",
+    "hl.fragsize": "100000",
+    "hl.snippets": "2147483647",
+    "hl.defaultSummary": "true",
+}
+
 FACET_ARGS = {
     "facet": "true",
     "facet.field": ["{!ex=facetignore}" + i for i in FACET_FIELDS.values()],
@@ -97,7 +112,7 @@ def solr_connection(handler='/select'):
     return pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}", search_handler=handler)
 
 
-def _parse_highlights(highlights, max_len=200):
+def _parse_highlights(highlights, max_len, separator=" "):
     # remote empty highlights
     for key in highlights:
         non_empty = [hl for hl in highlights[key] if hl.strip()]
@@ -106,7 +121,6 @@ def _parse_highlights(highlights, max_len=200):
         else:
             del highlights[key]
 
-    separator = " … "  # ellipsis, not dots
     def highlight2str(highlights):
         hl = ""
         for field in HL_FIELDS.split(" "):
@@ -132,7 +146,9 @@ def _parse_highlights(highlights, max_len=200):
 
 
 def _parse_search_result(doc, response):
-    download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={doc['document_id']}"
+    id = doc["id"]
+    document_id = doc["document_id"]
+    download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={document_id}"
 
     short_name = None
     link = None
@@ -167,7 +183,10 @@ def _parse_search_result(doc, response):
     else:
         date = None
 
-    hl = _parse_highlights(response.highlighting[doc['id']])
+    if response.highlighting and doc['id'] in response.highlighting:
+        hl = _parse_highlights(response.highlighting[doc['id']], max_len=200, separator=" … ")
+    else:
+        hl = None
 
     if "preview_image" in doc:
         preview_image = doc['preview_image']
@@ -175,6 +194,8 @@ def _parse_search_result(doc, response):
         preview_image = None
 
     return SearchResult(
+        id,
+        document_id,
         title,
         hl,
         link,
@@ -203,8 +224,7 @@ def _parse_facets(facets):
                 parsed_results[name] = pairwise(facets['facet_fields'][field_name])
     return parsed_results
 
-
-def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter={}, hl=True, facet=True, solr_conn=solr_connection()):
+def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet):
     args = dict(SOLR_ARGS)
     if sort == SortOrder.date:
         args['sort'] = "first_seen desc"
@@ -226,11 +246,36 @@ def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter={},
     else:
         args['rows'] = NUM_ROWS
     args |= solr_page(page-1, args['rows'])
+    return args
 
+def count(query, solr_conn=solr_connection()):
+    result = solr_conn.search(query, rows=0)
+    return result.hits
+
+
+def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter={}, hl=True, facet=True, solr_conn=solr_connection()):
+    args = _create_solr_args(query, page, sort, limit, facet_filter, hl, facet)
     result = solr_conn.search(query, **args)
 
     documents = [_parse_search_result(doc, result) for doc in result.docs]
     facets = _parse_facets(result.facets)
+
+    return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
+
+# same as `search` but fills highlight with content
+def newest(query="*:*", limit=5, solr_conn=solr_connection()):
+    page = 1
+
+    args = _create_solr_args(query, page, SortOrder.date, limit, {}, False, False)
+    args |= HL_NEWEST_ARGS  # set HL to get an extraction of the content
+
+    result = solr_conn.search(query, **args)
+
+    documents = [_parse_search_result(doc, result) for doc in result.docs]
+    # For newest, we want to concatenate highlighting data up to a max. len
+    for doc in documents:
+        doc.highlight = _parse_highlights(result.highlighting[doc.id], max_len=10000, separator=" ")
+    facets = {}
 
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
 

@@ -1,7 +1,5 @@
 import base64
 import logging
-import os
-import sys
 from multiprocessing import Process
 
 from django.contrib.auth import authenticate

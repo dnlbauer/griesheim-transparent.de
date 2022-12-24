@@ -7,7 +7,7 @@ from django.core.management import BaseCommand
 
 from frontend import settings
 from frontend.risdb.models import Document
-from frontend.utils import get_preview_image_for_doc, analyze_document_tika
+from frontend.utils import get_preview_image_for_doc, analyze_document_tika, analyze_document_pdfact
 
 tika.TikaClientOnly = True
 
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         return solr
 
-    def _to_solr(self, doc, tika_result, preview_image):
+    def _to_solr(self, doc, tika_result, pdfact_result, preview_image):
         # find corresponding consultation
         consultations = doc.consultations.all()
         consultation = None
@@ -76,7 +76,8 @@ class Command(BaseCommand):
             meeting_date=[],
             meeting_organization_name=[],
             filename=doc.file_name,
-            preview_image=preview_image
+            preview_image=preview_image,
+            content=[]
         )
 
         if consultation is not None:
@@ -107,7 +108,6 @@ class Command(BaseCommand):
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
-        # add data from tika
         def clean_string(s):
             return re.sub(r"\s+", " ", s).strip()
 
@@ -116,11 +116,14 @@ class Command(BaseCommand):
                 if i in metadata:
                     return metadata[i]
 
-        # parse data from tika
-        if tika_result is not None:
-            if tika_result["content"] is not None:
-                solr_doc["content"] = clean_string(tika_result["content"])
+        # get content from pdfact or tika
+        if pdfact_result is not None:
+            solr_doc["content"] = [clean_string(s) for s in pdfact_result]
+        elif tika_result is not None and "content" in tika_result and tika_result["content"]:
+            solr_doc["content"] = [tika_result["content"]]
 
+        # parse metadata from tika
+        if tika_result is not None:
             metadata = tika_result["metadata"]
             author = get_metadata(metadata,  ["Author", "creator", "dc:creator", "meta:author", "pdf:docinfo:creator"])
             if author is not None:
@@ -138,10 +141,9 @@ class Command(BaseCommand):
             if last_save_date is not None:
                 solr_doc['last_saved'] = last_save_date
 
-
         # Niederschrift recognized by keyword "Niederschrift" in content or title
         if 'doc_type' not in solr_doc or solr_doc['doc_type'] is None:
-            if solr_doc["content"] and ("niederschrift" in solr_doc["content"][:100].lower() or "niederschrift" in doc.title.lower()):
+            if "niederschrift" in doc.title.lower():
                 solr_doc['doc_type'] = "Niederschrift"
 
 
@@ -200,13 +202,17 @@ class Command(BaseCommand):
                 self.log("Sending document to tika/ocr")
                 tika_result = analyze_document_tika(document.content_binary, True)
 
+            # run pdfact
+            self.log("Sending document to pdfact")
+            pdfact_result = analyze_document_pdfact(document.content_binary)
+
             # get preview image
             self.log("Sending document to preview service")
             preview_image = get_preview_image_for_doc(document.document_id)
 
             # generate solr document from data
             self.log("Creating solr document")
-            solr_doc = self._to_solr(document, tika_result, preview_image)
+            solr_doc = self._to_solr(document, tika_result, pdfact_result, preview_image)
             solr_docs.append(solr_doc)
 
             # write chunks to solr

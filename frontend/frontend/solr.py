@@ -62,20 +62,26 @@ SOLR_ARGS = {
     "fl": "id,content,first_seen,preview_image"
 }
 
+# order matters for highlight! Only using the hl with highest prio
+HL_FIELDS = "doc_title consultation_topic consultation_text content_hp content content_hr"
+HL_MAX_SNIPPETS = 3
+
 HL_ARGS = {
     "hl.encoder": "html",
     "hl.tag.pre": "<strong>",
     "hl.tag.post": "</strong>",
-    "hl.fl": "content consultation_text",
+    "hl.fl": HL_FIELDS,
     "hl.method": "unified",
-    "hl.snippets": "5",
-    "hl.fragsize": "250",
-    "hl.fragsizeIsMinimum": "false",
-    "hl.bs.type": "WORD",
-    "hl.defaultSummary": "true",
-    "hl.mergeContiguous": "false",
     "hl.bs.country": "DE",
     "hl.bs.language": "de",
+    "hl.bs.type": "LINE",
+    "hl.mergeContiguous": "false",
+    "hl.snippets": HL_MAX_SNIPPETS,
+    "hl.maxMultiValuedToMatch": HL_MAX_SNIPPETS,
+    "hl.fragsize": "250",
+    "hl.fragsizeIsMinimum": "false",
+    "hl.defaultSummary": "false",
+    "hl.requireFieldMatch": "true"
 }
 
 FACET_ARGS = {
@@ -92,25 +98,37 @@ def solr_connection(handler='/select'):
 
 
 def _parse_highlights(highlights, max_len=200):
-    if highlights is None or len(highlights) == 0:
-        return None
-
-    hl = []
-    if "consultation_text" in highlights:
-        hl += highlights['consultation_text']
-    if "content" in highlights:
-        hl += highlights['content']
-
-    separator = " ... "
-    hl_concatenated = ""
-    for i in hl:
-        if len(hl_concatenated) > max_len:
-            break
-        if len(hl_concatenated) == 0:
-            hl_concatenated = i
+    # remote empty highlights
+    for key in highlights:
+        non_empty = [hl for hl in highlights[key] if hl.strip()]
+        if len(non_empty) > 0:
+            highlights[key] = non_empty
         else:
-            hl_concatenated += separator + i
-    return hl_concatenated
+            del highlights[key]
+
+    separator = " … "  # ellipsis, not dots
+    def highlight2str(highlights):
+        hl = ""
+        for field in HL_FIELDS.split(" "):
+            if hl:
+                return hl
+            elif field in highlights:
+                for frag in highlights[field]:
+                    if hl:
+                        hl += separator + frag
+                    else:
+                        hl = frag
+                    if len(hl) > max_len:
+                        return hl
+        return hl
+
+    hl = highlight2str(highlights)
+
+    if hl:
+        if not hl.strip().endswith("."):
+            hl += separator.rstrip()
+        return hl
+    return None
 
 
 def _parse_search_result(doc, response):

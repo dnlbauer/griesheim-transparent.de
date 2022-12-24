@@ -17,8 +17,8 @@
     <field name="preview_image" type="string" indexed="false" stored="true" />
 
     <field name="content" type="text" indexed="true" stored="true" multiValued="true" />
-    <field name="content_hr" type="text_hr" indexed="true" stored="false" multiValued="true" />
-    <field name="content_hp" type="text_hp" indexed="true" stored="false" multiValued="true" />
+    <field name="content_hr" type="text_hr" indexed="true" stored="true" multiValued="true" />
+    <field name="content_hp" type="text_hp" indexed="true" stored="true" multiValued="true" />
     <copyField source="content" dest="content_hr"/>
     <copyField source="content" dest="content_hp"/>
 

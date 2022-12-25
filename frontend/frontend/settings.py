@@ -127,10 +127,9 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "de-de"
 
 TIME_ZONE = "Europe/Berlin"
+USE_TZ = True
 
 USE_I18N = True
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -144,8 +143,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Connection to solr
+
 SOLR_HOST = env("SOLR_HOST", default="http://localhost:8983/solr")
 SOLR_COLLECTION = env('SOLR_COLLECTION', default="ris")
+
+# Connection and settings for pdf preview thumbnails
 
 PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:8080")
 PREVIEW_RESOLUTION = "256x256"

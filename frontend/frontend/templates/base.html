@@ -21,8 +21,13 @@
         </script>
     </head>
     <body class="sans-serif bg-light-gray">
-        <main>
-            {% block content %}{% endblock %}
-        </main>
+        <div class="page-container">
+            <div class="content-wrap">
+                <main>
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+            {% include 'components/footer.html' %}
+        </div>
     </body>
 </html>

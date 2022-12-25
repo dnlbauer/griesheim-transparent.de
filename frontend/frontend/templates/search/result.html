@@ -28,30 +28,41 @@
             {% endif %}
             <div class="metadata">
                 <small class="f5-l f6 measure flex flex-wrap">
+                    <!-- document type -->
                     {% if document.doc_type %}
-                        <div class="mr2">
-                            {% if document.doc_type == "Anlage"%}
-                                <span class="fa-solid fa-paperclip"></span>
+                        <div class="mr1">
+                        {% if document.doc_type == "Anlage" %}
+                            <span class="fa-solid fa-paperclip"></span>
+                        {% else %}
+                            {% if document.doc_type == "Niederschrift" %}
+                                <span class="fa-solid fa-file-signature"></span>
                             {% else %}
-                                {% if document.doc_type == "Niederschrift" %}
-                                    <span class="fa-solid fa-file-signature"></span>
-                                {% else %}
-                                    <span class="fa-regular fa-file"></span>
-                                {% endif %}
+                                <span class="fa-regular fa-file"></span>
                             {% endif %}
-                            {{ document.doc_type }}
+                        {% endif %}
                         </div>
+                        <span class="mr2">{{ document.doc_type }}</span>
                     {% endif %}
-                    {% if document.doc_type and document.date %}<div class="mr2">|</div>{% endif %}
-                    {% if document.date %}
-                        <div class="mr2">{{ document.date|date:"d. M 'y" }}</div>
+                    <!-- separator -->
+                    {% if document.doc_type %}
+                        {% if document.short_name or document.date %}
+                            <span class="mr2">|</span>
+                        {% endif %}
                     {% endif %}
-                    {% if document.link %}
-                            <a class="f6-l f7 grow no-underline br-pill ba ph2 mb22 dib bg-blue bg-main-color black" href="{{ document.link }}">
-                                <span class="{% if document.doc_type == "Anlage" or document.doc_type == "Niederschrift" %}fa fa-calendar-days{% else %}fa-regular fa-file{% endif %}"></span>
-                                <span class="ml1">{{ document.short_name }}</span>
-                            </a>
+                    <!-- assoc event -->
+                    {% if document.short_name %}
+                       <span class="mr2">{{ document.short_name }}</span>
                     {% endif %}
+                    <!-- separator -->
+                    {% if document.doc_type or document.short_name %}
+                        {% if document.date %}
+                            <span class="mr2">|</span>
+                        {% endif %}
+                    {% endif %}
+                    <div class="mr1">
+                        <span class="fa fa-calendar-days"></span>
+                    </div>
+                    <span class="mr2">{{ document.date|date:"d. M 'y" }}</span>
                 </small>
             </div>
         </div>

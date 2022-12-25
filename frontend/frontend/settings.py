@@ -28,6 +28,9 @@ SECRET_KEY = env('SECRET_KEY', default="django-insecure-$vob9+fgpc=h_2e57lc=3*vs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
+# share referrer
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
+
 
 ALLOWED_HOSTS = [host for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
 

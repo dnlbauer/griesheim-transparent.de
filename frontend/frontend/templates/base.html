@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html lang="de">
-    <title>{% block title %}Griesheim Transparent{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% load static %}
-    <meta property="og:title" content="Griesheim Transparent"/>
-    <meta property="og:description" content="Griesheim Transparent: Volltext Suche für Dokumente aus dem Griesheimer Ratsinfosystem."/>
-    <meta property="og:image" content="{% static 'sharepic.jpg' %}" />
-    <link rel="stylesheet" href="{% static 'css/tachyons.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
-    <script src="{% static 'js/unpoly.js' %}"></script>
-    <script>
-        {% if DEBUG %}
-            up.log.disable()
-        {% endif %}
-        up.fragment.config.autoHistoryTargets.push(".searchresults-container")
-    </script>
+    <head>
+        <title>{% block pretitle %}{% endblock %}Griesheim Transparent{% block title %}{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load static %}
+        <meta property="og:title" content="Griesheim Transparent"/>
+        <meta property="og:description" content="Griesheim Transparent: Volltext Suche für Dokumente aus dem Griesheimer Ratsinfosystem."/>
+        <meta property="og:image" content="{% static 'sharepic.jpg' %}" />
+        <link rel="stylesheet" href="{% static 'css/tachyons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
+        <script src="{% static 'js/unpoly.js' %}"></script>
+        <script>
+            {% if DEBUG %}
+                up.log.disable()
+            {% endif %}
+            up.fragment.config.autoHistoryTargets.push(".searchresults-container")
+        </script>
+    </head>
     <body class="sans-serif bg-light-gray">
         <main>
             {% block content %}{% endblock %}

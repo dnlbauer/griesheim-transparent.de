@@ -124,6 +124,7 @@ div.searchresult-preview > img {
 }
 
 .highlight-text {
+    font-style: italic;
     overflow: hidden;
     text-overflow: ellipsis;
     /*-webkit-line-clamp: 3;*/

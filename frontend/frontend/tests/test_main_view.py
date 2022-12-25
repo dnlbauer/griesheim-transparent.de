@@ -3,8 +3,6 @@ from unittest.mock import patch
 
 from django.test import Client
 
-from solr import SearchResults
-
 
 class MainViewTest(unittest.TestCase):
     def setUp(self):
@@ -12,7 +10,7 @@ class MainViewTest(unittest.TestCase):
 
     @patch('frontend.views.solr')
     def test_main_view(self, solr_mock):
-        solr_mock.search.return_value = SearchResults([], [], 1, 1, 1337, 0)
+        solr_mock.count.return_value = 1337
         r = self.client.get("/")
 
         self.assertEqual(r.status_code, 200)

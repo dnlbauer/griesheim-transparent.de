@@ -12,21 +12,24 @@ from frontend.models.risdb import Document
 
 
 def get_preview_image_for_doc(document_id):
+    """ Perform a request against the external preview image service
+    to generate a preview thumbnail for the document """
     doc = Document.objects.get(document_id=int(document_id))
+
     url = f"{settings.PREVIEW_HOST}/preview/{settings.PREVIEW_RESOLUTION}"
-    session = requests.Session()
-    response = session.post(url, files=dict(file=doc.content_binary))
+    response = requests.post(url, files=dict(file=doc.content_binary))
+
     if response.status_code == 200:
-        response_content = response.content
-        response_content = base64.b64encode(response_content).decode('utf-8')
-        response_content = "data:image/jpeg;base64, " + response_content
-        return response_content
+        image_base64 = base64.b64encode(response.content).decode("utf-8")
+        return f"data:image/jpeg;base64, {image_base64}"
     else:
         print(f"Failed to generate preview image for document (id={document_id})")
         return None
 
 def analyze_document_tika(binary, ocr=False):
-    # create tempfile
+    """ Extract document text with tika or tesseract(ocr) """
+
+    # create tempfile from binary
     temp_file = tempfile.NamedTemporaryFile("wb", suffix=".pdf", delete=False)
     temp_file.write(binary)
     temp_file.close()
@@ -55,11 +58,14 @@ def analyze_document_tika(binary, ocr=False):
         os.unlink(temp_file.name)
 
 def analyze_document_pdfact(binary):
-    response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files=dict(file=binary))
+    """ Analyze document with pdfact and return the whole text """
 
-    if response.status_code != 200:
+    response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files=dict(file=binary))
+    if response.status_code != 200:  # something went wront
+        print("Failed to extract text using pdfact.")
         return None
 
+    # parse response
     json = response.json()
     snippets = []
     for paragraph in json["paragraphs"]:

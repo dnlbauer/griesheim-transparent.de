@@ -6,17 +6,18 @@ import pysolr
 from django.core.management import BaseCommand
 
 from frontend import settings
+from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
 from frontend.models.risdb import Document
-from frontend.utils import get_preview_image_for_doc, analyze_document_tika, analyze_document_pdfact
 
+# Force tika to use an external service
 tika.TikaClientOnly = True
 
 class Command(BaseCommand):
-    help = "Update solr from risdb"
+    help = "Update solr index from risdb"
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-    DEFAULT_CHUNK_SIZE = 10
-    VERSION = 2  # incr. if analyze chain changes
+    DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commiting
+    VERSION = 2  # incr. if analyze chain changes to force a full resync
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -29,15 +30,14 @@ class Command(BaseCommand):
                             help="allow ocr for documents (takes a long time)",
                             action="store_false")
 
-    def log(self, message):
+    def _log(self, message):
         self.stdout.write(message)
 
-    def _connect_solr(self):
-        solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
-        return solr
+    def _get_relevant_events(self, doc):
+        """ Returns a list of consultations, meetings, agenda_items relevant
+        for this document """
+        # find associated consultations, meetings, ..
 
-    def _to_solr(self, doc, tika_result, pdfact_result, preview_image):
-        # find corresponding consultation
         consultations = doc.consultations.all()
         consultation = None
         if len(consultations) > 1:
@@ -45,7 +45,6 @@ class Command(BaseCommand):
         elif len(consultations) == 1:
             consultation = consultations[0]
 
-        # find associated meetings and agenda items
         meetings = set(doc.meetings.all())
         agenda_items = set(doc.agenda_items.all())
 
@@ -58,11 +57,14 @@ class Command(BaseCommand):
             for item in consultation_meetings:
                 meetings.add(item)
 
-        # create document
+        return consultation, meetings, agenda_items
+
+
+    def _parse_solr_document(self, doc, tika_result, pdfact_result, preview_image):
         solr_doc = dict(
+            id=str(doc.id),
             version=self.VERSION,
             last_analyzed=datetime.now().strftime(self.DATE_FORMAT),
-            id=str(doc.id),
             document_id=doc.document_id,
             size=doc.size,
             content_type=doc.content_type,
@@ -80,6 +82,9 @@ class Command(BaseCommand):
             content=[]
         )
 
+        # include data from associated events
+        consultation, meetings, agenda_items = self._get_relevant_events(doc)
+
         if consultation is not None:
             solr_doc["consultation_id"] = consultation.consultation_id
             solr_doc["consultation_name"] = consultation.name
@@ -89,40 +94,41 @@ class Command(BaseCommand):
             solr_doc['doc_type'] = consultation.type
 
         for agenda_item in agenda_items:
-            if agenda_item.agenda_item_id not in solr_doc['agenda_item_id']:
-                solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
-                solr_doc['agenda_item_title'].append(agenda_item.title.split(":")[-1].strip())
-                solr_doc['agenda_item_text'].append(agenda_item.text)
+            solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
+            solr_doc['agenda_item_title'].append(agenda_item.title.split(":")[-1].strip())
+            solr_doc['agenda_item_text'].append(agenda_item.text)
 
         for meeting in meetings:
-            if meeting.meeting_id not in solr_doc['meeting_id']:
-                solr_doc['meeting_id'].append(meeting.meeting_id)
-                solr_doc['meeting_title'].append(meeting.title)
-                solr_doc['meeting_title_short'].append(meeting.title_short)
-                solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
-                solr_doc['meeting_organization_name'].append(meeting.organization.name)
-                if "last_seen" not in solr_doc or datetime.strptime(solr_doc['last_seen'], self.DATE_FORMAT) < meeting.date:
-                    solr_doc['last_seen'] = solr_doc['meeting_date'][-1]
-                if "first_seen" not in solr_doc or datetime.strptime(solr_doc['first_seen'], self.DATE_FORMAT) > meeting.date:
-                    solr_doc['first_seen'] = solr_doc['meeting_date'][-1]
+            solr_doc['meeting_id'].append(meeting.meeting_id)
+            solr_doc['meeting_title'].append(meeting.title)
+            solr_doc['meeting_title_short'].append(meeting.title_short)
+            solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
+            solr_doc['meeting_organization_name'].append(meeting.organization.name)
+            if "last_seen" not in solr_doc or datetime.strptime(solr_doc['last_seen'], self.DATE_FORMAT) < meeting.date:
+                solr_doc['last_seen'] = solr_doc['meeting_date'][-1]
+            if "first_seen" not in solr_doc or datetime.strptime(solr_doc['first_seen'], self.DATE_FORMAT) > meeting.date:
+                solr_doc['first_seen'] = solr_doc['meeting_date'][-1]
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
+        # add content strings from tika/pdfact
         def clean_string(s):
             return re.sub(r"\s+", " ", s).strip()
 
-        def get_metadata(metadata, fields):
-            for i in fields:
-                if i in metadata:
-                    return metadata[i]
-
-        # get content from pdfact or tika
+        # pdfact has data nicely seperated into chunks.
+        # prefered over unordered tika content
         if pdfact_result is not None:
             solr_doc["content"] = [clean_string(s) for s in pdfact_result]
         elif tika_result is not None and "content" in tika_result and tika_result["content"]:
             solr_doc["content"] = [tika_result["content"]]
 
+
         # parse metadata from tika
+        def get_metadata(metadata, fields):
+            for i in fields:
+                if i in metadata:
+                    return metadata[i]
+
         if tika_result is not None:
             metadata = tika_result["metadata"]
             author = get_metadata(metadata,  ["Author", "creator", "dc:creator", "meta:author", "pdf:docinfo:creator"])
@@ -141,11 +147,11 @@ class Command(BaseCommand):
             if last_save_date is not None:
                 solr_doc['last_saved'] = last_save_date
 
-        # Niederschrift recognized by keyword "Niederschrift" in content or title
+
+        # Niederschrift type recognized by keyword "Niederschrift" title
         if 'doc_type' not in solr_doc or solr_doc['doc_type'] is None:
             if "niederschrift" in doc.title.lower():
                 solr_doc['doc_type'] = "Niederschrift"
-
 
         return solr_doc
 
@@ -162,25 +168,25 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        # get arguments
+        # get command arguments
         chunk_size = self.DEFAULT_CHUNK_SIZE
         if options['chunk_size']:
             chunk_size = options['chunk_size']
         force = options["force"]
         ocr = options["no_ocr"]
 
-        self.log(f"Processing {Document.objects.all().count()} documents...")
+        self._log(f"Processing {Document.objects.all().count()} documents...")
         processed = 0
         updated = 0
 
-        solr = self._connect_solr()
+        solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         solr_docs = []
 
-        # get all document ids to process and filter out up-to-date documents
+        # filter document ids for outdated documents
         document_ids = Document.objects.values_list("id", flat=True)
-        document_ids = [id for id in document_ids if force or self._is_solr_doc_outdated(solr, id)]
+        document_ids = [i for i in document_ids if force or self._is_solr_doc_outdated(solr, id)]
         total = len(document_ids)
-        self.log(f"Outdated documents: {total}")
+        self._log(f"Outdated documents: {total}")
 
         for document_id in document_ids:
             document = Document.objects.get(id=document_id)
@@ -188,43 +194,45 @@ class Command(BaseCommand):
 
             # filter non-pdfs
             if not document.content_type.lower().endswith("pdf"):
-                self.log(f"Skipped {document.file_name} (no pdf) ({str(document.id)})")
+                self._log(f"Skipped {document.file_name} (no pdf) ({str(document.id)})")
                 continue
 
-            self.log(f"Processing {document.file_name} ({str(document.id)})")
+            self._log(f"Processing {document.file_name} ({str(document.id)})")
 
             # analyze document with tika
-            self.log("Sending document to tika")
+            self._log("Sending document to tika")
             tika_result = analyze_document_tika(document.content_binary, False)
 
-            # Only run OCR/tesseract if there is no content from tika w/o ocr
+            # Run OCR/tesseract if there is no content from tika without ocr
             if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
-                self.log("Sending document to tika/ocr")
+                self._log("Sending document to tika/ocr")
                 tika_result = analyze_document_tika(document.content_binary, True)
 
             # run pdfact
-            self.log("Sending document to pdfact")
+            self._log("Sending document to pdfact")
             pdfact_result = analyze_document_pdfact(document.content_binary)
 
-            # get preview image
-            self.log("Sending document to preview service")
+            # get preview thumbnail
+            self._log("Sending document to preview service")
             preview_image = get_preview_image_for_doc(document.document_id)
 
             # generate solr document from data
-            self.log("Creating solr document")
-            solr_doc = self._to_solr(document, tika_result, pdfact_result, preview_image)
+            self._log("Creating solr document")
+            solr_doc = self._parse_solr_document(document, tika_result, pdfact_result, preview_image)
             solr_docs.append(solr_doc)
 
             # write chunks to solr
             if len(solr_docs) >= chunk_size:
                 solr.add(solr_docs, commit=True)
                 updated += len(solr_docs)
-                self.log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+                self._log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr_docs = []
 
+        # commit last incomplete chunk
         solr.add(solr_docs, commit=True)
         updated += len(solr_docs)
-        self.log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-        self.log(f"{processed} documents processed ({updated} updated).")
+        self._log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+
+        self._log(f"{processed} documents processed ({updated} updated).")
 
 

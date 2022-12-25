@@ -8,7 +8,7 @@ import requests
 from django.conf import settings
 from tika import parser
 
-from frontend.risdb.models import Document
+from frontend.models.risdb import Document
 
 
 def get_preview_image_for_doc(document_id):

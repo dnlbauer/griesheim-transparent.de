@@ -6,7 +6,7 @@ import pysolr
 from django.core.management import BaseCommand
 
 from frontend import settings
-from frontend.risdb.models import Document
+from frontend.models.risdb import Document
 from frontend.utils import get_preview_image_for_doc, analyze_document_tika, analyze_document_pdfact
 
 tika.TikaClientOnly = True

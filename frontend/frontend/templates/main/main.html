@@ -5,18 +5,7 @@
     <div class="vh-50 dt w-100"
          style="background-image: url({% static 'header_25.webp' %}); background-position: bottom; background-repeat: no-repeat; background-size: cover; ">
         <h1 class="f1-l f2 dtc v-btm tc white-90 pb6 text-shadow">Griesheimer Politik, durchsuchbar.
-            <a class="f3 fa-solid fa-circle-question v-top white grow pointer main-color no-underline" href="/faq" ></a>
-            <script>
-                if (window.matchMedia("(min-width: 60em)").matches) {
-                    link = up.element.subtree(up.element.get("h1"), "a")[0]
-                    up.element.setAttrs(link, {
-                        "up-history": "false",
-                        "up-size": "large",
-                        "up-layer": "new popup",
-                        "up-class": "modal"
-                    })
-                }
-            </script>
+            <a class="f3 fa-solid fa-circle-question v-top white grow pointer main-color no-underline" href="/about" ></a>
         </h1>
     </div>
     <div class="vh-25 w-100 dt bg-main-color">
@@ -33,7 +22,7 @@
     {% include 'main/newest.html' %}
     <div class="footer pa3 bg-main-color">
         <a href="/impressum" class="f6" >Impressum & Datenschutz</a>
-        <a href="/faq" class="ml3 f6" >Warum gibt es das?</a>
+        <a href="/about" class="ml3 f6" >Warum gibt es das?</a>
     </div>
 
 {% endblock %}

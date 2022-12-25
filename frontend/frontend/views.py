@@ -12,18 +12,16 @@ from django.shortcuts import render, redirect
 from frontend import settings
 from frontend import solr
 from .models import Query
-from .solr import suggest, SortOrder
 
 logger = logging.getLogger(__name__)
 
-
-def base_context():
-    return {
-        "DEBUG": settings.DEBUG
-    }
+BASE_CONTEXT = {
+    "DEBUG": settings.DEBUG  # config js debugging
+}
 
 
-def parse_page(request, default=1):
+def _parse_parge(request, default=1):
+    """ The requested page. Defaults to first page is no or an invalid page is requested"""
     page = request.GET.get("page", default)
     if type(page) != int and not page.isnumeric():
         return default
@@ -35,7 +33,8 @@ def parse_page(request, default=1):
             return page
 
 
-def is_auth(request):
+def _is_authenticated_su(request):
+    """ True if the user is an authenticatd superuser"""
     if "HTTP_AUTHORIZATION" in request.META:
         auth = request.META["HTTP_AUTHORIZATION"].split()
         if len(auth) == 2 and auth[0] == "Basic":
@@ -45,9 +44,15 @@ def is_auth(request):
     return False
 
 
+
 update_proc = None
 def update(request):
-    if is_auth(request):
+    """ Triggers async update of the solar index (runs update_solr management task.
+    Therefore, a new process is started and the view returnes immediatly.
+    If the update process is already running, it gets killed and a new one
+    is started """
+
+    if _is_authenticated_su(request):
         global update_proc
         # check if update process is already running, kill it if yes
         if update_proc is not None and update_proc.is_alive():
@@ -67,19 +72,23 @@ def update(request):
 
 
 class MainView(TemplateView):
+    """ Landing page """
     template_name = "main/main.html"
-    autofocus = True
+    autofocus = True  # Focus on search input field?
 
     def get(self, request, **kwargs):
-        context = base_context()
+        context = BASE_CONTEXT
 
+        # parse query parameters
         query = request.GET.get("query", None)
         sort = solr.SortOrder(request.GET.get("sort", "relevance"))
         doc_type = request.GET.get("doc_type", "*")
         organization = request.GET.get("organization", "*")
-        page = parse_page(request, 1)
+        page = _parse_parge(request, 1)
+
+        # perform solr query
         if query is not None:
-            Query(query=query).save()
+            Query(query=query).save()  # Query log
             result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
         else:
             context['num_docs'] = solr.count("*:*")
@@ -95,17 +104,21 @@ class MainView(TemplateView):
 
 
 class SearchView(MainView):
+    """ Search results page """
     template_name = "search/search.html"
-    autofocus = False
+    autofocus = False  # no autofocus on search
 
     def get(self, request, **kwargs):
         query = request.GET.get("query", None)
+
+        # redirect to landing page if nothing was searched
         if query is None or len(query) == 0:
             return redirect("main")
         else:
             return super().get(request, **kwargs)
 
 class SuggestView(TemplateView):
+    """ Handler for search suggestions """
     template_name = "components/suggestions.html"
 
     def get(self, request, **kwargs):
@@ -113,9 +126,11 @@ class SuggestView(TemplateView):
         if query is None:
             suggestions = []
         else:
-            suggestions = suggest(query)
-        status = 200
-        if (len(suggestions) == 0):
-            status = 404
-        return render(request, self.template_name, context={"suggestions": suggestions}, status=status)
+            suggestions = solr.suggest(query)
 
+        if (len(suggestions) > 0):
+            status = 200
+        else:
+            status = 404
+
+        return render(request, self.template_name, context={"suggestions": suggestions}, status=status)

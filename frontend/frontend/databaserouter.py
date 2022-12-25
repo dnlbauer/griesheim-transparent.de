@@ -19,16 +19,16 @@ class DatabaseRouter:
             return self.RIS_DB
         return self.DEFAULT_DB
 
-    def db_for_read(self, model):
+    def db_for_read(self, model, **hints):
         return self._route(model)
 
-    def db_for_write(self, model):
+    def db_for_write(self, model, **hints):
         return self._route(model)
 
-    def allow_relation(self, obj1, obj2):
+    def allow_relation(self, obj1, obj2, **hints):
         # allow relations between objects in the same database
         return self._is_risdb_model(obj1) == self._is_risdb_model(obj2)
 
-    def allow_migrate(self, db, app_label, model_name=None):
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
         # no migrations in risdb. db is handled by the scraper
         return db != self.RIS_DB

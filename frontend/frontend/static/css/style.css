@@ -23,6 +23,11 @@ a {
     color: var(--secondary-color)
 }
 
+a.no-decoration {
+    text-decoration: none;
+    color: unset;
+}
+
 div.searchresult-head > a {
     text-decoration: none;
     color: inherit
@@ -56,7 +61,6 @@ div.searchresult-preview > img {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
 
 .overflow2 {
     display: -webkit-box;

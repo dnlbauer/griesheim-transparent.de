@@ -1,6 +1,7 @@
 <div class="facets mb3 flex flex-wrap f5-l f6">
+    <div class="nowrap overflow-x-auto">
     {% if result.facets.doc_type %}
-        <select class="facet bn pa2 mr3 mw5" name="doc_type" form="search" up-autosubmit>
+        <select class="bg-light-gray facet bn pa2 mr3 mw5" name="doc_type" form="search" up-autosubmit>
             <option value="*">Beliebiges Dokument</option>
             {% for field in result.facets.doc_type %}
                 <option {% if doc_type == field.0 %}selected{% endif %} value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
@@ -9,7 +10,7 @@
     {% endif %}
 
     {% if result.facets.organization %}
-        <select class="facet bn pa2 mr3 mw5" name="organization" form="search" up-autosubmit>
+        <select class="bg-light-gray facet bn pa2 mr3 mw5" name="organization" form="search" up-autosubmit>
             <option value="*">Beliebiges Gremium</option>
             {% for field in result.facets.organization %}
                 <option {% if organization == field.0 %}selected{% endif %} value="{{ field.0 }}">{{ field.0 }} ({{ field.1 }})</option>
@@ -17,8 +18,9 @@
         </select>
     {% endif %}
 
-    <select class="facet bn pa2 mr3 mw5" name="sort" form="search" up-autosubmit>
+    <select class="bg-light-gray facet bn pa2 mr3 mw5" name="sort" form="search" up-autosubmit>
         <option {% if sort == "relevance" %}selected{% endif %} value="relevance">Sortierung: Relevanz</option>
         <option {% if sort == "date" %}selected{% endif %} value="date">Sortierung: Datum</option>
     </select>
+    </div>
 </div>

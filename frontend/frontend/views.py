@@ -10,8 +10,8 @@ from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 
 from frontend import settings
-from frontend import solr
 from .models import Query
+from .search import solr
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class MainView(TemplateView):
             result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
         else:
             context['num_docs'] = solr.count("*:*")
-            result = solr.newest("*:*", limit=5)
+            result = solr.doc_id("*:*", limit=5)
 
         context['query'] = query
         context['organization'] = organization

@@ -1,71 +1,34 @@
 from datetime import datetime
 from enum import Enum
-import math
-from frontend import settings
-import pysolr
 
+from frontend.search import SearchResult, SearchResults
+from frontend.search.utils import pairwise, solr_page, solr_connection
 
-def pairwise(iterable):
-    return list(zip(iterable[0::2], iterable[1::2]))
-
-
-class SortOrder(Enum):
-    relevance = "relevance"
-    date = "date"
-
-
-class SearchResult:
-    def __init__(self, id, document_id, title, highlight, link, download_link,
-                 doc_type, short_name, date, preview_image):
-        self.id = id
-        self.document_id = document_id
-        self.title = title
-        self.highlight = highlight
-        self.link = link
-        self.download_link = download_link
-        self.doc_type = doc_type
-        self.short_name = short_name
-        self.date = date
-        self.preview_image = preview_image
-
-
-class SearchResults:
-    def __init__(self, documents, facets, page, rows, hits, qtime):
-        self.documents = documents
-        self.facets = facets
-        self.page = page
-        self.max_page = math.ceil(hits/rows)
-        self.hits = hits
-        self.qtime = qtime
-
-    def __iter__(self):
-        return iter(self.documents)
-
-    def __len__(self):
-        return len(self.documents)
-
-    @property
-    def has_previous(self):
-        return self.page > 1
-
-    @property
-    def has_next(self):
-        return self.page < self.max_page
-
-
+# default number of documents to return
 NUM_ROWS = 10
-FACET_FIELDS = {
-    "doc_type": "doc_type",
-    "organization": "meeting_organization_name_s"
-}
 
+# settings to pass to solr
 SOLR_ARGS = {
     "search_handler": "/select",
     "fl": "id,first_seen,preview_image"
 }
 
-# order matters for highlight! Only using the hl with highest prio
-HL_FIELDS = "doc_title consultation_topic consultation_text content_hp content content_hr"
+# facet specific settings
+FACET_FIELDS = {
+    "doc_type": "doc_type",
+    "organization": "meeting_organization_name_s"
+}
+
+FACET_ARGS = {
+    "facet": "true",
+    "facet.field": ["{!ex=facetignore}" + i for i in FACET_FIELDS.values()],
+    "facet.missing": "false",
+    "facet.sort": "count",
+    "facet.mincount": 1
+}
+
+# highlighting
+HL_FIELDS = "doc_title consultation_topic consultation_text content_hp content content_hr"  # order matters!
 HL_MAX_SNIPPETS = 3
 
 HL_ARGS = {
@@ -87,6 +50,7 @@ HL_ARGS = {
     "hl.requireFieldMatch": "true"
 }
 
+# highlighting for landing page
 HL_NEWEST_ARGS = {
     "hl": "true",
     "hl.encoder": "html",
@@ -99,21 +63,15 @@ HL_NEWEST_ARGS = {
     "hl.defaultSummary": "true",
 }
 
-FACET_ARGS = {
-    "facet": "true",
-    "facet.field": ["{!ex=facetignore}" + i for i in FACET_FIELDS.values()],
-    "facet.missing": "false",
-    "facet.sort": "count",
-    "facet.mincount": 1
-}
 
 
-def solr_connection(handler='/select'):
-    return pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}", search_handler=handler)
+class SortOrder(Enum):
+    relevance = "relevance"
+    date = "date"
 
 
 def _parse_highlights(highlights, max_len, separator=" "):
-    # remote empty highlights
+    # remove empty string highlights
     for key in highlights:
         non_empty = [hl for hl in highlights[key] if hl.strip()]
         if len(non_empty) > 0:
@@ -121,6 +79,8 @@ def _parse_highlights(highlights, max_len, separator=" "):
         else:
             del highlights[key]
 
+    # concatenate highlights into a single string with max_len
+    # as a soft limit (stopping once max_len is exceeded)
     def highlight2str(highlights):
         hl = ""
         for field in HL_FIELDS.split(" "):
@@ -135,10 +95,10 @@ def _parse_highlights(highlights, max_len, separator=" "):
                     if len(hl) > max_len:
                         return hl
         return hl
-
     hl = highlight2str(highlights)
 
     if hl:
+        # append the seperator if the sentence is not finished
         if not hl.strip().endswith("."):
             hl += separator.rstrip()
         return hl
@@ -165,6 +125,7 @@ def _parse_search_result(doc, response):
     else:
         doc_type = "Anlage"
 
+    # result title depends on the document type.
     title = None
     if doc_type:
         if doc_type in ["Antragsvorlage", "Beschlussvorlage", "Informationsvorlage"] and len(doc["consultation_topic"]) != 0:
@@ -177,7 +138,8 @@ def _parse_search_result(doc, response):
         elif "content" in doc:
             title = doc['content'][:100] + "..."
 
-    if "last_seen" in doc:
+    # doc date is set to the first time we found an event associated with this doc
+    if "first_seen" in doc:
         date = doc['first_seen']
         date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     else:
@@ -206,14 +168,9 @@ def _parse_search_result(doc, response):
         preview_image
     )
 
-
-def solr_page(page_number, rows_per_page):
-    start = page_number * rows_per_page
-    return {
-        "rows": rows_per_page,
-        "start": start
-    }
-
+SUGGEST_ARGS = {
+    "suggest": "true",
+}
 
 def _parse_facets(facets):
     parsed_results = {}
@@ -225,35 +182,50 @@ def _parse_facets(facets):
     return parsed_results
 
 def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet):
+    """ parses the set of solr arguments to a single dictionary matching the query """
     args = dict(SOLR_ARGS)
+
+    # sort order
     if sort == SortOrder.date:
         args['sort'] = "first_seen desc"
     else:
         args['sort'] = "score desc"
+
+    # filter documents based on selected facets
     fq = list(filter(lambda fq: fq[-2] != "*", map(lambda name: "{!tag=facetignore}"f"{FACET_FIELDS[name]}:\"{facet_filter[name]}\"", facet_filter.keys())))
     if len(fq) > 0:
         args['fq'] = fq
 
+    # highlighting
     if hl:
         args |= HL_ARGS
     else:
         args['hl'] = 'false'
+
+    # faceting
     if facet:
         args |= FACET_ARGS
         args['facet.query'] = query
+
+    # rows / paging
     if limit is not None:
         args['rows'] = int(limit)
     else:
         args['rows'] = NUM_ROWS
     args |= solr_page(page-1, args['rows'])
+
     return args
 
 def count(query, solr_conn=solr_connection()):
+    """ get a count of documents matching the query """
     result = solr_conn.search(query, rows=0)
     return result.hits
 
 
-def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter={}, hl=True, facet=True, solr_conn=solr_connection()):
+def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter=None, hl=True, facet=True, solr_conn=solr_connection()):
+    """ perform a search request """
+    if facet_filter is None:
+        facet_filter = {}
     args = _create_solr_args(query, page, sort, limit, facet_filter, hl, facet)
     result = solr_conn.search(query, **args)
 
@@ -263,7 +235,8 @@ def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter={},
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
 
 # same as `search` but fills highlight with content
-def newest(query="*:*", limit=5, solr_conn=solr_connection()):
+def doc_id(query="*:*", limit=5, solr_conn=solr_connection()):
+    """ Search for newest documents for this query. Defaults to all documents """
     page = 1
 
     args = _create_solr_args(query, page, SortOrder.date, limit, {}, False, False)
@@ -280,10 +253,8 @@ def newest(query="*:*", limit=5, solr_conn=solr_connection()):
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
 
 def suggest(query, solr_conn=solr_connection('/suggest')):
-    PARAMS = {
-        "suggest": "true",
-    }
-    response = solr_conn.search(query, **PARAMS)
+    """ Get search suggestions for the given query """
+    response = solr_conn.search(query, **SUGGEST_ARGS)
     suggestions = response.raw_response['suggest']['default'][query]['suggestions']
     return list(map(lambda s: s['term'], suggestions))
 

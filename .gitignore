@@ -166,3 +166,4 @@ deployment/data
 test
 
 deployment/secrets
+dump.sql

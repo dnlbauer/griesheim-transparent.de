@@ -72,7 +72,29 @@
     <copyField source="meeting_title" dest="suggest_text" />
     <copyField source="meeting_organization_name" dest="suggest_text" />
 
+    <field name="spellcheck" type="spellcheck" stored="false" multiValued="true" />
+    <copyField source="doc_title" dest="spellcheck" />
+    <copyField source="content" dest="spellcheck" />
+    <copyField source="consultation_name" dest="spellcheck" />
+    <copyField source="consultation_topic" dest="spellcheck" />
+    <copyField source="consultation_text" dest="spellcheck" />
+    <copyField source="agenda_item_title" dest="spellcheck" />
+    <copyField source="agenda_item_text" dest="spellcheck" />
+    <copyField source="meeting_organization_name" dest="spellcheck" />
+
     <uniqueKey>id</uniqueKey>
+
+    <fieldType name="spellcheck" class="solr.TextField" positionIncrementGap="100">
+        <analyzer>
+            <!-- Split at whitespace -->
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <!-- Remove word hyphens; Hyph-enated=>Hyphenated -->
+            <filter class="solr.PatternReplaceFilterFactory" pattern="(?:^[¿'`´“”&quot;‚„\(\[\{]+|[\.,;:\!\?'`´“”&quot;\)\}\]]+$)" replacement=""/>
+            <filter class="solr.HyphenatedWordsFilterFactory"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+        </analyzer>
+    </fieldType>
 
     <fieldType name="suggester" class="solr.TextField" positionIncrementGap="100">
         <analyzer type="index">

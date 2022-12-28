@@ -18,7 +18,14 @@
             <div class="w-80-l pa3 searchresults-container">
                 {% include "search/facets.html" %}
 
-                <small class="f5-l f6"><em>{{ result.hits }} Ergebnisse gefunden ({{ result.qtime }} ms)</em></small>
+                <small class="f5-l f6"><em>{{ result.hits }} Ergebnisse gefunden ({{ result.qtime }} ms).</em></small>
+                {% if result.spellcheck_suggested_query %}
+                    <small class="f5-l f6"><em>
+                        Meintest du vielleicht:
+                        <a href="/search?query={{ result.spellcheck_suggested_query|urlencode }}"><strong>{{ result.spellcheck_suggested_query|capfirst }}</strong></a>
+                        ({{ result.spellcheck_suggested_query_hits }} Ergebnisse)?
+                        </em></small>
+                {% endif %}
                 {% include "search/results.html" %}
 
                 {% if result.has_previous or result.has_next  %}

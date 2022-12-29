@@ -1,4 +1,4 @@
-version: '3.8'
+olrersion: '3.8'
 
 services:
   frontend: &frontend
@@ -94,7 +94,7 @@ services:
     ports:
       - ${SOLR_PORT}:8983
     volumes:
-      - solr_data://var/solr
+      - solr_data:/var/solr
     networks:
       - griesheimtransparent
     restart: ${RESTART_RULE}

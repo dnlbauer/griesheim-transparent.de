@@ -1,4 +1,4 @@
-FROM solr:9.0.0
+FROM solr:9.1
 
 # add configset to image
 COPY configsets/ris /ris_config

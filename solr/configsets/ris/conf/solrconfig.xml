@@ -733,7 +733,22 @@
       <str name="bf">
         recip(ms(NOW,last_seen),1.2674271e-10,1,1)
       </str>
+      <!-- setting spellcheck and maxCollationTries on the default handler
+      breaks core reloading. therefore, spellcheck is disabled in default -->
+      <str name="spellcheck">false</str>
+      <str name="spellcheck.dictionary">indexSpellChecker</str>
+      <str name="spellcheck.extendedResults">true</str>
+      <str name="spellcheck.count">10</str>
+      <str name="spellcheck.alternativeTermCount">5</str>
+      <str name="spellcheck.maxResultsForSuggest">5</str>
+      <str name="spellcheck.collate">true</str>
+      <str name="spellcheck.collateExtendedResults">true</str>
+      <str name="spellcheck.maxCollations">5</str>
+      <str name="spellcheck.maxCollationTries">10</str>
     </lst>
+    <arr name="last-components">
+        <str>spellcheck</str>
+    </arr>
     <lst name="invariants">
       <str name="echoParams">explicit</str>
       <str name="defType">edismax</str>
@@ -782,6 +797,36 @@
       <str name="df">content</str>
     </lst>
   </initParams>
+
+  <!-- Spell checking -->
+  <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
+      <str name="queryAnalyzerFieldType">spellcheck</str>
+      <!-- Simple index based spell checker -->
+      <lst name="spellchecker">
+          <str name="name">indexSpellChecker</str>
+          <str name="classname">solr.DirectSolrSpellChecker</str>
+          <str name="field">spellcheck</str>
+          <float name="accuracy">0.5</float>
+          <int name="maxEdits">2</int>
+          <int name="minPrefix">1</int>
+          <int name="maxInspections">5</int>
+          <int name="minQueryLength">4</int>
+          <int name="maxQueryLength">40</int>
+          <float name="maxQueryFrequency">0.01</float>
+          <float name="thresholdTokenFrequency">.01</float>
+      </lst>
+
+      <!-- Index based spell checker with word breaks -->
+      <lst name="spellchecker">
+          <str name="name">wordbreakSpellChecker</str>
+          <str name="field">spellcheck</str>
+          <str name="classname">solr.WordBreakSolrSpellChecker</str>
+          <str name="combineWords">true</str>
+          <str name="breakWords">true</str>
+          <int name="maxChanges">10</int>
+          <int name="minBreakLength">3</int>
+      </lst>
+  </searchComponent>
 
   <!-- The SuggestComponent in Solr provides users with automatic suggestions for query terms.
        You can use this to implement a powerful auto-suggest feature in your search application.

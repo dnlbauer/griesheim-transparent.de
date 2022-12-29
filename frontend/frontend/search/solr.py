@@ -63,6 +63,14 @@ HL_NEWEST_ARGS = {
     "hl.defaultSummary": "true",
 }
 
+# spellchecking arguments
+SPELLCHECK_ARGS = {
+    "spellcheck": "true",
+    "spellcheck.extendedResults": "true",  # required for correctlySpelled field
+    "spellcheck.onlyMorePopular": "true",
+    "spellcheck.count": 1,
+    "spellcheck.maxResultsForSuggest": 5,
+}
 
 
 class SortOrder(Enum):
@@ -186,7 +194,18 @@ def _parse_facets(facets):
                 parsed_results[name] = pairwise(facets['facet_fields'][field_name])
     return parsed_results
 
-def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet):
+def _parse_spellcheck(result):
+    """ parse spell checks and returns the best suggestion query string and number of hits
+    Returns the suggested query term and expected hits for this query """
+    if result.spellcheck is not None and not result.spellcheck["correctlySpelled"]:
+        spellcheck = result.spellcheck
+        collations = spellcheck["collations"][1::2]  # every second element
+        collation_queries = [(collation["collationQuery"], collation["hits"]) for collation in collations]
+        if len(collation_queries) > 0 and collation_queries[0][1] > result.hits:
+            return collation_queries[0]
+    return None, None
+
+def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellcheck):
     """ parses the set of solr arguments to a single dictionary matching the query """
     args = dict(SOLR_ARGS)
 
@@ -212,6 +231,12 @@ def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet):
         args |= FACET_ARGS
         args['facet.query'] = query
 
+    if spellcheck:
+        args |= SPELLCHECK_ARGS
+        args["spellcheck.q"] = query
+    else:
+        args["spellcheck"] = "false"
+
     # rows / paging
     if limit is not None:
         args['rows'] = int(limit)
@@ -227,24 +252,27 @@ def count(query, solr_conn=solr_connection()):
     return result.hits
 
 
-def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter=None, hl=True, facet=True, solr_conn=solr_connection()):
+def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter=None, hl=True, facet=True, spellcheck=True, solr_conn=solr_connection()):
     """ perform a search request """
     if facet_filter is None:
         facet_filter = {}
-    args = _create_solr_args(query, page, sort, limit, facet_filter, hl, facet)
+
+    args = _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellcheck)
     result = solr_conn.search(query, **args)
 
     documents = [_parse_search_result(doc, result) for doc in result.docs]
     facets = _parse_facets(result.facets)
 
-    return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
+    spellcheck_query, spellcheck_hits = _parse_spellcheck(result)
+
+    return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime, spellcheck_query, spellcheck_hits)
 
 # same as `search` but fills highlight with content
 def doc_id(query="*:*", limit=5, solr_conn=solr_connection()):
     """ Search for newest documents for this query. Defaults to all documents """
     page = 1
 
-    args = _create_solr_args(query, page, SortOrder.date, limit, {}, False, False)
+    args = _create_solr_args(query, page, SortOrder.date, limit, {}, False, False, False)
     args |= HL_NEWEST_ARGS  # set HL to get an extraction of the content
 
     result = solr_conn.search(query, **args)

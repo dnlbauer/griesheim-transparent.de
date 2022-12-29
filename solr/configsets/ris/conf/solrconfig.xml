@@ -765,6 +765,7 @@
 
         consultation_id^10
         consultation_name^10
+        consultation_organization^5
         consultation_topic^3 consultation_topic_hp^3.6 consultation_topic_hr^0.8
         consultation_text^2 consultation_text^2.4 consultation_text_hr^0.8
         consultation_type^10

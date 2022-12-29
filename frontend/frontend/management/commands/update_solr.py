@@ -7,7 +7,7 @@ from django.core.management import BaseCommand
 
 from frontend import settings
 from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
-from frontend.models.risdb import Document
+from frontend.models.risdb import Document, Organization
 
 # Force tika to use an external service
 tika.TikaClientOnly = True
@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commiting
-    VERSION = 2  # incr. if analyze chain changes to force a full resync
+    VERSION = 3  # incr. if analyze chain changes to force a full resync
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -88,10 +88,20 @@ class Command(BaseCommand):
         if consultation is not None:
             solr_doc["consultation_id"] = consultation.consultation_id
             solr_doc["consultation_name"] = consultation.name
-            solr_doc["consultation_topic"] = consultation.topic
             solr_doc["consultation_type"] = consultation.type
             solr_doc["consultation_text"] = consultation.text
             solr_doc['doc_type'] = consultation.type
+
+            # find antragssteller for consultations
+            found = re.search(r'\"?(.*)\"?,?\s(Gemeinsamer\s)?Antrag (der|des) (.*)', consultation.topic)
+            if found:
+                title, organizations = found.group(1), found.group(4)
+                solr_doc["consultation_topic"] = title
+                organizations = self._parse_consultation_organization(organizations)
+                solr_doc["consultation_organization"] = organizations
+            else:
+                solr_doc["consultation_topic"] = consultation.topic
+
 
         for agenda_item in agenda_items:
             solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
@@ -154,6 +164,31 @@ class Command(BaseCommand):
                 solr_doc['doc_type'] = "Niederschrift"
 
         return solr_doc
+
+    def _parse_consultation_organization(self, organizations):
+        # SPD-Fraktion -> SPD
+        # Fraktionen CDU, SPD und B90/Die Grünen -> CDU, SPD, B90/Die Grünen
+        organizations = re.sub(r'\-?Fraktion(en)?\s*', "", organizations).replace(" und ", ", ")
+        organizations = [org.strip() for org in organizations.split(",")]
+        replacements = [
+            (r"Bürgermeister.*", "Bürgermeister"),
+            (r".*Grüne.*", "B90/Grüne"),
+            (r"Seniorenbeirat.*", "Seniorenbeirat"),
+            (r"Ausländerbeirat.*", "Ausländerbeirat"),
+            (r"Stadtverwaltung.*", "Stadtverwaltung Griesheim"),
+
+        ]
+        for replacement in replacements:
+            organizations = [re.sub(*replacement, org) for org in organizations]
+
+        checked_organizations = []
+        for org in organizations:
+            if Organization.objects.filter(name=org).count() == 1:
+                checked_organizations.append(org)
+            else:
+                print("!! Invalid organization skipped: {org} !!")
+        return checked_organizations
+
 
     def _is_solr_doc_outdated(self, solr, doc_id):
         result = solr.search(f"id:{doc_id}", **{"rows": 2147483647, "fl": "version,last_analyzed"})
@@ -223,15 +258,15 @@ class Command(BaseCommand):
 
             # write chunks to solr
             if len(solr_docs) >= chunk_size:
+                self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr.add(solr_docs, commit=True)
                 updated += len(solr_docs)
-                self._log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr_docs = []
 
         # commit last incomplete chunk
         solr.add(solr_docs, commit=True)
         updated += len(solr_docs)
-        self._log(f"Submitted {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+        self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
 
         self._log(f"{processed} documents processed ({updated} updated).")
 

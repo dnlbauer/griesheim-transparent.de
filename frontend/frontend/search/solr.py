@@ -10,7 +10,7 @@ NUM_ROWS = 10
 # settings to pass to solr
 SOLR_ARGS = {
     "search_handler": "/select",
-    "fl": "id,first_seen,preview_image"
+    "fl": "id,first_seen,preview_image,consultation_organization"
 }
 
 # facet specific settings
@@ -146,6 +146,10 @@ def _parse_search_result(doc, response):
         elif "content" in doc:
             title = doc['content'][:100] + "..."
 
+    organization = None
+    if "consultation_organization" in doc:
+        organization = doc["consultation_organization"]
+
     # doc date is set to the first time we found an event associated with this doc
     if "first_seen" in doc:
         date = doc['first_seen']
@@ -167,6 +171,7 @@ def _parse_search_result(doc, response):
         id,
         document_id,
         title,
+        organization,
         hl,
         link,
         download_link,

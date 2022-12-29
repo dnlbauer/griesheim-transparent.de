@@ -1,11 +1,12 @@
 import math
 
 class SearchResult:
-    def __init__(self, id, document_id, title, highlight, link, download_link,
+    def __init__(self, id, document_id, title, organization, highlight, link, download_link,
                  doc_type, short_name, date, preview_image):
         self.id = id
         self.document_id = document_id
         self.title = title
+        self.organization = organization
         self.highlight = highlight
         self.link = link
         self.download_link = download_link

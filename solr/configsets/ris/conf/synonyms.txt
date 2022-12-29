@@ -17,8 +17,9 @@
 #cccfoo => cccbar cccbaz
 #fooaaa,baraaa,bazaaa
 Fotovoltaik,Photovoltaik
-Straße,strasse
+Strasse,Straße
 Protokoll => Protokoll,Niederschrift,NS
+NS,Niederschrift
 SVV,STVV,Stadtverordnetenversammlung
 JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
 WF,WIFI,Wirtschafts und Finanzausschuss,Wirtschaftsauschuss,Finanzausschuss,Wirtschaftsausschuss und Finanzausschuss
@@ -35,5 +36,7 @@ FW,Feuerwehrausschuss
 KITA,Kindertagesstätte
 IV,Informationsvorlage
 Miniwald,Tiny Forest
-Sachstand => Sachstand,Sachstandsbericht,Sachstandbericht
 Betriebskomission,Betriebskomision
+Sachstand => Sachstand,Sachstandsbericht,Sachstandbericht
+Beschluss => Beschluss,Beschlussvorlage,Beschlussfassung
+Antrag => Antrag,Antragsvorlage,Änderungsantrag,AG

@@ -219,7 +219,7 @@ class Command(BaseCommand):
 
         # filter document ids for outdated documents
         document_ids = Document.objects.values_list("id", flat=True)
-        document_ids = [i for i in document_ids if force or self._is_solr_doc_outdated(solr, id)]
+        document_ids = [i for i in document_ids if force or self._is_solr_doc_outdated(solr, i)]
         total = len(document_ids)
         self._log(f"Outdated documents: {total}")
 

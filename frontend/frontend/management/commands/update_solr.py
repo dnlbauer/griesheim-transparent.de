@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commiting
-    VERSION = 3  # incr. if analyze chain changes to force a full resync
+    VERSION = 4  # incr. if analyze chain changes to force a full resync
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -93,7 +93,7 @@ class Command(BaseCommand):
             solr_doc['doc_type'] = consultation.type
 
             # find antragssteller for consultations
-            found = re.search(r'\"?(.*)\"?,?\s(Gemeinsamer\s)?Antrag (der|des) (.*)', consultation.topic)
+            found = re.search(r'\"?(.*?)\"?,?\s(Gemeinsamer\s)?Antrag (der|des) (.*)', consultation.topic)
             if found:
                 title, organizations = found.group(1), found.group(4)
                 solr_doc["consultation_topic"] = title

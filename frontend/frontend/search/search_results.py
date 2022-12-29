@@ -16,16 +16,13 @@ class SearchResult:
         self.preview_image = preview_image
 
 class SearchResults:
-    def __init__(self, documents, facets, page, rows, hits, qtime,
-                 spellcheck_suggested_query=None, spellcheck_suggested_query_hits=None):
+    def __init__(self, documents, facets, page, rows, hits, qtime):
         self.documents = documents
         self.facets = facets
         self.page = page
         self.max_page = math.ceil(hits/rows)
         self.hits = hits
         self.qtime = qtime
-        self.spellcheck_suggested_query = spellcheck_suggested_query
-        self.spellcheck_suggested_query_hits = spellcheck_suggested_query_hits
 
     def __iter__(self):
         return iter(self.documents)

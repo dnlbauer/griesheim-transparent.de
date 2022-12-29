@@ -18,7 +18,6 @@
 #fooaaa,baraaa,bazaaa
 Fotovoltaik,Photovoltaik
 Strasse,Straße
-Protokoll => Protokoll,Niederschrift,NS
 NS,Niederschrift
 SVV,STVV,Stadtverordnetenversammlung
 JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
@@ -37,6 +36,8 @@ KITA,Kindertagesstätte
 IV,Informationsvorlage
 Miniwald,Tiny Forest
 Betriebskomission,Betriebskomision
+# hierarchical mappings
+Protokoll => Protokoll,Niederschrift,NS
 Sachstand => Sachstand,Sachstandsbericht,Sachstandbericht
 Beschluss => Beschluss,Beschlussvorlage,Beschlussfassung
 Antrag => Antrag,Antragsvorlage,Änderungsantrag,AG

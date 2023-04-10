@@ -20,9 +20,8 @@ class SessionNetSpider(scrapy.Spider):
     def start_requests(self):
         yield scrapy.Request(url=self.organizations_base_url, callback=self.parse)
 
-        years = [2022]
-        months = range(2, 3)
-        # months = range(2, 12)
+        years = range(2011, 2012)
+        months = range(11, 12)
         for year in years:
             params = { '__cjahr': year }
             for month in months:
@@ -112,13 +111,19 @@ class SessionNetSpider(scrapy.Spider):
         organization = response.selector.xpath(info_table_selector_base.format("sigrname")).get()
 
         date = response.selector.xpath(info_table_selector_base.format("sidat")).get()
-        date = datetime.strptime(date, "%d.%m.%Y")
+        if date:
+            date = datetime.strptime(date, "%d.%m.%Y")
         time = response.selector.xpath(info_table_selector_base.format("yytime")).get()
-        # 18:00-18:50 Uhr -> 18:00 18:50 Uhr
-        time = re.sub("\\-", " ", time)
-        # 18:00 Uhr -> 18:00
-        time = re.split('\\s+', time)[0]
-        time = datetime.strptime(time, "%H:%M")
+        if time:
+            # 18:00-18:50 Uhr -> 18:00 18:50 Uhr
+            time = re.sub("\\-", " ", time)
+            # 18:00 Uhr -> 18:00
+            time = re.split('\\s+', time)[0]
+            time = datetime.strptime(time, "%H:%M")
+
+        if date and time:
+            date = datetime.combine(date.date(), time.time())
+
 
         file_ids, file_follows = self.get_file_links(response)
         for follow in file_follows:
@@ -143,7 +148,7 @@ class SessionNetSpider(scrapy.Spider):
             title=title,
             title_short=title_short,
             organization=organization,
-            date=datetime.combine(date.date(), time.time()),
+            date=date,
             file_ids=file_ids,
             agenda_ids=agenda_ids,
             consultation_ids=consultation_ids

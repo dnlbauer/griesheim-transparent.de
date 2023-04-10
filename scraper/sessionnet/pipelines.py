@@ -2,7 +2,7 @@
 import scrapy.pipelines.files
 from itemadapter import ItemAdapter
 
-from sessionnet.spiders.utils import get_url_params
+from sessionnet.utils import get_url_params
 
 
 class HTMLFilterPipeline:

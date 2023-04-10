@@ -4,7 +4,7 @@ from datetime import datetime
 import scrapy
 
 from sessionnet.items import MeetingItem, DocumentItem, AgendaItem, ConsultationItem
-from sessionnet.spiders.utils import add_url_parameters, get_url_params, clean_text
+from sessionnet.utils import add_url_parameters, get_url_params, clean_text
 from sessionnet.url_suffices import meeting_url_to_suffix, meeting_document_link_suffix, agenda_url_link_suffix, \
     consultation_url_link_suffix, meeting_url_top_suffix, meeting_url_attendence_suffix
 from sessionnet.urls import get_meeting_url

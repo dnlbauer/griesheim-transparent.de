@@ -10,8 +10,8 @@ from sessionnet.url_suffices import meeting_url_to_suffix, meeting_document_link
 from sessionnet.urls import get_meeting_url
 
 
-class CalendarSpider(scrapy.Spider):
-    name = "calendar"
+class SessionNetSpider(scrapy.Spider):
+    name = "sessionnet"
 
     def start_requests(self):
         base_url = "https://sessionnet.krz.de/griesheim/bi/si0040.asp"

@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = "sessionnet.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = "griesheim-transparent scraper (+https://griesheim-transparent.de)"
+USER_AGENT = "griesheim-transparent/scrapy (+https://griesheim-transparent.de)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False

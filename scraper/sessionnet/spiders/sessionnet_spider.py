@@ -3,18 +3,23 @@ from datetime import datetime
 
 import scrapy
 
-from sessionnet.items import MeetingItem, DocumentItem, AgendaItem, ConsultationItem
-from sessionnet.utils import add_url_parameters, get_url_params, clean_text
+from sessionnet.items import MeetingItem, DocumentItem, AgendaItem, ConsultationItem, OrganizationItem
+from sessionnet.utils import add_url_parameters, get_url_params, clean_text, remove_url_parameters
 from sessionnet.url_suffices import meeting_url_to_suffix, meeting_document_link_suffix, agenda_url_link_suffix, \
-    consultation_url_link_suffix, meeting_url_top_suffix, meeting_url_attendence_suffix
+    consultation_url_link_suffix, meeting_url_top_suffix, meeting_url_attendence_suffix, \
+    organizations_details_url_suffix
 from sessionnet.urls import get_meeting_url
 
 
 class SessionNetSpider(scrapy.Spider):
     name = "sessionnet"
 
+    organizations_base_url = "https://sessionnet.krz.de/griesheim/bi/gr0040.asp?__cwpall=1&"
+    calendar_base_url = "https://sessionnet.krz.de/griesheim/bi/si0040.asp"
+
     def start_requests(self):
-        base_url = "https://sessionnet.krz.de/griesheim/bi/si0040.asp"
+        yield scrapy.Request(url=self.organizations_base_url, callback=self.parse)
+
         years = [2022]
         months = range(2, 3)
         # months = range(2, 12)
@@ -22,11 +27,53 @@ class SessionNetSpider(scrapy.Spider):
             params = { '__cjahr': year }
             for month in months:
                 params["__cmonat"] = month
-                url = add_url_parameters(base_url, params)
+                url = add_url_parameters(self.calendar_base_url, params)
                 yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response, **kwargs):
-        return self.parse_calendar(response)
+        if response.url.startswith(self.calendar_base_url):
+            yield from self.parse_calendar(response)
+        if response.url.startswith(self.organizations_base_url):
+            yield from self.parse_organizations_overview(response)
+
+    def parse_organizations_overview(self, response):
+        scrapeable_organizations = response.selector.xpath(f"//a[contains(@href, '{organizations_details_url_suffix}')]//@href").getall()
+        for link in scrapeable_organizations:
+            # get all
+            link = add_url_parameters(link, {"__cwpall": 1})
+            link = remove_url_parameters(link, ["cwpnr"])
+            yield response.follow(url=link, callback=self.parse_organization)
+
+    def parse_organization(self, response, **kwargs):
+        id = get_url_params(response.url)["__kgrnr"]
+        title = response.selector.xpath("//h1//text()").get()
+
+        persons = []
+        persons_table = response.selector.xpath("//table[contains(@class, 'table')]//tbody//tr")
+        selector_organizations_mandate_base = "//td[@data-label='{0}']//text()"
+        for person in persons_table:
+            name = person.xpath(selector_organizations_mandate_base.format("Name")).get()
+            type = person.xpath(selector_organizations_mandate_base.format("Mitarbeit")).get()
+            from_date = person.xpath(selector_organizations_mandate_base.format("Beginn")).get()
+            if from_date:
+                from_date = datetime.strptime(from_date, "%d.%m.%Y")
+            to_date = person.xpath(selector_organizations_mandate_base.format("Ende")).get()
+            if to_date:
+                to_date = datetime.strptime(to_date, "%d.%m.%Y")
+            persons.append(dict(
+                name=name,
+                type=type,
+                from_date=from_date,
+                to_date=to_date
+            ))
+
+
+        yield OrganizationItem(
+            id=id,
+            title=title,
+            persons=persons
+        )
+
 
     def parse_calendar(self, response):
         yield from self.scrape_dom_for_meetings(response)

@@ -1,5 +1,6 @@
 import re
 import urllib.parse
+from datetime import date
 
 
 def add_url_parameters(url, params):
@@ -31,3 +32,13 @@ def clean_text(text):
     text = " ".join(text)
     text = re.sub("\\s+", " ", text)
     return text
+
+
+def month_from_now(add=0):
+    month = date.today().month
+    year = date.today().year
+    month += add
+    while (month > 12):
+        month -= 12
+        year += 1
+    return f"{month}/{year}"

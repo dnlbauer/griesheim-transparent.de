@@ -18,16 +18,26 @@ class SessionNetSpider(scrapy.Spider):
     calendar_base_url = "https://sessionnet.krz.de/griesheim/bi/si0040.asp"
 
     def start_requests(self):
-        yield scrapy.Request(url=self.organizations_base_url, callback=self.parse)
+        if self.settings.get("SCRAPE_ORGANIZATIONS"):
+            self.logger.info("Seeding organizations")
+            yield scrapy.Request(url=self.organizations_base_url, callback=self.parse)
 
-        years = range(2011, 2012)
-        months = range(11, 12)
-        for year in years:
-            params = { '__cjahr': year }
-            for month in months:
-                params["__cmonat"] = month
-                url = add_url_parameters(self.calendar_base_url, params)
-                yield scrapy.Request(url=url, callback=self.parse)
+        if self.settings.get("SCRAPE_MEETINGS"):
+            start_month, start_year = self.settings.get("SCRAPE_START").split("/")
+            end_month, end_year = self.settings.get("SCRAPE_END").split("/")
+            self.logger.info(f"Seeding calendar months from {start_month}/{start_year} to {end_month}/{end_year}")
+            years = range(int(start_year), int(end_year))
+            months = range(1, 13)
+            for year in years:
+                params = {'__cjahr': year}
+                for month in months:
+                    if year == int(start_year) and month < int(start_month):
+                        continue
+                    if year == int(end_year) and month > int(end_month):
+                        continue
+                    params["__cmonat"] = month
+                    url = add_url_parameters(self.calendar_base_url, params)
+                    yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response, **kwargs):
         if response.url.startswith(self.calendar_base_url):

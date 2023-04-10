@@ -6,6 +6,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+from sessionnet.utils import month_from_now
 
 BOT_NAME = "griesheim-transparent scraper"
 
@@ -77,3 +78,9 @@ FILES_STORE = os.path.join(os.getcwd(), "filestore")
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+SCRAPE_ORGANIZATIONS = True
+SCRAPE_MEETINGS = True
+SCRAPE_START = "01/2010"
+SCRAPE_END = month_from_now(3)
+

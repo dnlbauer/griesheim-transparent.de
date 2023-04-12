@@ -167,3 +167,6 @@ test
 
 deployment/secrets
 dump.sql
+
+scraper/filestore
+scraper/test.json

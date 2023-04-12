@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from collections import namedtuple
 
 import scrapy
 
@@ -10,6 +11,7 @@ from sessionnet.url_suffices import meeting_url_to_suffix, meeting_document_link
     organizations_details_url_suffix
 from sessionnet.urls import get_meeting_url
 
+Link = namedtuple("Link", "link text")
 
 class SessionNetSpider(scrapy.Spider):
     name = "sessionnet"
@@ -26,7 +28,7 @@ class SessionNetSpider(scrapy.Spider):
             start_month, start_year = self.settings.get("SCRAPE_START").split("/")
             end_month, end_year = self.settings.get("SCRAPE_END").split("/")
             self.logger.info(f"Seeding calendar months from {start_month}/{start_year} to {end_month}/{end_year}")
-            years = range(int(start_year), int(end_year))
+            years = range(int(start_year), int(end_year)+1)
             months = range(1, 13)
             for year in years:
                 params = {'__cjahr': year}
@@ -89,18 +91,24 @@ class SessionNetSpider(scrapy.Spider):
 
     def get_links(self, response, *links):
         found_links = []
+        found_texts = []
         for link in links:
             found_links += response.selector.xpath(f"//a[contains(@href, '{link}')]//@href").getall()
-        return list(set(found_links))
+            found_texts += response.selector.xpath(f"//a[contains(@href, '{link}')]//text()").getall()
+
+        links = []
+        for link, text in zip(found_links, found_texts):
+            links.append(Link(link, text))
+        return list(set(links))
 
     def get_file_links(self, response):
         file_links = self.get_links(response, meeting_document_link_suffix)
-        follows = [response.follow(file_link, callback=self.parse_file, method="HEAD") for file_link in file_links]
-        ids = [get_url_params(file_link)["id"] for file_link in file_links]
+        follows = [response.follow(file_link.link, callback=self.parse_file, method="HEAD", meta={"title": file_link.text}) for file_link in file_links]
+        ids = [get_url_params(file_link.link)["id"] for file_link in file_links]
         return ids, follows
 
     def scrape_dom_for_meetings(self, response):
-        meeting_links = self.get_links(response, meeting_url_to_suffix, meeting_url_to_suffix, meeting_url_top_suffix, meeting_url_attendence_suffix)
+        meeting_links = [link.link for link in self.get_links(response, meeting_url_to_suffix, meeting_url_to_suffix, meeting_url_top_suffix, meeting_url_attendence_suffix)]
 
         for link in meeting_links:
             meeting_id = get_url_params(link)["__ksinr"]
@@ -139,14 +147,14 @@ class SessionNetSpider(scrapy.Spider):
         for follow in file_follows:
             yield follow
 
-        agenda_links = self.get_links(response, agenda_url_link_suffix)
+        agenda_links = [link.link for link in self.get_links(response, agenda_url_link_suffix)]
         agenda_ids = []
         for agenda_link in agenda_links:
             agenda_id = get_url_params(agenda_link)["__ktonr"]
             agenda_ids.append(agenda_id)
             yield response.follow(agenda_link, callback=self.parse_agenda)
 
-        consultation_links = self.get_links(response, consultation_url_link_suffix)
+        consultation_links = [link.link for link in self.get_links(response, consultation_url_link_suffix)]
         consultation_ids = []
         for consultation_link in consultation_links:
             consultation_id = get_url_params(consultation_link)["__kvonr"]
@@ -180,7 +188,7 @@ class SessionNetSpider(scrapy.Spider):
         for follow in file_follows:
             yield follow
 
-        consultation_links = self.get_links(response, consultation_url_link_suffix)
+        consultation_links = [link.link for link in self.get_links(response, consultation_url_link_suffix)]
         consultation_ids = []
         for consultation_link in consultation_links:
             consultation_id = get_url_params(consultation_link)["__kvonr"]
@@ -230,9 +238,15 @@ class SessionNetSpider(scrapy.Spider):
         content_type = response.headers["Content-Type"].decode("utf-8").split(";")[0]
         file_name = response.headers["Content-Disposition"].decode("utf-8").split('"')[1]
 
+        if "title" in response.meta:
+            title = response.meta["title"]
+        else:
+            title = None
+
         yield DocumentItem(
             id=id,
             file_name=file_name,
             content_type=content_type,
-            file_urls=[response.url]
+            file_urls=[response.url],
+            title=title
         )

@@ -45,6 +45,7 @@ class DocumentItem(SessionNetItem):
     content_type = Field()
     file_urls = Field()
     files = Field()
+    title = Field()
 
 
 class OrganizationItem(SessionNetItem):

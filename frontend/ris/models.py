@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Organization(models.Model):
     class Meta:
         db_table = 'organizations'
@@ -49,6 +50,7 @@ class AgendaItem(models.Model):
     consultation = models.ForeignKey(Consultation, on_delete=models.RESTRICT, related_name="agenda_items")
     meeting = models.ForeignKey(Meeting, on_delete=models.RESTRICT, related_name="agenda_items")
     documents = models.ManyToManyField("Document", through="DocumentAgendaItem", related_name="agenda_item_id")
+
 
 class Document(models.Model):
     class Meta:

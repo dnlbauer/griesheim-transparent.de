@@ -6,7 +6,7 @@ import pysolr
 from django.core.management import BaseCommand
 
 from frontend import settings
-from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
+from ris.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
 from frontend.models.risdb import Document, Organization
 
 # Force tika to use an external service

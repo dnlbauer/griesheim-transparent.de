@@ -10,8 +10,10 @@ class DatabaseRouter:
     RIS_DB = "ris"
 
     def _is_risdb_model(self, model):
-        mod = inspect.getmodule(model)
-        _base, _sep, stem = mod.__name__.partition('.')
+        module = inspect.getmodule(model)
+        if not module:
+            return False
+        _base, _sep, stem = module.__name__.partition('.')
         return stem.endswith("risdb")
 
     def _route(self, model):
@@ -30,5 +32,7 @@ class DatabaseRouter:
         return self._is_risdb_model(obj1) == self._is_risdb_model(obj2)
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
-        # no migrations in risdb. db is handled by the scraper
-        return db != self.RIS_DB
+        if app_label == "ris":
+            return db == "ris"
+        return db == "default"
+

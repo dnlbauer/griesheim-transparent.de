@@ -1,11 +1,6 @@
 from django.db import models
-
-class RISMeta:
-    is_ris = True
-
 class Organization(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'organizations'
 
@@ -15,8 +10,7 @@ class Organization(models.Model):
 
 
 class Meeting(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'meetings'
 
@@ -31,8 +25,7 @@ class Meeting(models.Model):
 
 
 class Consultation(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'consultations'
 
@@ -46,8 +39,7 @@ class Consultation(models.Model):
 
 
 class AgendaItem(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'agendaitems'
 
@@ -62,8 +54,7 @@ class AgendaItem(models.Model):
     documents = models.ManyToManyField("Document", through="DocumentAgendaItem", related_name="agenda_item_id")
 
 class Document(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'documents'
 
@@ -80,8 +71,7 @@ class Document(models.Model):
 
 
 class DocumentConsulation(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'document_consultation'
 
@@ -90,8 +80,7 @@ class DocumentConsulation(models.Model):
 
 
 class DocumentAgendaItem(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'document_agenda_item'
 
@@ -100,8 +89,7 @@ class DocumentAgendaItem(models.Model):
 
 
 class DocumentMeeting(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = 'document_meeting'
 
@@ -110,8 +98,7 @@ class DocumentMeeting(models.Model):
 
 
 class ConsultationMeeting(models.Model):
-    class Meta(RISMeta):
-        managed = False
+    class Meta:
         abstract = False
         db_table = "consultation_meeting"
 

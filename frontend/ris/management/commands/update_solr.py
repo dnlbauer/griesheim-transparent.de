@@ -7,7 +7,7 @@ from django.core.management import BaseCommand
 
 from frontend import settings
 from ris.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
-from frontend.models.risdb import Document, Organization
+from ris.models import Organization, Document
 
 # Force tika to use an external service
 tika.TikaClientOnly = True

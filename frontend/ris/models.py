@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 
@@ -5,7 +7,6 @@ class Organization(models.Model):
     class Meta:
         db_table = 'organizations'
 
-    id = models.UUIDField(primary_key=True)
     org_id = models.IntegerField()
     name = models.TextField()
 
@@ -14,7 +15,6 @@ class Meeting(models.Model):
     class Meta:
         db_table = 'meetings'
 
-    id = models.UUIDField(primary_key=True)
     meeting_id = models.IntegerField()
     title = models.TextField()
     title_short = models.TextField()
@@ -28,7 +28,6 @@ class Consultation(models.Model):
     class Meta:
         db_table = 'consultations'
 
-    id = models.UUIDField(primary_key=True)
     consultation_id = models.IntegerField()
     name = models.TextField()
     topic = models.TextField()
@@ -41,7 +40,6 @@ class AgendaItem(models.Model):
     class Meta:
         db_table = 'agendaitems'
 
-    id = models.UUIDField(primary_key=True)
     agenda_item_id = models.IntegerField()
     title = models.TextField()
     decision = models.TextField()
@@ -56,7 +54,6 @@ class Document(models.Model):
     class Meta:
         db_table = 'documents'
 
-    id = models.UUIDField(primary_key=True)
     document_id = models.IntegerField()
     file_name = models.TextField()
     content_type = models.TextField()

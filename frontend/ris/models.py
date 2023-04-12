@@ -1,5 +1,3 @@
-import uuid
-
 from django.db import models
 
 
@@ -7,91 +5,79 @@ class Organization(models.Model):
     class Meta:
         db_table = 'organizations'
 
-    org_id = models.IntegerField()
+    id = models.AutoField(primary_key=True)
+    organization_id = models.IntegerField()
     name = models.TextField()
 
 
-class Meeting(models.Model):
+class Person(models.Model):
     class Meta:
-        db_table = 'meetings'
+        db_table = "persons"
 
-    meeting_id = models.IntegerField()
-    title = models.TextField()
-    title_short = models.TextField()
-    date = models.DateTimeField()
-    organization = models.ForeignKey(Organization, on_delete=models.RESTRICT, related_name="meetings")
-    documents = models.ManyToManyField("Document", through="DocumentMeeting", related_name="meeting_id")
-    consultations = models.ManyToManyField("Consultation", through="ConsultationMeeting", related_name="meeting_id")
-
-
-class Consultation(models.Model):
-    class Meta:
-        db_table = 'consultations'
-
-    consultation_id = models.IntegerField()
+    id = models.AutoField(primary_key=True)
+    person_id = models.IntegerField()
     name = models.TextField()
-    topic = models.TextField()
-    type = models.TextField()
-    text = models.TextField()
-    meetings = models.ManyToManyField("Meeting", through="ConsultationMeeting", related_name="consultation_id")
 
 
-class AgendaItem(models.Model):
+class Membership(models.Model):
     class Meta:
-        db_table = 'agendaitems'
+        db_table = "memberships"
 
-    agenda_item_id = models.IntegerField()
-    title = models.TextField()
-    decision = models.TextField()
-    vote = models.TextField()
-    text = models.TextField()
-    consultation = models.ForeignKey(Consultation, on_delete=models.RESTRICT, related_name="agenda_items")
-    meeting = models.ForeignKey(Meeting, on_delete=models.RESTRICT, related_name="agenda_items")
-    documents = models.ManyToManyField("Document", through="DocumentAgendaItem", related_name="agenda_item_id")
+    id = models.AutoField(primary_key=True)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
 
 class Document(models.Model):
     class Meta:
         db_table = 'documents'
 
+    id = models.AutoField(primary_key=True)
     document_id = models.IntegerField()
     file_name = models.TextField()
     content_type = models.TextField()
     content_binary = models.BinaryField()
     size = models.IntegerField()
     title = models.TextField()
-    consultations = models.ManyToManyField(Consultation, through="DocumentConsulation", related_name="document_id")
-    meetings = models.ManyToManyField(Meeting, through="DocumentMeeting", related_name="document_id")
-    agenda_items = models.ManyToManyField(AgendaItem, through="DocumentAgendaItem", related_name="document_id")
 
 
-class DocumentConsulation(models.Model):
+class Consultation(models.Model):
     class Meta:
-        db_table = 'document_consultation'
+        db_table = 'consultations'
 
-    document = models.ForeignKey(Document, on_delete=models.RESTRICT)
-    consultation = models.ForeignKey(Consultation, on_delete=models.RESTRICT)
+    id = models.AutoField(primary_key=True)
+    consultation_id = models.IntegerField()
+    name = models.TextField()
+    topic = models.TextField()
+    type = models.TextField()
+    text = models.TextField()
+    documents = models.ManyToManyField(Document)
 
 
-class DocumentAgendaItem(models.Model):
+class Meeting(models.Model):
     class Meta:
-        db_table = 'document_agenda_item'
+        db_table = 'meetings'
 
-    document = models.ForeignKey(Document, on_delete=models.RESTRICT)
-    agenda_item = models.ForeignKey(AgendaItem, on_delete=models.RESTRICT)
+    id = models.AutoField(primary_key=True)
+    meeting_id = models.IntegerField()
+    title = models.TextField()
+    title_short = models.TextField()
+    date = models.DateTimeField()
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    documents = models.ManyToManyField(Document)
+    consultations = models.ManyToManyField(Consultation)
 
 
-class DocumentMeeting(models.Model):
+class AgendaItem(models.Model):
     class Meta:
-        db_table = 'document_meeting'
+        db_table = 'agendaitems'
 
-    document = models.ForeignKey(Document, on_delete=models.RESTRICT)
-    meeting = models.ForeignKey(Meeting, on_delete=models.RESTRICT)
-
-
-class ConsultationMeeting(models.Model):
-    class Meta:
-        db_table = "consultation_meeting"
-
-    consultation = models.ForeignKey(Consultation, on_delete=models.RESTRICT)
-    meeting = models.ForeignKey(Meeting, on_delete=models.RESTRICT)
+    id = models.AutoField(primary_key=True)
+    agenda_item_id = models.IntegerField()
+    title = models.TextField()
+    decision = models.TextField()
+    vote = models.TextField()
+    text = models.TextField()
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
+    documents = models.ManyToManyField(Document)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)

@@ -61,9 +61,14 @@ class SessionNetSpider(scrapy.Spider):
 
         persons = []
         persons_table = response.selector.xpath("//table[contains(@class, 'table')]//tbody//tr")
-        selector_organizations_mandate_base = "//td[@data-label='{0}']//text()"
+        selector_organizations_mandate_base = "td[@data-label='{0}']//text()"
         for person in persons_table:
+            person_id = person.xpath("td[@data-label='Name']//a//@href").get()
+            if person_id:
+                person_id = get_url_params(person_id)["__kpenr"]
             name = person.xpath(selector_organizations_mandate_base.format("Name")).get()
+            if not name:
+                continue
             type = person.xpath(selector_organizations_mandate_base.format("Mitarbeit")).get()
             from_date = person.xpath(selector_organizations_mandate_base.format("Beginn")).get()
             if from_date:
@@ -72,6 +77,7 @@ class SessionNetSpider(scrapy.Spider):
             if to_date:
                 to_date = datetime.strptime(to_date, "%d.%m.%Y")
             persons.append(dict(
+                id=person_id,
                 name=name,
                 type=type,
                 from_date=from_date,

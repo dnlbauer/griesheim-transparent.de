@@ -46,8 +46,9 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "sessionnet.pipelines.HTMLFilterPipeline": 300,
     "sessionnet.pipelines.MyFilesPipeline": 1,
+    "sessionnet.pipelines.HTMLFilterPipeline": 300,
+    "sessionnet.pipelines.PsqlExportPipeline": 999,
 }
 
 import os
@@ -83,4 +84,10 @@ SCRAPE_ORGANIZATIONS = True
 SCRAPE_MEETINGS = True
 SCRAPE_START = "01/2010"
 SCRAPE_END = month_from_now(3)
+
+DB_HOST = "localhost"
+DB_PORT = 5432
+DB_NAME = "riscraper"
+DB_USER = "riscraper"
+DB_PASSWORD = "riscraper"
 

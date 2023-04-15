@@ -16,7 +16,7 @@ class Person(models.Model):
         unique_together = ("name", "person_id")
 
     id = models.AutoField(primary_key=True)
-    person_id = models.IntegerField(null=True)
+    person_id = models.IntegerField(null=True)  # not all persons are linked person objects?
     name = models.TextField(unique=True)
 
 
@@ -26,8 +26,8 @@ class Membership(models.Model):
         unique_together = ("person_id", "organization_id")
 
     id = models.AutoField(primary_key=True)
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_constraint=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, db_constraint=False)
     from_date = models.DateTimeField(null=True)
     to_date = models.DateTimeField(null=True)
 
@@ -54,7 +54,7 @@ class Consultation(models.Model):
     name = models.TextField()
     topic = models.TextField()
     type = models.TextField()
-    text = models.TextField()
+    text = models.TextField(null=True)
     documents = models.ManyToManyField(Document)
 
 
@@ -67,9 +67,9 @@ class Meeting(models.Model):
     title = models.TextField()
     title_short = models.TextField()
     date = models.DateTimeField()
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    documents = models.ManyToManyField(Document)
-    consultations = models.ManyToManyField(Consultation)
+    organization = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE, db_constraint=False)
+    documents = models.ManyToManyField(Document, db_constraint=False)
+    consultations = models.ManyToManyField(Consultation, db_constraint=False)
 
 
 class AgendaItem(models.Model):
@@ -79,9 +79,9 @@ class AgendaItem(models.Model):
     id = models.AutoField(primary_key=True)
     agenda_item_id = models.IntegerField(unique=True)
     title = models.TextField()
-    decision = models.TextField()
-    vote = models.TextField()
-    text = models.TextField()
-    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
+    decision = models.TextField(null=True)
+    vote = models.TextField(null=True)
+    text = models.TextField(null=True)
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.CASCADE, db_constraint=False)
     documents = models.ManyToManyField(Document)
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(Consultation, null=True, on_delete=models.CASCADE, db_constraint=False)

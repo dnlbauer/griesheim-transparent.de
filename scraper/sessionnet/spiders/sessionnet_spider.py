@@ -58,6 +58,7 @@ class SessionNetSpider(scrapy.Spider):
     def parse_organization(self, response, **kwargs):
         id = get_url_params(response.url)["__kgrnr"]
         title = response.selector.xpath("//h1//text()").get()
+        self.logger.info(f"Parse organization: {title} ({id})")
 
         persons = []
         persons_table = response.selector.xpath("//table[contains(@class, 'table')]//tbody//tr")
@@ -122,9 +123,9 @@ class SessionNetSpider(scrapy.Spider):
 
     def parse_meeting(self, response):
         id = get_url_params(response.url)["__ksinr"]
-        self.logger.info(f"Parsing meeting with id: {id}")
 
         title = response.selector.xpath("//h1//text()").get()
+        self.logger.info(f"Parsing meeting: {title} ({id})")
         if "Fehlermeldung" in title:
           error = " ".join(response.selector.xpath("//div[contains(@aria-label, 'Informationen')]")[0].getall())
           self.logger.error(f"Error crawling meeting {id}! Message: {error.strip()}")

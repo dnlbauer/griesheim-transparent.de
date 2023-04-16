@@ -7,6 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 from sessionnet.utils import month_from_now
+from os import environ
 
 BOT_NAME = "griesheim-transparent scraper"
 
@@ -72,7 +73,7 @@ MYFILESPIELINE_FILES_EXPIRES = FILES_EXPIRES
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
 #HTTPCACHE_ENABLED = True
-#HTTPCACHE_EXPIRATION_SECS = 0
+#HTTPCACHE_EXPIRATION_SECS = 60*60
 #HTTPCACHE_DIR = "httpcache"
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
@@ -82,14 +83,16 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
+LOG_LEVEL = "INFO"
+
 SCRAPE_ORGANIZATIONS = True
 SCRAPE_MEETINGS = True
-SCRAPE_START = "01/2010"
+SCRAPE_START = "01/2011"
 SCRAPE_END = month_from_now(3)
 
-DB_HOST = "localhost"
-DB_PORT = 5432
-DB_NAME = "riscraper"
-DB_USER = "riscraper"
-DB_PASSWORD = "riscraper"
+DB_HOST = environ.get("DB_HOST", default="localhost")
+DB_PORT = int(environ.get("DB_PORT", default="5432"))
+DB_NAME = environ.get("DB_NAME", default="")
+DB_USER = environ.get("DB_USER", default="")
+DB_PASSWORD = environ.get("DB_PASSWORD", default="")
 

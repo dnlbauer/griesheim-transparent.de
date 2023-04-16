@@ -1,0 +1,4 @@
+# full sync every day at 02:00
+0 2 * * * cd /scraper && scrapy crawl sessionnet -s SCRAPE_START=01/2011
+# sync +/- 6 months every 3hrs
+0 5-23/3 * * * cd /scraper && scrapy crawl sessionet -s SCRAPE_START=$(date +"%m/%Y" --date="-6 month") -s SCRAPE_END=$(date +"%m/%Y" --date="+6 month")

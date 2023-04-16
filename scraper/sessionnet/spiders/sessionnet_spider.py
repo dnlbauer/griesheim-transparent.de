@@ -141,15 +141,11 @@ class SessionNetSpider(scrapy.Spider):
 
     def get_links(self, response, *links):
         found_links = []
-        found_texts = []
         for link in links:
-            found_links += response.selector.xpath(f"//a[contains(@href, '{link}')]//@href").getall()
-            found_texts += response.selector.xpath(f"//a[contains(@href, '{link}')]//text()").getall()
-
-        links = []
-        for link, text in zip(found_links, found_texts):
-            links.append(Link(link, text))
-        return list(set(links))
+            found_links += response.selector.xpath(f"//a[contains(@href, '{link}')]")
+        found_links = [Link(link.xpath("@href").get(), link.xpath("text()").get()) for link in found_links]
+        found_links = [link for link in found_links if link.text is not None]
+        return list(set(found_links))
 
     def get_file_links(self, response):
         file_links = self.get_links(response, meeting_document_link_suffix)

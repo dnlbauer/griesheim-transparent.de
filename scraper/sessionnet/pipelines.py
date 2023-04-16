@@ -30,7 +30,6 @@ class MyFilesPipeline(scrapy.pipelines.files.FilesPipeline):
 
 class PsqlExportPipeline:
 
-
     def open_spider(self, spider):
         spider.logger.info("Opening database connection")
         db = PostgresqlDatabase(
@@ -61,7 +60,6 @@ class PsqlExportPipeline:
         self.consultations_agenda_items = []
         self.agenda_items_documents = []
         self.agenda_items_consultations = []
-
 
     def close_spider(self, spider):
         spider.logger.info("Updating meeting organizations")
@@ -236,21 +234,33 @@ class PsqlExportPipeline:
         ).execute()
 
     def process_organization(self, item, spider):
+        if item.get("title") is None:  # TODO add persons anyway, but without org membership
+            return
+
         self.db.begin()
+        if item.get("organization_id") is None:
+            conflict = self.Organization.name
+        else:
+            conflict = self.Organization.organization_id
         self.Organization.insert({
             self.Organization.organization_id: item.get("id"),
             self.Organization.name: item.get("title"),
             self.Organization.created_at: item.get("last_updated"),
             self.Organization.last_modified: item.get("last_updated")
         }).on_conflict(
-            conflict_target=self.Organization.organization_id,
+            conflict_target=conflict,
             action="update",
             update={
                 self.Organization.name: item.get("title"),
                 self.Organization.last_modified: item.get("last_updated")
             }
         ).execute()
-        organization_id = self.Organization.select(self.Organization.id).where(self.Organization.organization_id == item.get('id')).first().get('id')
+        organization = self.Organization.select(self.Organization.id).where(
+            self.Organization.name == item.get('title')).first()
+        if organization:
+            organization_id = organization.get('id')
+        else:
+            organization_id = None
 
         for person in item.get("persons"):
             self.Person.insert({
@@ -266,25 +276,24 @@ class PsqlExportPipeline:
                     self.Person.last_modified: item.get("last_updated")
                 }
             ).execute()
-            person_id = self.Person.select(self.Person.id).where(self.Person.name == person.get("name")).first().get("id")
-            self.Membership.insert({
-                self.Membership.person_id: person_id,
-                self.Membership.organization_id: organization_id,
-                self.Membership.from_date: person.get("from_date"),
-                self.Membership.to_date: person.get("to_date"),
-                self.Membership.created_at: item.get("last_updated"),
-                self.Membership.last_modified: item.get("last_updated")
-            }).on_conflict(
-                conflict_target=(self.Membership.person_id, self.Membership.organization_id),
-                action="update",
-                update={
+            if organization_id:
+                person_id = self.Person.select(self.Person.id).where(
+                    self.Person.name == person.get("name")).first().get("id")
+
+                self.Membership.insert({
+                    self.Membership.person_id: person_id,
+                    self.Membership.organization_id: organization_id,
                     self.Membership.from_date: person.get("from_date"),
                     self.Membership.to_date: person.get("to_date"),
+                    self.Membership.created_at: item.get("last_updated"),
                     self.Membership.last_modified: item.get("last_updated")
-                }
-            ).execute()
+                }).on_conflict(
+                    conflict_target=(self.Membership.person_id, self.Membership.organization_id),
+                    action="update",
+                    update={
+                        self.Membership.from_date: person.get("from_date"),
+                        self.Membership.to_date: person.get("to_date"),
+                        self.Membership.last_modified: item.get("last_updated")
+                    }
+                ).execute()
         self.db.commit()
-
-
-
-

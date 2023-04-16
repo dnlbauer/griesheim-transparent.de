@@ -15,7 +15,7 @@ class Organization(BaseModel):
 
     id = models.AutoField(primary_key=True)
     organization_id = models.IntegerField(unique=True, null=True)
-    name = models.TextField()
+    name = models.TextField(unique=True)
 
 
 class Person(BaseModel):

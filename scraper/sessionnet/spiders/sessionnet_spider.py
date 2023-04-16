@@ -18,12 +18,15 @@ class SessionNetSpider(scrapy.Spider):
     name = "sessionnet"
 
     organizations_base_url = "https://sessionnet.krz.de/griesheim/bi/gr0040.asp?__cwpall=1&"
+    persons_base_url = "https://sessionnet.krz.de/griesheim/bi/kp0041.asp?__cwpall=1&"
     calendar_base_url = "https://sessionnet.krz.de/griesheim/bi/si0040.asp"
 
     def start_requests(self):
         if self.settings.get("SCRAPE_ORGANIZATIONS"):
             self.logger.info("Seeding organizations")
             yield scrapy.Request(url=self.organizations_base_url, callback=self.parse)
+            self.logger.info("Seeding Persons")
+            yield scrapy.Request(url=self.persons_base_url, callback=self.parse)
 
         if self.settings.get("SCRAPE_MEETINGS"):
             start_month, start_year = self.settings.get("SCRAPE_START").split("/")
@@ -47,6 +50,33 @@ class SessionNetSpider(scrapy.Spider):
             yield from self.parse_calendar(response)
         if response.url.startswith(self.organizations_base_url):
             yield from self.parse_organizations_overview(response)
+        if response.url.startswith(self.persons_base_url):
+            yield from self.parse_persons_overview(response)
+
+    def parse_persons_overview(self, response):
+        self.logger.info("Parse person overview")
+        rows = response.selector.xpath("//table[contains(@class, 'table-striped')]//tbody//tr")
+        organizations = {}
+        for row in rows:
+            name = row.xpath("td[contains(@data-label, 'Name')]//text()").get()
+            organization = row.xpath("td[contains(@data-label, 'Mitgliedschaft')]//text()").get()
+            to_date = row.xpath("td[contains(@data-label, 'Ende')]//text()").get()
+            if to_date:
+                to_date = datetime.strptime(to_date, "%d.%m.%Y")
+            person = dict(
+                name=name,
+                to_date=to_date
+            )
+            if organization in organizations:
+                organizations[organization].append(person)
+            else:
+                organizations[organization] = [person]
+
+        for organization in organizations:
+            yield OrganizationItem(
+                title=organization,
+                persons=organizations[organization]
+            )
 
     def parse_organizations_overview(self, response):
         self.logger.info("Parse organization overview")

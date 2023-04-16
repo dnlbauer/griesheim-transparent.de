@@ -48,6 +48,7 @@ class SessionNetSpider(scrapy.Spider):
             yield from self.parse_organizations_overview(response)
 
     def parse_organizations_overview(self, response):
+        self.logger.info("Parse organization overview")
         scrapeable_organizations = response.selector.xpath(f"//a[contains(@href, '{organizations_details_url_suffix}')]//@href").getall()
         scrapeable_organizations_names = response.selector.xpath(f"//a[contains(@href, '{organizations_details_url_suffix}')]//text()").getall()
         organizations_names = response.selector.xpath(f"//td[contains(@class, 'grname')]//text()").getall()
@@ -103,6 +104,8 @@ class SessionNetSpider(scrapy.Spider):
 
 
     def parse_calendar(self, response):
+        params = get_url_params(response.url)
+        self.logger.info(f"Seeding from calendar {params['__cmonat']}/{params['__cjahr']}")
         yield from self.scrape_dom_for_meetings(response)
 
     def get_links(self, response, *links):

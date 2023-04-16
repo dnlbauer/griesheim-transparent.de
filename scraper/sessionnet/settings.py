@@ -53,6 +53,8 @@ ITEM_PIPELINES = {
 
 import os
 FILES_STORE = os.path.join(os.getcwd(), "filestore")
+FILES_EXPIRES = 90
+MYFILESPIELINE_FILES_EXPIRES = FILES_EXPIRES
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

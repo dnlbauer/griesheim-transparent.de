@@ -14,7 +14,7 @@ class Organization(BaseModel):
         db_table = 'organizations'
 
     id = models.AutoField(primary_key=True)
-    organization_id = models.IntegerField(unique=True)
+    organization_id = models.IntegerField(unique=True, null=True)
     name = models.TextField()
 
 

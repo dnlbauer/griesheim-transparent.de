@@ -49,11 +49,20 @@ class SessionNetSpider(scrapy.Spider):
 
     def parse_organizations_overview(self, response):
         scrapeable_organizations = response.selector.xpath(f"//a[contains(@href, '{organizations_details_url_suffix}')]//@href").getall()
+        scrapeable_organizations_names = response.selector.xpath(f"//a[contains(@href, '{organizations_details_url_suffix}')]//text()").getall()
+        organizations_names = response.selector.xpath(f"//td[contains(@class, 'grname')]//text()").getall()
         for link in scrapeable_organizations:
             # get all
             link = add_url_parameters(link, {"__cwpall": 1})
             link = remove_url_parameters(link, ["cwpnr"])
             yield response.follow(url=link, callback=self.parse_organization)
+        for name in organizations_names:
+            if name in scrapeable_organizations_names:
+                continue
+            yield OrganizationItem(
+                title=name,
+                persons=[]
+            )
 
     def parse_organization(self, response, **kwargs):
         id = get_url_params(response.url)["__kgrnr"]

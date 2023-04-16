@@ -52,7 +52,7 @@ def analyze_document_pdfact(path):
     binary = open(path, "rb").read()
 
     response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files=dict(file=binary))
-    if response.status_code != 200:  # something went wront
+    if response.status_code != 200:  # something went wrong
         print("Failed to extract text using pdfact.")
         return None
 
@@ -61,6 +61,9 @@ def analyze_document_pdfact(path):
     snippets = []
     for paragraph in json["paragraphs"]:
         snippets.append(paragraph["paragraph"]["text"])
+    if len(snippets) == 0:
+        print("pdfact returned no text")
+        return None
     return snippets
 
 

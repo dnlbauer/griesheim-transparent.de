@@ -1,3 +1,5 @@
+import os
+
 import tika
 from datetime import datetime
 import re
@@ -6,7 +8,7 @@ import pysolr
 from django.core.management import BaseCommand
 
 from frontend import settings
-from ris.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
+from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
 from ris.models import Organization, Document
 
 # Force tika to use an external service
@@ -234,22 +236,24 @@ class Command(BaseCommand):
 
             self._log(f"Processing {document.file_name} ({str(document.id)})")
 
+            file_path = os.path.join(settings.DOCUMENT_STORE, document.uri)
+
             # analyze document with tika
             self._log("Sending document to tika")
-            tika_result = analyze_document_tika(document.content_binary, False)
+            tika_result = analyze_document_tika(file_path, False)
 
             # Run OCR/tesseract if there is no content from tika without ocr
             if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
                 self._log("Sending document to tika/ocr")
-                tika_result = analyze_document_tika(document.content_binary, True)
+                tika_result = analyze_document_tika(file_path, True)
 
             # run pdfact
             self._log("Sending document to pdfact")
-            pdfact_result = analyze_document_pdfact(document.content_binary)
+            pdfact_result = analyze_document_pdfact(file_path)
 
             # get preview thumbnail
             self._log("Sending document to preview service")
-            preview_image = get_preview_image_for_doc(document.document_id)
+            preview_image = get_preview_image_for_doc(file_path)
 
             # generate solr document from data
             self._log("Creating solr document")

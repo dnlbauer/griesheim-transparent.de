@@ -147,13 +147,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Connection to solr
+# document file storage base directory
+DOCUMENT_STORE = env("DOCUMENT_STORE", default="/filestore")
 
+# Connection to solr
 SOLR_HOST = env("SOLR_HOST", default="http://localhost:8983/solr")
 SOLR_COLLECTION = env('SOLR_COLLECTION', default="ris")
 
 # Connection and settings for pdf preview thumbnails
-
 PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:8080")
 PREVIEW_RESOLUTION = "256x256"
 

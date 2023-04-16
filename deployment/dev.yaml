@@ -33,6 +33,7 @@ services:
     volumes:
       - django_db:/django_db
       - django_staticfiles:/app/staticfiles
+      - scraper_files:/filestore 
     ports:
       - 8000:8000
     command: gunicorn frontend.wsgi:application --bind 0.0.0.0:8000

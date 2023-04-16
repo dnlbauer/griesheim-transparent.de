@@ -29,6 +29,8 @@ class MyFilesPipeline(scrapy.pipelines.files.FilesPipeline):
 
 
 class PsqlExportPipeline:
+
+
     def open_spider(self, spider):
         spider.logger.info("Opening database connection")
         db = PostgresqlDatabase(
@@ -39,17 +41,17 @@ class PsqlExportPipeline:
             port=spider.settings.get("DB_PORT"))
         self.db = db
 
-        self.Person = Table("persons", ("id", "person_id", "name")).bind(db)
-        self.Organization = Table("organizations", ("id", "organization_id", "name")).bind(db)
-        self.Membership = Table("memberships", ("id", "person_id", "organization_id", "from_date", "to_date")).bind(db)
-        self.Meeting = Table("meetings", ("id", "meeting_id", "title", "title_short", "date", "organization_id")).bind(db)
+        self.Person = Table("persons", ("id", "person_id", "name", "created_at", "last_modified")).bind(db)
+        self.Organization = Table("organizations", ("id", "organization_id", "name", "created_at", "last_modified")).bind(db)
+        self.Membership = Table("memberships", ("id", "person_id", "organization_id", "from_date", "to_date", "created_at", "last_modified")).bind(db)
+        self.Meeting = Table("meetings", ("id", "meeting_id", "title", "title_short", "date", "organization_id", "created_at", "last_modified")).bind(db)
         self.Meeting_Document = Table("meetings_documents", ("id", "meeting_id", "document_id")).bind(db)
         self.Meeting_Consultation = Table("meetings_consultations", ("id", "meeting_id", "consultation_id")).bind(db)
-        self.Consultation = Table("consultations", ("id", "consultation_id", "name", "topic", "type", "text")).bind(db)
+        self.Consultation = Table("consultations", ("id", "consultation_id", "name", "topic", "type", "text", "created_at", "last_modified")).bind(db)
         self.Consultation_Document = Table("consultations_documents", ("id", "consultation_id", "document_id")).bind(db)
-        self.AgendaItem = Table("agendaitems", ("id", "agenda_item_id", "title", "decision", "vote", "text", "consultation_id", "meeting_id")).bind(db)
+        self.AgendaItem = Table("agendaitems", ("id", "agenda_item_id", "title", "decision", "vote", "text", "consultation_id", "meeting_id", "created_at", "last_modified")).bind(db)
         self.AgendaItem_Document = Table("agendaitems_documents", ("id", "agendaitem_id", "document_id")).bind(db)
-        self.Document = Table("documents", ("id", "document_id", "file_name", "content_type", "content_binary", "size", "title")).bind(db)
+        self.Document = Table("documents", ("id", "document_id", "file_name", "uri", "content_type", "size", "title", "checksum", "created_at", "last_modified")).bind(db)
 
         self.meetings_organizations = []
         self.meetings_documents = []
@@ -142,6 +144,8 @@ class PsqlExportPipeline:
             self.Meeting.title: item.get("title"),
             self.Meeting.title_short: item.get("title_short"),
             self.Meeting.date: item.get("date"),
+            self.Meeting.created_at: item.get("last_updated"),
+            self.Meeting.last_modified: item.get("last_updated")
         }).on_conflict(
             conflict_target=self.Meeting.meeting_id,
             action="update",
@@ -149,6 +153,7 @@ class PsqlExportPipeline:
                 self.Meeting.title: item.get("title"),
                 self.Meeting.title_short: item.get("title_short"),
                 self.Meeting.date: item.get("date"),
+                self.Meeting.last_modified: item.get("last_updated")
             }
         ).execute()
         self.meetings_organizations.append((item.get('id'), item.get("organization")))
@@ -162,7 +167,9 @@ class PsqlExportPipeline:
             self.Consultation.name: item.get("name"),
             self.Consultation.topic: item.get("topic"),
             self.Consultation.type: item.get("type"),
-            self.Consultation.text: item.get("text")
+            self.Consultation.text: item.get("text"),
+            self.Consultation.created_at: item.get("last_updated"),
+            self.Consultation.last_modified: item.get("last_updated")
         }).on_conflict(
             conflict_target=self.Consultation.consultation_id,
             action="update",
@@ -170,7 +177,8 @@ class PsqlExportPipeline:
                 self.Consultation.name: item.get("name"),
                 self.Consultation.topic: item.get("topic"),
                 self.Consultation.type: item.get("type"),
-                self.Consultation.text: item.get("text")
+                self.Consultation.text: item.get("text"),
+                self.Consultation.last_modified: item.get("last_updated")
             }
         ).execute()
         self.consultations_documents.append((item.get("id"), item.get("file_ids")))
@@ -183,6 +191,8 @@ class PsqlExportPipeline:
             self.AgendaItem.decision: item.get("decision"),
             self.AgendaItem.vote: item.get("vote"),
             self.AgendaItem.text: item.get("text"),
+            self.AgendaItem.created_at: item.get("last_updated"),
+            self.AgendaItem.last_modified: item.get("last_updated")
         }).on_conflict(
             conflict_target=self.AgendaItem.agenda_item_id,
             action="update",
@@ -191,6 +201,7 @@ class PsqlExportPipeline:
                 self.AgendaItem.decision: item.get("decision"),
                 self.AgendaItem.vote: item.get("vote"),
                 self.AgendaItem.text: item.get("text"),
+                self.AgendaItem.last_modified: item.get("last_updated")
             }
         ).execute()
         self.agenda_items_documents.append((item.get("id"), item.get("file_ids")))
@@ -199,25 +210,28 @@ class PsqlExportPipeline:
     def process_document(self, item, spider):
         path = os.path.join(spider.settings.get("FILES_STORE"), item.get("files")[0].get("path"))
         size = os.path.getsize(path)
-        content = open(path, "rb").read()
-
 
         self.Document.insert({
             self.Document.document_id: item.get("id"),
             self.Document.file_name: item.get("file_name"),
             self.Document.content_type: item.get("content_type"),
-            self.Document.content_binary: content,
+            self.Document.checksum: item.get("files")[0]["checksum"],
+            self.Document.uri: item.get("files")[0]["path"],
             self.Document.size: size,
-            self.Document.title: item.get("title")
+            self.Document.title: item.get("title"),
+            self.Document.created_at: item.get("last_updated"),
+            self.Document.last_modified: item.get("last_updated")
         }).on_conflict(
             conflict_target=self.Document.document_id,
             action="update",
             update={
                 self.Document.file_name: item.get("file_name"),
                 self.Document.content_type: item.get("content_type"),
-                self.Document.content_binary: content,
+                self.Document.checksum: item.get("files")[0]["checksum"],
+                self.Document.uri: item.get("files")[0]["path"],
                 self.Document.size: size,
-                self.Document.title: item.get("title")
+                self.Document.title: item.get("title"),
+                self.Document.last_modified: item.get("last_updated")
             }
         ).execute()
 
@@ -225,11 +239,16 @@ class PsqlExportPipeline:
         self.db.begin()
         self.Organization.insert({
             self.Organization.organization_id: item.get("id"),
-            self.Organization.name: item.get("title")
+            self.Organization.name: item.get("title"),
+            self.Organization.created_at: item.get("last_updated"),
+            self.Organization.last_modified: item.get("last_updated")
         }).on_conflict(
             conflict_target=self.Organization.organization_id,
             action="update",
-            update={self.Organization.name: item.get("title")}
+            update={
+                self.Organization.name: item.get("title"),
+                self.Organization.last_modified: item.get("last_updated")
+            }
         ).execute()
         organization_id = self.Organization.select(self.Organization.id).where(self.Organization.organization_id == item.get('id')).first().get('id')
 
@@ -237,26 +256,34 @@ class PsqlExportPipeline:
             self.Person.insert({
                 self.Person.person_id: person.get("id"),
                 self.Person.name: person.get("name"),
+                self.Person.created_at: item.get("last_updated"),
+                self.Person.last_modified: item.get("last_updated")
             }).on_conflict(
                 conflict_target=self.Person.name,
                 action="update",
-                update={self.Person.name: person.get("name")}
+                update={
+                    self.Person.name: person.get("name"),
+                    self.Person.last_modified: item.get("last_updated")
+                }
             ).execute()
             person_id = self.Person.select(self.Person.id).where(self.Person.name == person.get("name")).first().get("id")
             self.Membership.insert({
                 self.Membership.person_id: person_id,
                 self.Membership.organization_id: organization_id,
                 self.Membership.from_date: person.get("from_date"),
-                self.Membership.to_date: person.get("to_date")
+                self.Membership.to_date: person.get("to_date"),
+                self.Membership.created_at: item.get("last_updated"),
+                self.Membership.last_modified: item.get("last_updated")
             }).on_conflict(
                 conflict_target=(self.Membership.person_id, self.Membership.organization_id),
                 action="update",
                 update={
                     self.Membership.from_date: person.get("from_date"),
-                    self.Membership.to_date: person.get("to_date")
+                    self.Membership.to_date: person.get("to_date"),
+                    self.Membership.last_modified: item.get("last_updated")
                 }
             ).execute()
-            self.db.commit()
+        self.db.commit()
 
 
 

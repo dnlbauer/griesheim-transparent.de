@@ -1,7 +1,15 @@
 from django.db import models
 
 
-class Organization(models.Model):
+class BaseModel(models.Model):
+    class Meta:
+        abstract = True
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
+
+class Organization(BaseModel):
     class Meta:
         db_table = 'organizations'
 
@@ -10,7 +18,7 @@ class Organization(models.Model):
     name = models.TextField()
 
 
-class Person(models.Model):
+class Person(BaseModel):
     class Meta:
         db_table = "persons"
         unique_together = ("name", "person_id")
@@ -20,7 +28,7 @@ class Person(models.Model):
     name = models.TextField(unique=True)
 
 
-class Membership(models.Model):
+class Membership(BaseModel):
     class Meta:
         db_table = "memberships"
         unique_together = ("person_id", "organization_id")
@@ -32,20 +40,22 @@ class Membership(models.Model):
     to_date = models.DateTimeField(null=True)
 
 
-class Document(models.Model):
+class Document(BaseModel):
     class Meta:
         db_table = 'documents'
 
     id = models.AutoField(primary_key=True)
     document_id = models.IntegerField(unique=True)
-    file_name = models.TextField()
-    content_type = models.TextField()
-    content_binary = models.BinaryField()
+    file_name = models.TextField(null=True)
+    uri = models.TextField()
+    content_type = models.TextField(null=True)
     size = models.IntegerField()
-    title = models.TextField()
+    title = models.TextField(null=True)
+    checksum = models.TextField()
+    last_modified = models.DateTimeField()
 
 
-class Consultation(models.Model):
+class Consultation(BaseModel):
     class Meta:
         db_table = 'consultations'
 
@@ -58,7 +68,7 @@ class Consultation(models.Model):
     documents = models.ManyToManyField(Document)
 
 
-class Meeting(models.Model):
+class Meeting(BaseModel):
     class Meta:
         db_table = 'meetings'
 
@@ -72,7 +82,7 @@ class Meeting(models.Model):
     consultations = models.ManyToManyField(Consultation, db_constraint=False)
 
 
-class AgendaItem(models.Model):
+class AgendaItem(BaseModel):
     class Meta:
         db_table = 'agendaitems'
 

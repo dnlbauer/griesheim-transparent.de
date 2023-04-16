@@ -47,7 +47,7 @@ class Document(BaseModel):
     id = models.AutoField(primary_key=True)
     document_id = models.IntegerField(unique=True)
     file_name = models.TextField(null=True)
-    uri = models.TextField()
+    uri = models.TextField(unique=True)
     content_type = models.TextField(null=True)
     size = models.IntegerField()
     title = models.TextField(null=True)

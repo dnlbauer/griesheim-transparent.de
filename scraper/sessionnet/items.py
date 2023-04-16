@@ -1,5 +1,6 @@
 import datetime
 
+import pytz
 from scrapy.item import Item, Field
 
 class SessionNetItem(Item):
@@ -8,7 +9,7 @@ class SessionNetItem(Item):
 
     def __init__(self, *args, **kwargs):
         if "last_updated" not in kwargs.keys():
-            kwargs["last_updated"] = datetime.datetime.now()
+            kwargs["last_updated"] = datetime.datetime.now().astimezone(pytz.utc)
         super(SessionNetItem, self).__init__(*args, **kwargs)
 
 

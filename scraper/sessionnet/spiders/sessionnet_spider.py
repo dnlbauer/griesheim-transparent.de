@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from collections import namedtuple
 
+import pytz as pytz
 import scrapy
 
 from sessionnet.items import MeetingItem, DocumentItem, AgendaItem, ConsultationItem, OrganizationItem
@@ -149,17 +150,17 @@ class SessionNetSpider(scrapy.Spider):
 
         date = response.selector.xpath(info_table_selector_base.format("sidat")).get()
         if date:
-            date = datetime.strptime(date, "%d.%m.%Y")
+            date = datetime.strptime(date, "%d.%m.%Y").replace(tzinfo=pytz.timezone("Europe/Berlin"))
         time = response.selector.xpath(info_table_selector_base.format("yytime")).get()
         if time:
             # 18:00-18:50 Uhr -> 18:00 18:50 Uhr
             time = re.sub("\\-", " ", time)
             # 18:00 Uhr -> 18:00
             time = re.split('\\s+', time)[0]
-            time = datetime.strptime(time, "%H:%M")
+            time = datetime.strptime(time, "%H:%M").replace(tzinfo=pytz.timezone("Europe/Berlin"))
 
         if date and time:
-            date = datetime.combine(date.date(), time.time())
+            date = datetime.combine(date.date(), time.time()).astimezone(pytz.utc)
 
 
         file_ids, file_follows = self.get_file_links(response)

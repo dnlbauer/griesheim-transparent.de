@@ -57,6 +57,8 @@ services:
     networks:
       - griesheimtransparent
     restart: ${RESTART_RULE}
+    volumes:
+      - scraper_db:/var/lib/postgresql
   tika:
     image: apache/tika:1.28.4-full
     container_name: griesheimtransparent-tika
@@ -68,21 +70,21 @@ services:
   scraper:
     image: griesheimtransparent-scraper
     container_name: griesheimtransparent-scraper
-    build: ../RIScraper
+    build: ../scraper
     depends_on:
       - database
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_HOST=database:${POSTGRES_PORT}
-      - NSCRAPER=${SCRAPER_SCRAPE_THREADS}
-    # command: --start 08/2022 --end 08/2022
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_USER=${POSTGRES_USER}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=database
+      - DB_PORT=${POSTGRES_PORT}
+    # command: crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END 03/2023
     entrypoint: crond -f -d 0
-    volumes:
-      - scraper_db:/var/lib/postgresql/data
     networks:
       - griesheimtransparent
+    volumes:
+      - scraper_files:/scraper/filestore
     restart: ${RESTART_RULE}
   solr:
     image: griesheimtransparent-solr
@@ -121,3 +123,5 @@ volumes:
   django_db:
   django_staticfiles:
   scraper_db:
+  scraper_files:
+

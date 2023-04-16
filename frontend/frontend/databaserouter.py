@@ -13,8 +13,8 @@ class DatabaseRouter:
         module = inspect.getmodule(model)
         if not module:
             return False
-        _base, _sep, stem = module.__name__.partition('.')
-        return stem.endswith("risdb")
+        base, _sep, _stem = module.__name__.partition('.')
+        return base == "ris"
 
     def _route(self, model):
         if self._is_risdb_model(model):

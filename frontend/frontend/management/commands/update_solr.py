@@ -40,22 +40,22 @@ class Command(BaseCommand):
         for this document """
         # find associated consultations, meetings, ..
 
-        consultations = doc.consultations.all()
+        consultations = doc.consultation_set.all()
         consultation = None
         if len(consultations) > 1:
             raise ValueError("Associated consultation objects > 1. This is unexpected")
         elif len(consultations) == 1:
             consultation = consultations[0]
 
-        meetings = set(doc.meetings.all())
-        agenda_items = set(doc.agenda_items.all())
+        meetings = set(doc.meeting_set.all())
+        agenda_items = set(doc.agendaitem_set.all())
 
         if consultation is not None:
-            consultation_agenda_items = consultation.agenda_items.all()
+            consultation_agenda_items = consultation.agendaitem_set.all()
             for item in consultation_agenda_items:
                 agenda_items.add(item)
                 meetings.add(item.meeting)
-            consultation_meetings = consultation.meetings.all()
+            consultation_meetings = consultation.meeting_set.all()
             for item in consultation_meetings:
                 meetings.add(item)
 
@@ -110,16 +110,23 @@ class Command(BaseCommand):
             solr_doc['agenda_item_title'].append(agenda_item.title.split(":")[-1].strip())
             solr_doc['agenda_item_text'].append(agenda_item.text)
 
+        last_seen = None
+        first_seen = None
         for meeting in meetings:
             solr_doc['meeting_id'].append(meeting.meeting_id)
             solr_doc['meeting_title'].append(meeting.title)
             solr_doc['meeting_title_short'].append(meeting.title_short)
             solr_doc['meeting_date'].append(meeting.date.strftime(self.DATE_FORMAT))
             solr_doc['meeting_organization_name'].append(meeting.organization.name)
-            if "last_seen" not in solr_doc or datetime.strptime(solr_doc['last_seen'], self.DATE_FORMAT) < meeting.date:
-                solr_doc['last_seen'] = solr_doc['meeting_date'][-1]
-            if "first_seen" not in solr_doc or datetime.strptime(solr_doc['first_seen'], self.DATE_FORMAT) > meeting.date:
-                solr_doc['first_seen'] = solr_doc['meeting_date'][-1]
+            if last_seen is None or last_seen < meeting.date:
+                last_seen = meeting.date
+            if first_seen is None or first_seen > meeting.date:
+                first_seen = meeting.date
+
+        if last_seen is not None:
+            solr_doc['last_seen'] = last_seen.strftime(self.DATE_FORMAT)
+        if first_seen is not None:
+            solr_doc['first_seen'] = first_seen.strftime(self.DATE_FORMAT)
 
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
@@ -188,7 +195,7 @@ class Command(BaseCommand):
             if Organization.objects.filter(name=org).count() == 1:
                 checked_organizations.append(org)
             else:
-                print("!! Invalid organization skipped: {org} !!")
+                print(f"!! Invalid organization skipped: {org} !!")
         return checked_organizations
 
 
@@ -273,5 +280,4 @@ class Command(BaseCommand):
         self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
 
         self._log(f"{processed} documents processed ({updated} updated).")
-
 

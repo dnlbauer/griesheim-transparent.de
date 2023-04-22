@@ -2,7 +2,7 @@ import math
 
 class SearchResult:
     def __init__(self, id, document_id, title, organization, highlight, link, download_link,
-                 doc_type, short_name, date, preview_image):
+                 doc_type, short_name, date, preview_image, filetype):
         self.id = id
         self.document_id = document_id
         self.title = title
@@ -14,6 +14,7 @@ class SearchResult:
         self.short_name = short_name
         self.date = date
         self.preview_image = preview_image
+        self.filetype = filetype
 
 class SearchResults:
     def __init__(self, documents, facets, page, rows, hits, qtime,

@@ -1,76 +1,92 @@
 <article class="searchresult f5 pa3 flex" style="line-height: 1.6;">
     <!-- thumbnail -->
-    {% if document.preview_image %}
-            <div class="mr3 db-l searchresult-preview">
-                <a href="{{ document.download_link }}">
-                    <div class="searchresult-preview-image">
-                        <img src="{{ document.preview_image }}" class="ba bw shadow-1 mw3 mw3-l" alt="Preview image: {{ document.title.strip }}"/>
-                        <span class="fa-regular fa-file-pdf dark-red bg-light-gray f3" style="position: absolute; top:-8px; right:-8px"></span>
-                    </div>
-                </a>
+    <div class="mr3 db-l searchresult-preview">
+        <a href="{{ document.download_link }}">
+            <div class="searchresult-preview-image">
+                {% if document.preview_image %}
+                    <img src="{{ document.preview_image }}" class="ba bw shadow-1 mw3 mw3-l"
+                         alt="Preview image: {{ document.title.strip }}"/>
+                {% else %}
+                    {% load static %}
+                    <img src="{% static 'preview_empty.jpg' %}" class="ba bw shadow-1 mw3 mw3-l"
+                         alt="Preview image: {{ document.title.strip }}"/>
+                {% endif %}
+                <span class="fa-regular
+                    {% if document.filetype == "pdf" %}
+                    fa-file-pdf
+                    {% elif document.filetype == "xlsx" %}
+                    fa-file-excel
+                    {% elif document.filetype == "docx" %}
+                    fa-file-word
+                    {% else %}
+                    fa-file
+                    {% endif %}
+                        dark-red bg-light-gray f3"
+                      style="position: absolute; top:-8px; right:-8px"></span>
             </div>
-        {% endif %}
-        <div>
-            <!-- document title -->
-            <div class="searchresult-head overflow-x-hidden">
-                <a href="{{ document.link }}">
+        </a>
+    </div>
+    <div>
+        <!-- document title -->
+        <div class="searchresult-head overflow-x-hidden">
+            <a href="{{ document.link }}">
                     <span class="secondary-color fw4 f5 f4-l measure">
                         {{ document.title.strip }}
                         {% if document.organization %}
                             ({{ document.organization|join:", " }})
                         {% endif %}
                     </span>
-                </a>
-            </div>
-            <!-- document metadata -->
-            <div class="metadata">
-                <small class="f5-l f6 measure flex flex-wrap">
-                    <!-- document type -->
-                    {% if document.doc_type %}
-                        <div class="mr1 mid-gray">
-                            {% if document.doc_type == "Anlage" %}
-                                <span class="fa-solid fa-paperclip"></span>
-                            {% else %}
-                                {% if document.doc_type == "Niederschrift" %}
-                                    <span class="fa-solid fa-file-signature"></span>
-                                {% else %}
-                                    <span class="fa-regular fa-file"></span>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-                        <span class="mr2">{{ document.doc_type }}</span>
-                    {% endif %}
-                    <!-- separator -->
-                    {% if document.doc_type %}
-                        {% if document.short_name or document.date %}
-                            <span class="mr2">|</span>
-                        {% endif %}
-                    {% endif %}
-                    <!-- assoc event -->
-                    {% if document.short_name %}
-                        <span class="mr2">{{ document.short_name }}</span>
-                    {% endif %}
-                    <!-- separator -->
-                    {% if document.doc_type or document.short_name %}
-                        {% if document.date %}
-                            <span class="mr2">|</span>
-                        {% endif %}
-                    {% endif %}
-                    <div class="mid-gray mr1">
-                        <span class="fa fa-calendar-days"></span>
-                    </div>
-                    <span class="mr2">{{ document.date|date:"d. M 'y" }}</span>
-                </small>
-            </div>
-            <!-- Highlight text -->
-            {% if document.highlight %}
-                <div class="gray mb2 f5-l f6 highlight-text mt1">
-                    {% if hl_maxchars %}
-                        {{ document.highlight.strip|safe|truncatechars:hl_maxchars }}
-                    {% else %}
-                        {{ document.highlight.strip|safe }}
-                   {% endif %}
-                </div>
-            {% endif %}
+            </a>
         </div>
+        <!-- document metadata -->
+        <div class="metadata">
+            <small class="f5-l f6 measure flex flex-wrap">
+                <!-- document type -->
+                {% if document.doc_type %}
+                    <div class="mr1 mid-gray">
+                        {% if document.doc_type == "Anlage" %}
+                            <span class="fa-solid fa-paperclip"></span>
+                        {% else %}
+                            {% if document.doc_type == "Niederschrift" %}
+                                <span class="fa-solid fa-file-signature"></span>
+                            {% else %}
+                                <span class="fa-regular fa-file"></span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    <span class="mr2">{{ document.doc_type }}</span>
+                {% endif %}
+                <!-- separator -->
+                {% if document.doc_type %}
+                    {% if document.short_name or document.date %}
+                        <span class="mr2">|</span>
+                    {% endif %}
+                {% endif %}
+                <!-- assoc event -->
+                {% if document.short_name %}
+                    <span class="mr2">{{ document.short_name }}</span>
+                {% endif %}
+                <!-- separator -->
+                {% if document.doc_type or document.short_name %}
+                    {% if document.date %}
+                        <span class="mr2">|</span>
+                    {% endif %}
+                {% endif %}
+                <div class="mid-gray mr1">
+                    <span class="fa fa-calendar-days"></span>
+                </div>
+                <span class="mr2">{{ document.date|date:"d. M 'y" }}</span>
+            </small>
+        </div>
+        <!-- Highlight text -->
+        {% if document.highlight %}
+            <div class="gray mb2 f5-l f6 highlight-text mt1">
+                {% if hl_maxchars %}
+                    {{ document.highlight.strip|safe|truncatechars:hl_maxchars }}
+                {% else %}
+                    {{ document.highlight.strip|safe }}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 </article>

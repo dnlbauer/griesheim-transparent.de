@@ -10,7 +10,7 @@ NUM_ROWS = 10
 # settings to pass to solr
 SOLR_ARGS = {
     "search_handler": "/select",
-    "fl": "id,first_seen,preview_image,consultation_organization"
+    "fl": "id,first_seen,preview_image,consultation_organization,filename"
 }
 
 # facet specific settings
@@ -133,6 +133,11 @@ def _parse_search_result(doc, response):
     else:
         doc_type = "Anlage"
 
+    if "filename" in doc:
+        filetype = doc["filename"].split(".")[-1]
+    else:
+        filetype = None
+
     # result title depends on the document type.
     title = None
     if doc_type:
@@ -178,7 +183,8 @@ def _parse_search_result(doc, response):
         doc_type,
         short_name,
         date,
-        preview_image
+        preview_image,
+        filetype
     )
 
 SUGGEST_ARGS = {

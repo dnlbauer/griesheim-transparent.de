@@ -1,4 +1,0 @@
-# full sync every day at 02:00
-0 2 * * * python /RIScraper/Scraper.py --start 01/2010
-# sync +/- 3 months every 3hrs
-0 5-23/3 * * * python /RIScraper/Scraper.py --start $(date +"%m/%Y" --date="-3 month") --end $(date +"%m/%Y" --date="+3 month")

@@ -23,7 +23,7 @@ class PreviewServiceHealthCheckBackend(BaseHealthCheckBackend):
             if content != "OK":
                 raise ServiceUnavailable(f"Status: {content}")
         except Exception as e:
-            raise ServiceUnavailable(str(e))
+            raise ServiceUnavailable(f"{url}: {str(e)}")
 
     def _get_healthcheck_url(self):
         return settings.PREVIEW_HOST

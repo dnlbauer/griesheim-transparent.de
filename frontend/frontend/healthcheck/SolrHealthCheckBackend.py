@@ -24,7 +24,7 @@ class SolrHealthCheckBackend(BaseHealthCheckBackend):
             if status != "OK":
                 raise ServiceUnavailable(f"Status: {status}")
         except Exception as e:
-            raise ServiceUnavailable(str(e))
+            raise ServiceUnavailable(f"{url}: {str(e)}")
 
     def _get_healthcheck_url(self):
         host = settings.SOLR_HOST

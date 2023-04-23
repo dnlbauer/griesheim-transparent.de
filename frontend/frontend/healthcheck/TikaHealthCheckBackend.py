@@ -23,7 +23,7 @@ class TikaHealthCheckBackend(BaseHealthCheckBackend):
             if "Apache Tika" not in content:
                 raise ServiceUnavailable(f"Status: {content}")
         except Exception as e:
-            raise ServiceUnavailable(str(e))
+            raise ServiceUnavailable(f"{url}: {str(e)}")
 
     def _get_healthcheck_url(self):
         host = settings.TIKA_HOST

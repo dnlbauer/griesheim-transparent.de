@@ -14,13 +14,16 @@ class PDFActHealthCheckBackend(BaseHealthCheckBackend):
 
     def check_status(self):
         url = self._get_healthcheck_url()
-        r = urllib.request.urlopen(url)
-        if r.status != 200:
-            raise ServiceUnavailable(f"Unavailable (status={r.status})")
+        try:
+            r = urllib.request.urlopen(url)
+            if r.status != 200:
+                raise ServiceUnavailable(f"Unavailable (status={r.status})")
 
-        content = r.read().decode("utf-8")
-        if content != "OK":
-            raise ServiceUnavailable(f"Status: {content}")
+            content = r.read().decode("utf-8")
+            if content != "OK":
+                raise ServiceUnavailable(f"Status: {content}")
+        except Exception as e:
+            raise ServiceUnavailable(f"{url}: {str(e)}")
 
     def _get_healthcheck_url(self):
         return settings.PDFACT_HOST

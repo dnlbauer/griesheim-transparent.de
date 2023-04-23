@@ -88,8 +88,17 @@ class MainView(TemplateView):
 
         # perform solr query
         if query is not None:
-            Query(query=query).save()  # Query log
             result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
+            Query(
+                query=query,
+                user=request.user.username if request.user.is_authenticated else None,
+                organization=organization,
+                doc_type=doc_type,
+                sort=sort,
+                page=page,
+                num_results=result.hits,
+                query_time=result.qtime
+            ).save()  # Query log
         else:
             context['num_docs'] = solr.count("*:*")
             result = solr.doc_id("*:*", limit=5)

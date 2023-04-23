@@ -170,3 +170,6 @@ dump.sql
 
 scraper/filestore
 scraper/test.json
+
+frontend/staticfiles
+frontend/health_check_storage_test

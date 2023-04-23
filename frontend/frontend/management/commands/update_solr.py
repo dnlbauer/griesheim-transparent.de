@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commiting
-    VERSION = 4  # incr. if analyze chain changes to force a full resync
+    VERSION = 5  # incr. if analyze chain changes to force a full resync
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -263,7 +263,8 @@ class Command(BaseCommand):
 
                 # get preview thumbnail
                 self._log("Sending document to preview service")
-                preview_image = get_preview_image_for_doc(file_path)
+                preview_image = None
+                # preview_image = get_preview_image_for_doc(file_path)
 
             # generate solr document from data
             self._log("Creating solr document")

@@ -33,7 +33,8 @@ SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
 
 
 ALLOWED_HOSTS = [host for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
-
+CSRF_TRUSTED_ORIGINS = [f"http://{host}" for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
+CSRF_TRUSTED_ORIGINS += [f"https://{host}" for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
 
 # Application definition
 

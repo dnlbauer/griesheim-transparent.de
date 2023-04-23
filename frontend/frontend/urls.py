@@ -16,7 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
+from django.conf.urls import handler400, handler403, handler404, handler500
 
+from frontend import settings
 from frontend.views import MainView, SearchView, SuggestView, update
 
 urlpatterns = [
@@ -30,4 +32,10 @@ urlpatterns = [
     path("impressum", TemplateView.as_view(template_name="impressum.html"), name="impressum"),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
 ]
+
+if not settings.DEBUG:
+    handler400 = 'frontend.views.handler_400'
+    handler403 = 'frontend.views.handler_403'
+    handler404 = 'frontend.views.handler_404'
+    handler500 = 'frontend.views.handler_500'
 

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %} - Fehler {{ status_code }}{% endblock %}
+{% block content %}
+    <div class="w-60-l w-90 center">
+    <h2>Oops!... {{ message }} (status={{ status_code }})</h2>
+        <p>
+    Sollte das Problem bestehen bleiben, schreibe mir gerne eine Email:
+    {% include "components/mail.html" %}.
+        </p>
+    <a href="/">Zur Startseite</a>
+    </div>
+
+{% endblock %}

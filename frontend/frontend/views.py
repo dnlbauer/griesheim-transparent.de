@@ -134,3 +134,25 @@ class SuggestView(TemplateView):
             status = 404
 
         return render(request, self.template_name, context={"suggestions": suggestions}, status=status)
+
+def error_handler(request, code, message):
+    context = dict(
+        status_code=code,
+        message=message
+    )
+    return render(request, "error.html", status=code, context=context)
+
+def handler_400(request, *args, **kwargs):
+    return error_handler(request, 400, "Ungültige Anfrage.")
+
+
+def handler_403(request, *args, **kwargs):
+    return error_handler(request, 403, "Zugriff verweigert.")
+
+
+def handler_404(request, *args, **kwargs):
+    return error_handler(request, 404, "Seite konnte nicht gefunden werden.")
+
+
+def handler_500(request, *args, **kwargs):
+    return error_handler(request, 500, "Serverfehler.")

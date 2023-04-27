@@ -263,8 +263,7 @@ class Command(BaseCommand):
 
                 # get preview thumbnail
                 self._log("Sending document to preview service")
-                preview_image = None
-                # preview_image = get_preview_image_for_doc(file_path)
+                preview_image = get_preview_image_for_doc(file_path)
 
             # generate solr document from data
             self._log("Creating solr document")

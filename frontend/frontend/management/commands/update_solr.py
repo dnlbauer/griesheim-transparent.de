@@ -2,6 +2,7 @@ import os
 
 import tika
 from datetime import datetime
+import pytz
 import re
 
 import pysolr
@@ -199,16 +200,19 @@ class Command(BaseCommand):
         return checked_organizations
 
 
-    def _is_solr_doc_outdated(self, solr, doc_id):
-        result = solr.search(f"id:{doc_id}", **{"rows": 2147483647, "fl": "version,last_analyzed"})
+    def _is_solr_doc_outdated(self, solr, doc):
+        doc_id, last_modified = doc
+        result = solr.search(f"id:{doc_id}", **{"rows": 1, "fl": "version,last_analyzed"})
 
-        if len(result) > 1:
-            raise ValueError(f"Expected single document for {doc_id} but found {len(result)}")
         if len(result) == 0:
             return True
 
-        doc = result.docs[0]
-        return doc["version"] < self.VERSION
+        doc_version = result.docs[0]["version"]
+        last_analyzed = datetime.strptime(result.docs[0]["last_analyzed"], self.DATE_FORMAT).replace(tzinfo=pytz.UTC)
+
+        # TODO does not take into account changes to metadata..
+        #return doc_version < self.VERSION or last_analyzed < last_modified
+        return True
 
 
     def handle(self, *args, **options):
@@ -227,8 +231,9 @@ class Command(BaseCommand):
         solr_docs = []
 
         # filter document ids for outdated documents
-        document_ids = Document.objects.values_list("id", flat=True)
+        document_ids = Document.objects.values_list("id", "last_modified")
         document_ids = [i for i in document_ids if force or self._is_solr_doc_outdated(solr, i)]
+        document_ids = [doc[0] for doc in document_ids]
         total = len(document_ids)
         self._log(f"Outdated documents: {total}")
 

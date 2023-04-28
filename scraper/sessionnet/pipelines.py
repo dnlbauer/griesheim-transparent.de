@@ -137,6 +137,18 @@ class PsqlExportPipeline:
         return item
 
     def process_meeting(self, item, spider):
+        exists = self.Meeting.select().where(
+            (self.Meeting.meeting_id == item.get('id')) &
+            (self.Meeting.title == item.get("title")) &
+            (self.Meeting.title_short == item.get("title_short")) &
+            (self.Meeting.date == item.get("date"))
+        ).exists()
+
+        if exists:
+            return
+
+        spider.logger.info(f"Upserting meeting {item.get('title')} ({item.get('id')})")
+
         self.Meeting.insert({
             self.Meeting.meeting_id: item.get('id'),
             self.Meeting.title: item.get("title"),
@@ -154,12 +166,25 @@ class PsqlExportPipeline:
                 self.Meeting.last_modified: item.get("last_updated")
             }
         ).execute()
+        spider.crawler.stats.inc_value("db.meetings_upserted", spider=spider)
         self.meetings_organizations.append((item.get('id'), item.get("organization")))
         self.meetings_documents.append((item.get("id"), item.get("file_ids")))
         self.meetings_consultations.append((item.get("id"), item.get("consultation_ids")))
         self.meetings_agenda_items.append((item.get("id"), item.get("agenda_ids")))
 
     def process_consultations(self, item, spider):
+        exists = self.Consultation.select().where(
+            (self.Consultation.consultation_id == item.get("id")) &
+            (self.Consultation.name == item.get("name")) &
+            (self.Consultation.topic == item.get("topic")) &
+            (self.Consultation.type == item.get("type")) &
+            (self.Consultation.text == item.get("text"))
+        ).exists()
+
+        if exists:
+            return
+
+        spider.logger.info(f"Upserting consultation {item.get('name')} ({item.get('id')})")
         self.Consultation.insert({
             self.Consultation.consultation_id: item.get("id"),
             self.Consultation.name: item.get("name"),
@@ -179,10 +204,23 @@ class PsqlExportPipeline:
                 self.Consultation.last_modified: item.get("last_updated")
             }
         ).execute()
+        spider.crawler.stats.inc_value("db.consultations_upserted", spider=spider)
         self.consultations_documents.append((item.get("id"), item.get("file_ids")))
         self.consultations_agenda_items.append((item.get("id"), item.get("agenda_ids")))
 
     def process_agenda_item(self, item, spider):
+        exists = self.AgendaItem.select().where(
+            (self.AgendaItem.agenda_item_id == item.get("id")) &
+            (self.AgendaItem.title == item.get("title")) &
+            (self.AgendaItem.decision == item.get("decision")) &
+            (self.AgendaItem.vote == item.get("vote")) &
+            (self.AgendaItem.text == item.get("text"))
+        ).exists()
+
+        if exists:
+            return
+
+        spider.logger.info(f"Upserting agenda item {item.get('title')} ({item.get('id')})")
         self.AgendaItem.insert({
             self.AgendaItem.agenda_item_id: item.get("id"),
             self.AgendaItem.title: item.get("title"),
@@ -202,6 +240,7 @@ class PsqlExportPipeline:
                 self.AgendaItem.last_modified: item.get("last_updated")
             }
         ).execute()
+        spider.crawler.stats.inc_value("db.agenda_items_upserted", spider=spider)
         self.agenda_items_documents.append((item.get("id"), item.get("file_ids")))
         self.agenda_items_consultations.append((item.get("id"), item.get("consultation_ids")))
 
@@ -209,6 +248,20 @@ class PsqlExportPipeline:
         path = os.path.join(spider.settings.get("FILES_STORE"), item.get("files")[0].get("path"))
         size = os.path.getsize(path)
 
+        exists = self.Document.select().where(
+            (self.Document.document_id == item.get("id")) &
+            (self.Document.file_name == item.get("file_name")) &
+            (self.Document.content_type == item.get("content_type")) &
+            (self.Document.checksum == item.get("files")[0]["checksum"]) &
+            (self.Document.uri == item.get("files")[0]["path"]) &
+            (self.Document.size == size) &
+            (self.Document.title == item.get("title"))
+        ).exists()
+
+        if exists:
+            return
+
+        spider.logger.info(f"Upserting document {item.get('title')} ({item.get('id')})")
         self.Document.insert({
             self.Document.document_id: item.get("id"),
             self.Document.file_name: item.get("file_name"),
@@ -232,37 +285,57 @@ class PsqlExportPipeline:
                 self.Document.last_modified: item.get("last_updated")
             }
         ).execute()
+        spider.crawler.stats.inc_value("db.documents_upserted", spider=spider)
 
     def process_organization(self, item, spider):
-        if item.get("title") is None:  # TODO add persons anyway, but without org membership
-            return
-
         self.db.begin()
-        if item.get("organization_id") is None:
-            conflict = self.Organization.name
-        else:
-            conflict = self.Organization.organization_id
-        self.Organization.insert({
-            self.Organization.organization_id: item.get("id"),
-            self.Organization.name: item.get("title"),
-            self.Organization.created_at: item.get("last_updated"),
-            self.Organization.last_modified: item.get("last_updated")
-        }).on_conflict(
-            conflict_target=conflict,
-            action="update",
-            update={
-                self.Organization.name: item.get("title"),
-                self.Organization.last_modified: item.get("last_updated")
-            }
-        ).execute()
-        organization = self.Organization.select(self.Organization.id).where(
-            self.Organization.name == item.get('title')).first()
-        if organization:
-            organization_id = organization.get('id')
-        else:
-            organization_id = None
+
+        organization_id = None
+        if item.get("title") is not None:
+            exists = self.Organization.select().where(
+                self.Organization.name == item.get("title")
+            ).exists()
+
+            if not exists:
+                spider.logger.info(f"Upserting organization {item.get('title')} ({item.get('id')})")
+
+                if item.get("organization_id") is None:
+                    conflict = self.Organization.name
+                else:
+                    conflict = self.Organization.organization_id
+
+                self.Organization.insert({
+                    self.Organization.organization_id: item.get("id"),
+                    self.Organization.name: item.get("title"),
+                    self.Organization.created_at: item.get("last_updated"),
+                    self.Organization.last_modified: item.get("last_updated")
+                }).on_conflict(
+                    conflict_target=conflict,
+                    action="update",
+                    update={
+                        self.Organization.name: item.get("title"),
+                        self.Organization.last_modified: item.get("last_updated")
+                    }
+                ).execute()
+                spider.crawler.stats.inc_value("db.organizations_upserted", spider=spider)
+
+            organization = self.Organization.select(self.Organization.id).where(
+                self.Organization.name == item.get('title')).first()
+            if organization:
+                organization_id = organization.get('id')
 
         for person in item.get("persons"):
+            self.process_person(spider, person, item, organization_id)
+
+        self.db.commit()
+
+    def process_person(self, spider, person, item, organization_id=None):
+        exists = self.Person.select().where(
+            self.Person.name == person.get("name")
+        ).exists()
+
+        if not exists:
+            spider.logger.info(f"Upserting person {person.get('name')} ({person.get('id')})")
             self.Person.insert({
                 self.Person.person_id: person.get("id"),
                 self.Person.name: person.get("name"),
@@ -276,24 +349,35 @@ class PsqlExportPipeline:
                     self.Person.last_modified: item.get("last_updated")
                 }
             ).execute()
-            if organization_id:
-                person_id = self.Person.select(self.Person.id).where(
-                    self.Person.name == person.get("name")).first().get("id")
+            spider.crawler.stats.inc_value("db.persons_upserted", spider=spider)
 
-                self.Membership.insert({
-                    self.Membership.person_id: person_id,
-                    self.Membership.organization_id: organization_id,
+        if organization_id:
+            person_id = self.Person.select(self.Person.id).where(
+                self.Person.name == person.get("name")).first().get("id")
+
+            membership_exists = self.Membership.select().where(
+                (self.Membership.person_id == person_id) &
+                (self.Membership.organization_id == organization_id)
+            ).exists()
+
+            if membership_exists:
+                return
+
+            spider.logger.info(f"Upserting membership {person.get('name')} ({person.get('id')}): {organization_id}")
+            self.Membership.insert({
+                self.Membership.person_id: person_id,
+                self.Membership.organization_id: organization_id,
+                self.Membership.from_date: person.get("from_date"),
+                self.Membership.to_date: person.get("to_date"),
+                self.Membership.created_at: item.get("last_updated"),
+                self.Membership.last_modified: item.get("last_updated")
+            }).on_conflict(
+                conflict_target=(self.Membership.person_id, self.Membership.organization_id),
+                action="update",
+                update={
                     self.Membership.from_date: person.get("from_date"),
                     self.Membership.to_date: person.get("to_date"),
-                    self.Membership.created_at: item.get("last_updated"),
                     self.Membership.last_modified: item.get("last_updated")
-                }).on_conflict(
-                    conflict_target=(self.Membership.person_id, self.Membership.organization_id),
-                    action="update",
-                    update={
-                        self.Membership.from_date: person.get("from_date"),
-                        self.Membership.to_date: person.get("to_date"),
-                        self.Membership.last_modified: item.get("last_updated")
-                    }
-                ).execute()
-        self.db.commit()
+                }
+            ).execute()
+            spider.crawler.stats.inc_value("db.memberships_upserted", spider=spider)

@@ -2,7 +2,6 @@ import os
 
 import tika
 from datetime import datetime
-import pytz
 import re
 
 import pysolr
@@ -21,7 +20,6 @@ class Command(BaseCommand):
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commit
-    VERSION = 5  # incr. if analyze chain changes to force a full resync without the force flag
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -60,7 +58,6 @@ class Command(BaseCommand):
     def _parse_solr_document(self, doc, content, metadata, preview_image):
         solr_doc = dict(
             id=str(doc.id),
-            version=self.VERSION,
             last_analyzed=datetime.now().strftime(self.DATE_FORMAT),
             document_id=doc.document_id,
             size=doc.size,
@@ -98,7 +95,6 @@ class Command(BaseCommand):
                 solr_doc["consultation_organization"] = organizations
             else:
                 solr_doc["consultation_topic"] = consultation.topic
-
 
         for agenda_item in agenda_items:
             solr_doc['agenda_item_id'].append(agenda_item.agenda_item_id)
@@ -150,7 +146,6 @@ class Command(BaseCommand):
             if last_save_date is not None:
                 solr_doc['last_saved'] = last_save_date
 
-
         # Niederschrift type recognized by keyword "Niederschrift" title
         if 'doc_type' not in solr_doc or solr_doc['doc_type'] is None:
             if "niederschrift" in doc.title.lower():
@@ -182,22 +177,6 @@ class Command(BaseCommand):
                 print(f"!! Invalid organization skipped: {org} !!")
         return checked_organizations
 
-
-    def _is_solr_doc_outdated(self, solr, doc):
-        doc_id, last_modified = doc
-        result = solr.search(f"id:{doc_id}", **{"rows": 1, "fl": "version,last_analyzed"})
-
-        if len(result) == 0:
-            return True
-
-        doc_version = result.docs[0]["version"]
-        last_analyzed = datetime.strptime(result.docs[0]["last_analyzed"], self.DATE_FORMAT).replace(tzinfo=pytz.UTC)
-
-        # TODO does not take into account changes to metadata..
-        #return doc_version < self.VERSION or last_analyzed < last_modified
-        return True
-
-
     def handle(self, *args, **options):
         # get command arguments
         chunk_size = self.DEFAULT_CHUNK_SIZE
@@ -206,26 +185,15 @@ class Command(BaseCommand):
         force = options["force"]
         ocr = options["no_ocr"]
 
-        self._log(f"Processing {Document.objects.all().count()} documents...")
-        processed = 0
-        updated = 0
-
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         solr_docs = []
 
-        # filter document ids for outdated documents
-        document_ids = Document.objects.values_list("id", "last_modified")
-        document_ids = [i for i in document_ids if force or self._is_solr_doc_outdated(solr, i)]
-        document_ids = [doc[0] for doc in document_ids]
-        total = len(document_ids)
-        self._log(f"Outdated documents: {total}")
+        total = Document.objects.all().count()
+        self._log(f"Processing {total} documents...")
 
-        for document_id in document_ids:
-            document = Document.objects.get(id=document_id)
-            processed += 1
-
+        processed = 0
+        for document in Document.objects.all():
             self._log(f"Processing {document.file_name} ({str(document.id)})")
-
 
             # perform text analysis
             content = []
@@ -235,39 +203,37 @@ class Command(BaseCommand):
                 file_path = os.path.join(settings.DOCUMENT_STORE, document.uri)
 
                 self._log("Sending document to pdfact")
-                content = analyze_document_pdfact(file_path)
+                content = analyze_document_pdfact(file_path, skip_cache=force)
 
                 # analyze document with tika
                 self._log("Sending document to tika")
-                tika_result = analyze_document_tika(file_path, False)
+                tika_result = analyze_document_tika(file_path, False, skip_cache=force)
 
                 # Run OCR/tesseract if there is no content from tika without ocr
                 if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
                     self._log("Sending document to tika/ocr")
-                    tika_result = analyze_document_tika(file_path, True)
+                    tika_result = analyze_document_tika(file_path, True, skip_cache=force)
                 metadata = tika_result["metadata"]
                 if content is None or len(content) == 0:
                     content = tika_result["content"]
 
                 self._log("Sending document to preview service")
-                preview_image = get_preview_image_for_doc(file_path)
+                preview_image = get_preview_image_for_doc(file_path, skip_cache=force)
 
             # generate solr document from data
             self._log("Creating solr document")
             solr_doc = self._parse_solr_document(document, content, metadata, preview_image)
             solr_docs.append(solr_doc)
+            processed += 1
 
             # write chunks to solr
             if len(solr_docs) >= chunk_size:
                 self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr.add(solr_docs, commit=True)
-                updated += len(solr_docs)
                 solr_docs = []
 
         # commit last incomplete chunk
         solr.add(solr_docs, commit=True)
-        updated += len(solr_docs)
         self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-
-        self._log(f"{processed} documents processed ({updated} updated).")
+        self._log(f"Processed {processed} documents.")
 

@@ -7,7 +7,6 @@
 
     <!-- Used to identify if a document needs reindexing -->
     <field name="last_analyzed" type="pdate" indexed="false" stored="true" required="true" />
-    <field name="version" type="pint" indexed="false" stored="true" required="true" />
 
     <!-- Document data -->
     <field name="document_id" type="pint" indexed="false" stored="true" required="true" />

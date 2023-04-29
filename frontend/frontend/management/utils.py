@@ -28,13 +28,14 @@ def get_cache_content(path, postfix):
         return None
 
 
-def get_preview_image_for_doc(path):
+def get_preview_image_for_doc(path, skip_cache=False):
     """ Perform a request against the external preview image service
     to generate a preview thumbnail for the document """
 
-    cached = get_cache_content(path, "preview")
-    if cached:
-        return cached
+    if not skip_cache:
+        cached = get_cache_content(path, "preview")
+        if cached:
+            return cached
 
     binary = open(path, "rb").read()
 
@@ -51,7 +52,7 @@ def get_preview_image_for_doc(path):
         return None
 
 
-def analyze_document_tika(path, ocr=False):
+def analyze_document_tika(path, ocr=False, skip_cache=False):
     """ Extract document text with tika or tesseract(ocr) """
 
     if not ocr:
@@ -65,9 +66,10 @@ def analyze_document_tika(path, ocr=False):
             "X-Tika-OCRTimeout": str(30*60)
         }
 
-    cached = get_cache_content(path, f"tika{'.ocr' if ocr else ''}")
-    if cached:
-        return json.loads(cached)
+    if not skip_cache:
+        cached = get_cache_content(path, f"tika{'.ocr' if ocr else ''}")
+        if cached:
+            return json.loads(cached)
 
     parsed = parser.from_file(
         path,
@@ -80,12 +82,13 @@ def analyze_document_tika(path, ocr=False):
     return parsed
 
 
-def analyze_document_pdfact(path):
+def analyze_document_pdfact(path, skip_cache=False):
     """ Analyze document with pdfact and return the whole text """
 
-    cached = get_cache_content(path, "pdfact")
-    if cached:
-        return json.loads(cached)
+    if not skip_cache:
+        cached = get_cache_content(path, "pdfact")
+        if cached:
+            return json.loads(cached)
 
     binary = open(path, "rb").read()
 

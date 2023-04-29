@@ -174,7 +174,7 @@ class Command(BaseCommand):
             if Organization.objects.filter(name=org).count() == 1:
                 checked_organizations.append(org)
             else:
-                print(f"!! Invalid organization skipped: {org} !!")
+                self._log(f"!! Invalid organization skipped: {org} !!")
         return checked_organizations
 
     def handle(self, *args, **options):
@@ -221,7 +221,6 @@ class Command(BaseCommand):
                 preview_image = get_preview_image_for_doc(file_path, skip_cache=force)
 
             # generate solr document from data
-            self._log("Creating solr document")
             solr_doc = self._parse_solr_document(document, content, metadata, preview_image)
             solr_docs.append(solr_doc)
             processed += 1

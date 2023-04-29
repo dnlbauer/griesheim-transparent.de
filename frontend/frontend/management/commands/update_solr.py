@@ -228,7 +228,7 @@ class Command(BaseCommand):
             # write chunks to solr
             if len(solr_docs) >= chunk_size:
                 self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-                solr.add(solr_docs, commit=True)
+                solr.add(solr_docs)
                 solr_docs = []
 
         # commit last incomplete chunk

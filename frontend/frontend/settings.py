@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+import os.path
 from os.path import join
 from pathlib import Path
 import environ
@@ -154,6 +155,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # document file storage base directory
 DOCUMENT_STORE = env("DOCUMENT_STORE", default="/filestore")
+CACHE_DIR = join(DOCUMENT_STORE, "analysis")
 
 # Connection to solr
 SOLR_HOST = env("SOLR_HOST", default="http://localhost:8983/solr")
@@ -164,4 +166,4 @@ PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:9997")
 PREVIEW_RESOLUTION = "256x256"
 
 TIKA_HOST = env("TIKA_HOST", default="http://localhost:9998")
-PDFACT_HOST = env("PDFACT_HOST", default="http://localhost:9997")
+PDFACT_HOST = env("PDFACT_HOST", default="http://localhost:9996")

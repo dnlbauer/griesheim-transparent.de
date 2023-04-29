@@ -15,12 +15,13 @@ from ris.models import Organization, Document
 # Force tika to use an external service
 tika.TikaClientOnly = True
 
+
 class Command(BaseCommand):
     help = "Update solr index from risdb"
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-    DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commiting
-    VERSION = 5  # incr. if analyze chain changes to force a full resync
+    DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commit
+    VERSION = 5  # incr. if analyze chain changes to force a full resync without the force flag
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -39,18 +40,12 @@ class Command(BaseCommand):
     def _get_relevant_events(self, doc):
         """ Returns a list of consultations, meetings, agenda_items relevant
         for this document """
-        # find associated consultations, meetings, ..
 
-        consultations = doc.consultation_set.all()
-        consultation = None
-        if len(consultations) > 1:
-            raise ValueError("Associated consultation objects > 1. This is unexpected")
-        elif len(consultations) == 1:
-            consultation = consultations[0]
-
+        consultation = doc.consultation_set.first()
         meetings = set(doc.meeting_set.all())
         agenda_items = set(doc.agendaitem_set.all())
 
+        # addend agenda items belonging to this consultation
         if consultation is not None:
             consultation_agenda_items = consultation.agendaitem_set.all()
             for item in consultation_agenda_items:
@@ -62,8 +57,7 @@ class Command(BaseCommand):
 
         return consultation, meetings, agenda_items
 
-
-    def _parse_solr_document(self, doc, tika_result, pdfact_result, preview_image):
+    def _parse_solr_document(self, doc, content, metadata, preview_image):
         solr_doc = dict(
             id=str(doc.id),
             version=self.VERSION,
@@ -132,38 +126,27 @@ class Command(BaseCommand):
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
         # add content strings from tika/pdfact
-        def clean_string(s):
-            return re.sub(r"\s+", " ", s).strip()
+        solr_doc["content"] = [re.sub(r"\s+", " ", s).strip() for s in content]
 
-        # pdfact has data nicely seperated into chunks.
-        # prefered over unordered tika content
-        if pdfact_result is not None:
-            solr_doc["content"] = [clean_string(s) for s in pdfact_result]
-        elif tika_result is not None and "content" in tika_result and tika_result["content"]:
-            solr_doc["content"] = [tika_result["content"]]
-
-
-        # parse metadata from tika
-        def get_metadata(metadata, fields):
+        def get_metadata_value(metadata, fields):
             for i in fields:
                 if i in metadata:
                     return metadata[i]
 
-        if tika_result is not None:
-            metadata = tika_result["metadata"]
-            author = get_metadata(metadata,  ["Author", "creator", "dc:creator", "meta:author", "pdf:docinfo:creator"])
+        if metadata is not None:
+            author = get_metadata_value(metadata,  ["Author", "creator", "dc:creator", "meta:author", "pdf:docinfo:creator"])
             if author is not None:
                 solr_doc["author"] = author
 
-            creation_date = get_metadata(metadata, ["Creation-Date", "created", "dcterms:created", "meta:creation-date", "pdf:docinfo:created"])
+            creation_date = get_metadata_value(metadata, ["Creation-Date", "created", "dcterms:created", "meta:creation-date", "pdf:docinfo:created"])
             if creation_date is not None:
                 solr_doc['creation_date'] = creation_date
 
-            last_modified = get_metadata(metadata, ["Last-Modified", "dcterms:modified", "modified", "pdf:docinfo:modified"])
+            last_modified = get_metadata_value(metadata, ["Last-Modified", "dcterms:modified", "modified", "pdf:docinfo:modified"])
             if last_modified is not None:
                 solr_doc['last_modified'] = last_modified
 
-            last_save_date = get_metadata(metadata, ["Last-Save-Date", "meta:save-date"])
+            last_save_date = get_metadata_value(metadata, ["Last-Save-Date", "meta:save-date"])
             if last_save_date is not None:
                 solr_doc['last_saved'] = last_save_date
 
@@ -244,35 +227,34 @@ class Command(BaseCommand):
             self._log(f"Processing {document.file_name} ({str(document.id)})")
 
 
-            # text analysis only for pdfs
-            pdfact_result = None
-            tika_result = None
+            # perform text analysis
+            content = []
+            metadata = {}
             preview_image = None
-            if document.content_type.lower().endswith("pdf"):
+            if document.content_type.lower().endswith("pdf"):  # TODO convert non-pdfs for analysis
                 file_path = os.path.join(settings.DOCUMENT_STORE, document.uri)
 
-                # run pdfact
                 self._log("Sending document to pdfact")
-                pdfact_result = analyze_document_pdfact(file_path)
+                content = analyze_document_pdfact(file_path)
 
-                if not pdfact_result:
-                    # analyze document with tika
-                    self._log("Sending document to tika")
-                    tika_result = analyze_document_tika(file_path, False)
+                # analyze document with tika
+                self._log("Sending document to tika")
+                tika_result = analyze_document_tika(file_path, False)
 
-                    # Run OCR/tesseract if there is no content from tika without ocr
-                    if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
-                        self._log("Sending document to tika/ocr")
-                        tika_result = analyze_document_tika(file_path, True)
+                # Run OCR/tesseract if there is no content from tika without ocr
+                if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
+                    self._log("Sending document to tika/ocr")
+                    tika_result = analyze_document_tika(file_path, True)
+                metadata = tika_result["metadata"]
+                if content is None or len(content) == 0:
+                    content = tika_result["content"]
 
-
-                # get preview thumbnail
                 self._log("Sending document to preview service")
                 preview_image = get_preview_image_for_doc(file_path)
 
             # generate solr document from data
             self._log("Creating solr document")
-            solr_doc = self._parse_solr_document(document, tika_result, pdfact_result, preview_image)
+            solr_doc = self._parse_solr_document(document, content, metadata, preview_image)
             solr_docs.append(solr_doc)
 
             # write chunks to solr

@@ -1,15 +1,40 @@
 import base64
+import json
+from os import makedirs
 
 import requests
 from django.conf import settings
 from tika import parser
+from os.path import basename, join, dirname
 
-from ris.models import Document
+
+def get_cache_path(path, postfix):
+    name = basename(path)
+    return join(settings.CACHE_DIR, f"{name}.{postfix}")
+
+
+def insert_in_cache(path, postfix, content):
+    cache_path = get_cache_path(path, postfix)
+    makedirs(dirname(cache_path), exist_ok=True)
+    with open(cache_path, "w") as f:
+        f.write(content)
+
+
+def get_cache_content(path, postfix):
+    try:
+        with open(get_cache_path(path, postfix), "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        return None
 
 
 def get_preview_image_for_doc(path):
     """ Perform a request against the external preview image service
     to generate a preview thumbnail for the document """
+
+    cached = get_cache_content(path, "preview")
+    if cached:
+        return cached
 
     binary = open(path, "rb").read()
 
@@ -18,10 +43,13 @@ def get_preview_image_for_doc(path):
 
     if response.status_code == 200:
         image_base64 = base64.b64encode(response.content).decode("utf-8")
-        return f"data:image/jpeg;base64, {image_base64}"
+        image_base64 = f"data:image/jpeg;base64, {image_base64}"
+        insert_in_cache(path, "preview", image_base64)
+        return image_base64
     else:
         print(f"Failed to generate preview image for document (id={path})")
         return None
+
 
 def analyze_document_tika(path, ocr=False):
     """ Extract document text with tika or tesseract(ocr) """
@@ -37,17 +65,27 @@ def analyze_document_tika(path, ocr=False):
             "X-Tika-OCRTimeout": str(30*60)
         }
 
+    cached = get_cache_content(path, f"tika{'.ocr' if ocr else ''}")
+    if cached:
+        return json.loads(cached)
+
     parsed = parser.from_file(
         path,
         serverEndpoint=settings.TIKA_HOST,
         headers=headers,
         requestOptions={'timeout': 30*60}
     )
+    insert_in_cache(path, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4))
 
     return parsed
 
+
 def analyze_document_pdfact(path):
     """ Analyze document with pdfact and return the whole text """
+
+    cached = get_cache_content(path, "pdfact")
+    if cached:
+        return json.loads(cached)
 
     binary = open(path, "rb").read()
 
@@ -57,13 +95,15 @@ def analyze_document_pdfact(path):
         return None
 
     # parse response
-    json = response.json()
+    json_response = response.json()
     snippets = []
-    for paragraph in json["paragraphs"]:
+    for paragraph in json_response["paragraphs"]:
         snippets.append(paragraph["paragraph"]["text"])
     if len(snippets) == 0:
         print("pdfact returned no text")
         return None
+
+    insert_in_cache(path, "pdfact", json.dumps(snippets, indent=4))
     return snippets
 
 

@@ -58,6 +58,7 @@ def analyze_document_tika(path, ocr=False, skip_cache=False):
     if not ocr:
         headers = {
             "X-Tika-PDFOcrStrategy": "no_ocr",
+            "X-Tika-PDFSuppressDuplicateOverlappingText": "true"
         }
     else:
         headers = {

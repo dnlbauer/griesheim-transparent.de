@@ -11,6 +11,7 @@ services:
       - previewservice
       - tika
       - pdfact
+      - gotenberg
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr

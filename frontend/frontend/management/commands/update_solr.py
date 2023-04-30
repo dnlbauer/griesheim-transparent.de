@@ -8,7 +8,8 @@ import pysolr
 from django.core.management import BaseCommand
 
 from frontend import settings
-from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika
+from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika, \
+    convert_to_pdf
 from ris.models import Organization, Document
 
 # Force tika to use an external service
@@ -122,7 +123,8 @@ class Command(BaseCommand):
         solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
         # add content strings from tika/pdfact
-        solr_doc["content"] = [re.sub(r"\s+", " ", s).strip() for s in content]
+        if content is not None:
+            solr_doc["content"] = [re.sub(r"\s+", " ", s).strip() for s in content]
 
         def get_metadata_value(metadata, fields):
             for i in fields:
@@ -199,9 +201,11 @@ class Command(BaseCommand):
             content = []
             metadata = {}
             preview_image = None
-            if document.content_type.lower().endswith("pdf"):  # TODO convert non-pdfs for analysis
-                file_path = os.path.join(settings.DOCUMENT_STORE, document.uri)
+            file_path = os.path.join(settings.DOCUMENT_STORE, document.uri)
+            if not document.content_type.lower().endswith("pdf"):
+                file_path = convert_to_pdf(file_path, skip_cache=force)
 
+            if file_path is not None:
                 self._log("Sending document to pdfact")
                 content = analyze_document_pdfact(file_path, skip_cache=force)
 
@@ -210,12 +214,15 @@ class Command(BaseCommand):
                 tika_result = analyze_document_tika(file_path, False, skip_cache=force)
 
                 # Run OCR/tesseract if there is no content from tika without ocr
-                if ocr and (tika_result is None or tika_result["content"] is None or len(tika_result["content"]) == 0):
+                tika_content = tika_result["content"].strip() if (tika_result is not None and tika_result["content"] is not None) else None
+                if ocr and content is None and (tika_content is None or len(tika_content) == 0 or tika_content == "Page 1"):
                     self._log("Sending document to tika/ocr")
                     tika_result = analyze_document_tika(file_path, True, skip_cache=force)
+                    tika_content = tika_result["content"].strip() if (tika_result and tika_result["content"]) else None
+
                 metadata = tika_result["metadata"]
                 if content is None or len(content) == 0:
-                    content = tika_result["content"]
+                    content = re.sub(r"(\n)\n+", "\n", tika_content)  # replace multiple new lines
 
                 self._log("Sending document to preview service")
                 preview_image = get_preview_image_for_doc(file_path, skip_cache=force)

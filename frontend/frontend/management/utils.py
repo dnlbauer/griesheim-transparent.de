@@ -1,5 +1,6 @@
 import base64
 import json
+import os.path
 from os import makedirs
 
 import requests
@@ -13,16 +14,20 @@ def get_cache_path(path, postfix):
     return join(settings.CACHE_DIR, f"{name}.{postfix}")
 
 
-def insert_in_cache(path, postfix, content):
+def exists_in_cache(path, postfix):
+    return os.path.exists(get_cache_path(path, postfix))
+
+
+def insert_in_cache(path, postfix, content, mode="w"):
     cache_path = get_cache_path(path, postfix)
     makedirs(dirname(cache_path), exist_ok=True)
-    with open(cache_path, "w") as f:
+    with open(cache_path, mode) as f:
         f.write(content)
 
 
-def get_cache_content(path, postfix):
+def get_cache_content(path, postfix, mode="r"):
     try:
-        with open(get_cache_path(path, postfix), "r") as f:
+        with open(get_cache_path(path, postfix), mode) as f:
             return f.read()
     except FileNotFoundError:
         return None
@@ -110,4 +115,19 @@ def analyze_document_pdfact(path, skip_cache=False):
     insert_in_cache(path, "pdfact", json.dumps(snippets, indent=4))
     return snippets
 
+
+def convert_to_pdf(path, skip_cache=False):
+    cache_path = get_cache_path(path, "converted.pdf")
+    if not skip_cache and exists_in_cache(path, "converted.pdf"):
+        return cache_path
+
+    form_data = {"files": open(path, "rb")}
+    response = requests.post(url=f"{settings.GOTENBERG_HOST}/forms/libreoffice/convert", files=form_data)
+    if response.status_code != 200:  # something went wrong
+        print("Failed to convert document to pdf.")
+        return None
+
+    content = response.content
+    insert_in_cache(path, "converted.pdf", content, mode="wb")
+    return cache_path
 

@@ -221,7 +221,7 @@ class Command(BaseCommand):
                     tika_content = tika_result["content"].strip() if (tika_result and tika_result["content"]) else None
 
                 metadata = tika_result["metadata"]
-                if content is None or len(content) == 0:
+                if (content is None or len(content) == 0) and tika_content is not None:
                     content = re.sub(r"(\n)\n+", "\n", tika_content)  # replace multiple new lines
 
                 self._log("Sending document to preview service")

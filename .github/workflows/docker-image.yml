@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build_solr:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build solr Docker image
+      run: docker build solr --file solr/Dockerfile --tag griesheimtransparent-solr:$(date +%s)
+  build_frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build frontend Docker image
+      run: docker build frontend --file frontend/Dockerfile --tag griesheimtransparent-frontend:$(date +%s)
+  build_scraper:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build scraper Docker image
+      run: docker build scraper --file scraper/Dockerfile --tag griesheimtransparent-scraper:$(date +%s)

@@ -33,7 +33,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: "./solr"
-        push: {{ github.event_name != 'pull_request' }}
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outpyts.labels }}
   build_frontend:
@@ -58,7 +58,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: "./frontend"
-        push: {{ github.event_name != 'pull_request' }}
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outpyts.labels }}
   build_scraper:
@@ -83,7 +83,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: "./scraper"
-        push: {{ github.event_name != 'pull_request' }}
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outpyts.labels }}
 

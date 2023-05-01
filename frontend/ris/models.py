@@ -52,7 +52,6 @@ class Document(BaseModel):
     size = models.IntegerField()
     title = models.TextField(null=True)
     checksum = models.TextField()
-    last_modified = models.DateTimeField()
 
 
 class Consultation(BaseModel):

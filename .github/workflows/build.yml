@@ -32,7 +32,7 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v4
       with:
-        context: "{{defaultContext}}/solr
+        context: "{{defaultContext}}/solr"
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outpyts.labels }}
 

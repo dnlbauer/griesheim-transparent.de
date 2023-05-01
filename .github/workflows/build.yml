@@ -10,18 +10,20 @@ jobs:
   build_solr:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build solr Docker image
-      run: docker build solr --file solr/Dockerfile --tag griesheimtransparent-solr:$(date +%s)
-  build_frontend:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build frontend Docker image
-      run: docker build frontend --file frontend/Dockerfile --tag griesheimtransparent-frontend:$(date +%s)
-  build_scraper:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build scraper Docker image
-      run: docker build scraper --file scraper/Dockerfile --tag griesheimtransparent-scraper:$(date +%s)
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Extract metadata for container tagging
+      id: meta
+      uses: docker/metadata-action@v4
+      with: griesheimtransparent/solr
+    - name: Login to container registry
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.container_registry_user }}
+        password: ${{ secrets.container_registry_password }}
+   - name: Build and push
+     uses: docker/build-push-action@v4
+     with:
+       push: false
+
+       

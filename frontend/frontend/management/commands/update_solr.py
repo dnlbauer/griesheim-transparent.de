@@ -1,6 +1,3 @@
-import os
-
-import tika
 from datetime import datetime
 import re
 
@@ -8,19 +5,20 @@ import pysolr
 from django.core.management import BaseCommand
 
 from frontend import settings
-from frontend.management.utils import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika, \
+from frontend.processing.file_repository import FileRepository
+from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika, \
     convert_to_pdf
 from ris.models import Organization, Document
-
-# Force tika to use an external service
-tika.TikaClientOnly = True
-
 
 class Command(BaseCommand):
     help = "Update solr index from risdb"
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commit
+
+    def __init__(self):
+        super().__init__()
+        self.file_repository = FileRepository()
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -201,7 +199,7 @@ class Command(BaseCommand):
             content = []
             metadata = {}
             preview_image = None
-            file_path = os.path.join(settings.DOCUMENT_STORE, document.uri)
+            file_path = self.file_repository.get_file_path(document.uri)
             if not document.content_type.lower().endswith("pdf"):
                 file_path = convert_to_pdf(file_path, skip_cache=force)
 

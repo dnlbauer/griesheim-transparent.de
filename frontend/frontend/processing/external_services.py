@@ -1,3 +1,4 @@
+import tika
 import base64
 import json
 
@@ -12,8 +13,8 @@ cache = CacheRepository()
 files = FileRepository()
 
 # Force tika to use an external service
-import tika
 tika.TikaClientOnly = True
+
 
 def get_preview_image_for_doc(uri, skip_cache=False):
     """ Perform a request against the external preview image service
@@ -51,7 +52,7 @@ def analyze_document_tika(uri, ocr=False, skip_cache=False):
         headers = {
             "X-Tika-PDFOcrStrategy": "OCR_ONLY",
             "X-Tika-OCRLanguage": "deu",
-            "X-Tika-OCRTimeout": str(30*60)
+            "X-Tika-OCRTimeout": str(30 * 60)
         }
 
     if not skip_cache:
@@ -63,7 +64,7 @@ def analyze_document_tika(uri, ocr=False, skip_cache=False):
         files.get_file_path(uri),
         serverEndpoint=settings.TIKA_HOST,
         headers=headers,
-        requestOptions={'timeout': 30*60}
+        requestOptions={'timeout': 30 * 60}
     )
     cache.insert_in_cache(uri, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4))
 
@@ -110,4 +111,3 @@ def convert_to_pdf(uri, skip_cache=False):
 
     content = response.content
     return cache.insert_in_cache(uri, "converted.pdf", content, mode="wb")
-

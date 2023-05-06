@@ -7,7 +7,7 @@ from frontend import settings
 from frontend.processing.file_repository import FileRepository
 from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, \
     analyze_document_tika, \
-    convert_to_pdf
+    convert_to_pdf, ExternalServiceUnsuccessfulException
 from frontend.processing.processing import parse_solr_document
 from ris.models import Document
 
@@ -53,7 +53,10 @@ class Command(BaseCommand):
 
             file_path = self.file_repository.get_file_path(document.uri)
             if not document.content_type.lower().endswith("pdf"):
-                file_path = convert_to_pdf(file_path, skip_cache=self.force)
+                try:
+                    file_path = convert_to_pdf(file_path, skip_cache=self.force)
+                except ExternalServiceUnsuccessfulException:
+                    file_path = None
 
             # perform text analysis
             content = []
@@ -61,8 +64,9 @@ class Command(BaseCommand):
             preview_image = None
             if file_path is not None:
                 print("Sending document to pdfact")
-                content = analyze_document_pdfact(file_path, skip_cache=self.force)
-                if content and len(content) == 0:
+                try:
+                    content = analyze_document_pdfact(file_path, skip_cache=self.force)
+                except ExternalServiceUnsuccessfulException:
                     content = None
 
                 # analyze document with tika

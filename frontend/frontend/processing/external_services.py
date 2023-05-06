@@ -16,16 +16,20 @@ files = FileRepository()
 tika.TikaClientOnly = True
 
 
-def get_preview_image_for_doc(uri, skip_cache=False):
+class ExternalServiceUnsuccessfulException(Exception):
+    pass
+
+
+def get_preview_image_for_doc(file_path, skip_cache=False):
     """ Perform a request against the external preview image service
     to generate a preview thumbnail for the document """
 
     if not skip_cache:
-        cached = cache.get_cache_content(uri, "preview")
+        cached = cache.get_cache_content(file_path, "preview")
         if cached:
             return cached
 
-    binary = files.get_file_path(uri)
+    binary = files.get_file_content(file_path)
 
     url = f"{settings.PREVIEW_HOST}/preview/{settings.PREVIEW_RESOLUTION}"
     response = requests.post(url, files=dict(file=binary))
@@ -33,14 +37,13 @@ def get_preview_image_for_doc(uri, skip_cache=False):
     if response.status_code == 200:
         image_base64 = base64.b64encode(response.content).decode("utf-8")
         image_base64 = f"data:image/jpeg;base64, {image_base64}"
-        cache.insert_in_cache(uri, "preview", image_base64)
+        cache.insert_in_cache(file_path, "preview", image_base64)
         return image_base64
     else:
-        print(f"Failed to generate preview image for document (id={uri})")
-        return None
+        raise ExternalServiceUnsuccessfulException(f"Failed to get preview image for {file_path}")
 
 
-def analyze_document_tika(uri, ocr=False, skip_cache=False):
+def analyze_document_tika(file_path, ocr=False, skip_cache=False):
     """ Extract document text with tika or tesseract(ocr) """
 
     if not ocr:
@@ -56,35 +59,36 @@ def analyze_document_tika(uri, ocr=False, skip_cache=False):
         }
 
     if not skip_cache:
-        cached = cache.get_cache_content(uri, f"tika{'.ocr' if ocr else ''}")
+        cached = cache.get_cache_content(file_path, f"tika{'.ocr' if ocr else ''}")
         if cached:
             return json.loads(cached)
 
     parsed = parser.from_file(
-        files.get_file_path(uri),
+        files.get_file_path(file_path),
         serverEndpoint=settings.TIKA_HOST,
         headers=headers,
         requestOptions={'timeout': 30 * 60}
     )
-    cache.insert_in_cache(uri, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4))
+    if parsed:
+        cache.insert_in_cache(file_path, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4))
+        return parsed
+    else:
+        raise ExternalServiceUnsuccessfulException(f"Failed to process document with tika: {file_path}")
 
-    return parsed
 
-
-def analyze_document_pdfact(uri, skip_cache=False):
+def analyze_document_pdfact(file_path, skip_cache=False):
     """ Analyze document with pdfact and return the whole text """
 
     if not skip_cache:
-        cached = cache.get_cache_content(uri, "pdfact")
+        cached = cache.get_cache_content(file_path, "pdfact")
         if cached:
             return json.loads(cached)
 
-    binary = files.get_file_content(uri)
+    binary = files.get_file_content(file_path)
 
     response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files=dict(file=binary))
     if response.status_code != 200:  # something went wrong
-        print("Failed to extract text using pdfact.")
-        return None
+        raise ExternalServiceUnsuccessfulException(f"Failed to extract text using pdfact: {file_path}")
 
     # parse response
     json_response = response.json()
@@ -92,22 +96,20 @@ def analyze_document_pdfact(uri, skip_cache=False):
     for paragraph in json_response["paragraphs"]:
         snippets.append(paragraph["paragraph"]["text"])
     if len(snippets) == 0:
-        print("pdfact returned no text")
-        return None
+        raise ExternalServiceUnsuccessfulException("pdfact returned no text")
 
-    cache.insert_in_cache(uri, "pdfact", json.dumps(snippets, indent=4))
+    cache.insert_in_cache(file_path, "pdfact", json.dumps(snippets, indent=4))
     return snippets
 
 
-def convert_to_pdf(uri, skip_cache=False):
-    if not skip_cache and cache.exists_in_cache(uri, "converted.pdf"):
-        return cache.get_cache_file_path(uri, "converted.pdf")
+def convert_to_pdf(file_path, skip_cache=False):
+    if not skip_cache and cache.exists_in_cache(file_path, "converted.pdf"):
+        return cache.get_cache_file_path(file_path, "converted.pdf")
 
-    form_data = {"files": files.open(uri, "rb")}
+    form_data = {"files": files.open_file(file_path, "rb")}
     response = requests.post(url=f"{settings.GOTENBERG_HOST}/forms/libreoffice/convert", files=form_data)
     if response.status_code != 200:  # something went wrong
-        print("Failed to convert document to pdf.")
-        return None
+        raise ExternalServiceUnsuccessfulException("Failed to convert document to pdf.")
 
     content = response.content
-    return cache.insert_in_cache(uri, "converted.pdf", content, mode="wb")
+    return cache.insert_in_cache(file_path, "converted.pdf", content, mode="wb")

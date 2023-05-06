@@ -1,3 +1,5 @@
+import json
+import os
 import re
 
 import pysolr
@@ -36,11 +38,21 @@ class Command(BaseCommand):
         parser.add_argument("--no-ocr",
                             help="allow ocr for documents (takes a long time)",
                             action="store_false")
+        parser.add_argument("-o",
+                            help=f"Output file: Also store results in this file as json lines")
 
     def _parse_args(self, **options):
         self.chunk_size = self.DEFAULT_CHUNK_SIZE
         self.force = options["force"]
         self.allow_ocr = options["no_ocr"]
+        if options["o"]:
+            try:
+                os.unlink(options["o"])
+            except FileNotFoundError:
+                pass
+            self.output = options["o"]
+        else:
+            self.output = None
 
     def handle(self, *args, **options):
         self._parse_args(**options)
@@ -106,10 +118,15 @@ class Command(BaseCommand):
                 self.submit(solr_docs)
                 solr_docs = []
 
-        self.submit(solr_docs, commit=True)
+        if len(solr_docs) > 0:
+            self.submit(solr_docs, commit=True)
         print(f"Processed {self.processed} documents.")
 
     def submit(self, solr_docs, commit=False):
         self.processed += len(solr_docs)
         print(f"Submitting {len(solr_docs)} documents to solr. (Processed={self.processed}/{self.total})")
         self.solr.add(solr_docs, commit=commit)
+        if self.output:
+            with open(self.output, "a", encoding="utf-8") as f:
+                for solr_doc in solr_docs:
+                    f.write(f"{json.dumps(solr_doc, indent=4)}\n")

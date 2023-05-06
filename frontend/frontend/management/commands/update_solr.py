@@ -12,7 +12,7 @@ from ris.models import Document
 
 
 class Command(BaseCommand):
-    help = "Update solr index from risdb"
+    help = "Update solr index from ris database"
 
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commit
 
@@ -33,9 +33,6 @@ class Command(BaseCommand):
                             help="allow ocr for documents (takes a long time)",
                             action="store_false")
 
-    def _log(self, message):
-        self.stdout.write(message)
-
     def _parse_args(self, **options):
         self.chunk_size = self.DEFAULT_CHUNK_SIZE
         self.force = options["force"]
@@ -49,11 +46,11 @@ class Command(BaseCommand):
         solr_docs = []
 
         total = Document.objects.all().count()
-        self._log(f"Processing {total} documents...")
+        print(f"Processing {total} documents...")
 
         processed = 0
         for document in Document.objects.all():
-            self._log(f"Processing {document.file_name} ({str(document.id)})")
+            print(f"Processing {document.file_name} ({str(document.id)})")
 
             # perform text analysis
             content = []
@@ -64,11 +61,11 @@ class Command(BaseCommand):
                 file_path = convert_to_pdf(file_path, skip_cache=self.force)
 
             if file_path is not None:
-                self._log("Sending document to pdfact")
+                print("Sending document to pdfact")
                 content = analyze_document_pdfact(file_path, skip_cache=self.force)
 
                 # analyze document with tika
-                self._log("Sending document to tika")
+                print("Sending document to tika")
                 tika_result = analyze_document_tika(file_path, False, skip_cache=self.force)
 
                 # Run OCR/tesseract if there is no content from tika without ocr
@@ -76,7 +73,7 @@ class Command(BaseCommand):
                             tika_result is not None and tika_result["content"] is not None) else None
                 if self.allow_ocr and content is None and (
                         tika_content is None or len(tika_content) == 0 or tika_content == "Page 1"):
-                    self._log("Sending document to tika/ocr")
+                    print("Sending document to tika/ocr")
                     tika_result = analyze_document_tika(file_path, True, skip_cache=self.force)
                     tika_content = tika_result["content"].strip() if (tika_result and tika_result["content"]) else None
 
@@ -84,7 +81,7 @@ class Command(BaseCommand):
                 if (content is None or len(content) == 0) and tika_content is not None:
                     content = re.sub(r"(\n)\n+", "\n", tika_content)  # replace multiple new lines
 
-                self._log("Sending document to preview service")
+                print("Sending document to preview service")
                 preview_image = get_preview_image_for_doc(file_path, skip_cache=self.force)
 
             # generate solr document from data
@@ -94,12 +91,11 @@ class Command(BaseCommand):
 
             # write chunks to solr
             if len(solr_docs) >= self.chunk_size:
-                self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+                print(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr.add(solr_docs)
                 solr_docs = []
 
         # commit last incomplete chunk
         solr.add(solr_docs, commit=True)
-        self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-        self._log(f"Processed {processed} documents.")
-
+        print(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
+        print(f"Processed {processed} documents.")

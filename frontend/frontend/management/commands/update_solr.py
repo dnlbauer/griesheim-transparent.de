@@ -22,8 +22,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
-                            help=f"chunk size for document processing (default: {self.DEFAULT_CHUNK_SIZE})",
-                            type=int)
+                            help=f"chunk size for sending documents to solr (default: {self.DEFAULT_CHUNK_SIZE})",
+                            type=int,
+                            default=self.DEFAULT_CHUNK_SIZE
+                            )
         parser.add_argument("--force",
                             help="force update for all documents",
                             action="store_true")
@@ -33,6 +35,11 @@ class Command(BaseCommand):
 
     def _log(self, message):
         self.stdout.write(message)
+
+    def _parse_args(self, **options):
+        self.chunk_size = self.DEFAULT_CHUNK_SIZE
+        self.force = options["force"]
+        self.allow_ocr = options["no_ocr"]
 
     def _get_relevant_events(self, doc):
         """ Returns a list of consultations, meetings, agenda_items relevant
@@ -178,12 +185,7 @@ class Command(BaseCommand):
         return checked_organizations
 
     def handle(self, *args, **options):
-        # get command arguments
-        chunk_size = self.DEFAULT_CHUNK_SIZE
-        if options['chunk_size']:
-            chunk_size = options['chunk_size']
-        force = options["force"]
-        ocr = options["no_ocr"]
+        self._parse_args(**options)
 
         solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         solr_docs = []
@@ -201,21 +203,23 @@ class Command(BaseCommand):
             preview_image = None
             file_path = self.file_repository.get_file_path(document.uri)
             if not document.content_type.lower().endswith("pdf"):
-                file_path = convert_to_pdf(file_path, skip_cache=force)
+                file_path = convert_to_pdf(file_path, skip_cache=self.force)
 
             if file_path is not None:
                 self._log("Sending document to pdfact")
-                content = analyze_document_pdfact(file_path, skip_cache=force)
+                content = analyze_document_pdfact(file_path, skip_cache=self.force)
 
                 # analyze document with tika
                 self._log("Sending document to tika")
-                tika_result = analyze_document_tika(file_path, False, skip_cache=force)
+                tika_result = analyze_document_tika(file_path, False, skip_cache=self.force)
 
                 # Run OCR/tesseract if there is no content from tika without ocr
-                tika_content = tika_result["content"].strip() if (tika_result is not None and tika_result["content"] is not None) else None
-                if ocr and content is None and (tika_content is None or len(tika_content) == 0 or tika_content == "Page 1"):
+                tika_content = tika_result["content"].strip() if (
+                            tika_result is not None and tika_result["content"] is not None) else None
+                if self.allow_ocr and content is None and (
+                        tika_content is None or len(tika_content) == 0 or tika_content == "Page 1"):
                     self._log("Sending document to tika/ocr")
-                    tika_result = analyze_document_tika(file_path, True, skip_cache=force)
+                    tika_result = analyze_document_tika(file_path, True, skip_cache=self.force)
                     tika_content = tika_result["content"].strip() if (tika_result and tika_result["content"]) else None
 
                 metadata = tika_result["metadata"]
@@ -223,7 +227,7 @@ class Command(BaseCommand):
                     content = re.sub(r"(\n)\n+", "\n", tika_content)  # replace multiple new lines
 
                 self._log("Sending document to preview service")
-                preview_image = get_preview_image_for_doc(file_path, skip_cache=force)
+                preview_image = get_preview_image_for_doc(file_path, skip_cache=self.force)
 
             # generate solr document from data
             solr_doc = self._parse_solr_document(document, content, metadata, preview_image)
@@ -231,7 +235,7 @@ class Command(BaseCommand):
             processed += 1
 
             # write chunks to solr
-            if len(solr_docs) >= chunk_size:
+            if len(solr_docs) >= self.chunk_size:
                 self._log(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
                 solr.add(solr_docs)
                 solr_docs = []

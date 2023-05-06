@@ -79,10 +79,17 @@ def analyze_document_tika(file_path, ocr=False, skip_cache=False):
 def analyze_document_pdfact(file_path, skip_cache=False):
     """ Analyze document with pdfact and return the whole text """
 
+    def is_valid_response(response):
+        return response and len(response) > 0
+
     if not skip_cache:
         cached = cache.get_cache_content(file_path, "pdfact")
         if cached:
-            return json.loads(cached)
+            content = json.loads(cached)
+            if is_valid_response(content):
+                return content
+            else:
+                raise ExternalServiceUnsuccessfulException("pdfact returned no text")
 
     binary = files.get_file_content(file_path)
 
@@ -95,11 +102,12 @@ def analyze_document_pdfact(file_path, skip_cache=False):
     snippets = []
     for paragraph in json_response["paragraphs"]:
         snippets.append(paragraph["paragraph"]["text"])
-    if len(snippets) == 0:
-        raise ExternalServiceUnsuccessfulException("pdfact returned no text")
 
     cache.insert_in_cache(file_path, "pdfact", json.dumps(snippets, indent=4))
-    return snippets
+    if is_valid_response(snippets):
+        return snippets
+    else:
+        raise ExternalServiceUnsuccessfulException("pdfact returned no text")
 
 
 def convert_to_pdf(file_path, skip_cache=False):

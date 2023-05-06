@@ -118,8 +118,7 @@ class Command(BaseCommand):
                 self.submit(solr_docs)
                 solr_docs = []
 
-        if len(solr_docs) > 0:
-            self.submit(solr_docs, commit=True)
+        self.submit(solr_docs, commit=True)
         print(f"Processed {self.processed} documents.")
 
     def submit(self, solr_docs, commit=False):
@@ -129,4 +128,4 @@ class Command(BaseCommand):
         if self.output:
             with open(self.output, "a", encoding="utf-8") as f:
                 for solr_doc in solr_docs:
-                    f.write(f"{json.dumps(solr_doc, indent=4)}\n")
+                    f.write(f"{json.dumps(solr_doc, ensure_ascii=False)}\n")

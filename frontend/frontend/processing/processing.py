@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+import numpy as np
 
 from ris.models import Organization
 
@@ -93,10 +94,6 @@ def parse_solr_document(doc, content, metadata, preview_image):
 
     solr_doc['meeting_count'] = len(solr_doc['meeting_id'])
 
-    # add content strings from tika/pdfact
-    if content is not None:
-        solr_doc["content"] = [re.sub(r"\s+", " ", s).strip() for s in content]
-
     def get_metadata_value(metadata, fields):
         for i in fields:
             if i in metadata:
@@ -127,7 +124,64 @@ def parse_solr_document(doc, content, metadata, preview_image):
         if "niederschrift" in doc.title.lower():
             solr_doc['doc_type'] = "Niederschrift"
 
+    # add content strings from tika/pdfact
+    if content is not None:
+        content = [re.sub(r"\s+", " ", s).strip() for s in content]
+        content = process_content(content, solr_doc["doc_type"] if "doc_type" in solr_doc else None)
+        solr_doc["content"] = content
+
     return solr_doc
+
+
+def process_content(content, doc_type):
+    if doc_type == "Beschlussvorlage":
+        return remove_by_regexes(content, [
+            r"die Stadtverordnetenversammlung möge beschließen[\s\:\.,]*",
+            r"wird folgende Beschlussfassung empfohlen[\s\:\.,]*",
+        ])
+    elif doc_type == "Informationsvorlage":
+        return remove_by_regexes(content, [
+            r"die Stadtverordnetenversammlung wird über folgendes Thema informiert:[\s\:\.,]*",
+        ])
+    elif doc_type == "Antragsvorlage":
+        return remove_by_regexes(content, [
+            r"die Stadtverordnetenversammlung möge beschließen[\s\:\.,]*",
+            r"Sehr geehrte[r]? (Herr|Frau) Stadtverordnetenvorsteher(in)?[\s\.,]*",
+        ])
+
+    return content
+
+
+def remove_by_regexes(content, regexes):
+    """ Removes the header of documents based on given regex patterns.
+    The content lines are scanned for the first occurance of all regexes and the returned output
+    contains only the content after the last regex match.
+    Therefore, if a regex is found twice, only the first match is considered.
+    If two regexes match, the content is cut for the last match of the two.
+    """
+    matches = []  # tuples (line, regex_end) for all first matches
+    for regex in regexes:
+        for idx, line in enumerate(content):
+            res = re.search(regex, line, re.IGNORECASE)
+            if res:
+                matches.append((idx, res.end()))
+                break
+
+    if len(matches) == 0:
+        return content
+
+    last_match_line = np.max([match[0] for match in matches])
+    last_match_inline = 0
+    for line, inline in matches:
+        if line != last_match_line:
+            continue
+        last_match_inline = np.max([last_match_inline, inline])
+
+    content = content[last_match_line:]
+    content[0] = content[0][last_match_inline:]
+    if content[0].strip == "":
+        content = content[1:]
+    return content
 
 
 def parse_consultation_organization(organizations):

@@ -5,7 +5,8 @@ from django.core.management import BaseCommand
 
 from frontend import settings
 from frontend.processing.file_repository import FileRepository
-from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, analyze_document_tika, \
+from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, \
+    analyze_document_tika, \
     convert_to_pdf
 from frontend.processing.processing import parse_solr_document
 from ris.models import Document
@@ -19,6 +20,9 @@ class Command(BaseCommand):
     def __init__(self):
         super().__init__()
         self.file_repository = FileRepository()
+        self.solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
+        self.processed = 0
+        self.total = Document.objects.all().count()
 
     def add_arguments(self, parser):
         parser.add_argument("--chunk_size",
@@ -38,64 +42,70 @@ class Command(BaseCommand):
         self.force = options["force"]
         self.allow_ocr = options["no_ocr"]
 
-
     def handle(self, *args, **options):
         self._parse_args(**options)
+        print(f"Processing {self.total} documents...")
 
-        solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         solr_docs = []
 
-        total = Document.objects.all().count()
-        print(f"Processing {total} documents...")
-
-        processed = 0
         for document in Document.objects.all():
-            print(f"Processing {document.file_name} ({str(document.id)})")
+            print(f"Processing {document.file_name} (id={str(document.id)})")
+
+            file_path = self.file_repository.get_file_path(document.uri)
+            if not document.content_type.lower().endswith("pdf"):
+                file_path = convert_to_pdf(file_path, skip_cache=self.force)
 
             # perform text analysis
             content = []
             metadata = {}
             preview_image = None
-            file_path = self.file_repository.get_file_path(document.uri)
-            if not document.content_type.lower().endswith("pdf"):
-                file_path = convert_to_pdf(file_path, skip_cache=self.force)
-
             if file_path is not None:
                 print("Sending document to pdfact")
                 content = analyze_document_pdfact(file_path, skip_cache=self.force)
+                if content and len(content) == 0:
+                    content = None
 
                 # analyze document with tika
                 print("Sending document to tika")
                 tika_result = analyze_document_tika(file_path, False, skip_cache=self.force)
 
-                # Run OCR/tesseract if there is no content from tika without ocr
-                tika_content = tika_result["content"].strip() if (
-                            tika_result is not None and tika_result["content"] is not None) else None
-                if self.allow_ocr and content is None and (
-                        tika_content is None or len(tika_content) == 0 or tika_content == "Page 1"):
-                    print("Sending document to tika/ocr")
-                    tika_result = analyze_document_tika(file_path, True, skip_cache=self.force)
-                    tika_content = tika_result["content"].strip() if (tika_result and tika_result["content"]) else None
+                # use tika content if pdfact returned nothing
+                if not content:
+                    if tika_result and tika_result["content"] is not None:
+                        content = [tika_result["content"].strip()]
+                        if content and len(content) == 0:
+                            content = None
 
-                metadata = tika_result["metadata"]
-                if (content is None or len(content) == 0) and tika_content is not None:
-                    content = re.sub(r"(\n)\n+", "\n", tika_content)  # replace multiple new lines
+                    # Run OCR/tesseract if there is no content from tika without ocr
+                    if self.allow_ocr and (not content or content == "Page 1"):
+                        print("PDF has no text content. Sending document to tika/ocr")
+                        tika_result = analyze_document_tika(file_path, True, skip_cache=self.force)
+                        if tika_result and tika_result["content"] is not None:
+                            content = [tika_result["content"].strip()]
+                            if content and len(content) == 0:
+                                content = None
+
+                metadata = tika_result["metadata"] if tika_result else {}
+
+                if content:
+                    content = [re.sub(r"(\n)\n+", "\n", paragraph) for paragraph in
+                               content]  # replace multiple new lines
 
                 print("Sending document to preview service")
                 preview_image = get_preview_image_for_doc(file_path, skip_cache=self.force)
 
-            # generate solr document from data
             solr_doc = parse_solr_document(document, content, metadata, preview_image)
             solr_docs.append(solr_doc)
-            processed += 1
 
-            # write chunks to solr
+            # write document to solr in chunks
             if len(solr_docs) >= self.chunk_size:
-                print(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-                solr.add(solr_docs)
+                self.submit(solr_docs)
                 solr_docs = []
 
-        # commit last incomplete chunk
-        solr.add(solr_docs, commit=True)
-        print(f"Submitting {len(solr_docs)} documents to solr. (Processed={processed}/{total})")
-        print(f"Processed {processed} documents.")
+        self.submit(solr_docs, commit=True)
+        print(f"Processed {self.processed} documents.")
+
+    def submit(self, solr_docs, commit=False):
+        self.processed += len(solr_docs)
+        print(f"Submitting {len(solr_docs)} documents to solr. (Processed={self.processed}/{self.total})")
+        self.solr.add(solr_docs, commit=commit)

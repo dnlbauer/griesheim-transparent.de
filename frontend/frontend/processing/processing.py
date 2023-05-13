@@ -135,52 +135,80 @@ def parse_solr_document(doc, content, metadata, preview_image):
 
 def process_content(content, doc_type):
     if doc_type == "Beschlussvorlage":
-        return remove_by_regexes(content, [
+        content = remove_by_regexes(content, [
             r"die Stadtverordnetenversammlung möge beschließen[\s\:\.,]*",
             r"wird folgende Beschlussfassung empfohlen[\s\:\.,]*",
         ])
     elif doc_type == "Informationsvorlage":
-        return remove_by_regexes(content, [
+        content = remove_by_regexes(content, [
             r"die Stadtverordnetenversammlung wird über folgendes Thema informiert:[\s\:\.,]*",
         ])
     elif doc_type == "Antragsvorlage":
-        return remove_by_regexes(content, [
+        content = remove_by_regexes(content, [
             r"die Stadtverordnetenversammlung möge beschließen[\s\:\.,]*",
             r"Sehr geehrte[r]? (Herr|Frau) Stadtverordnetenvorsteher(in)?[\s\.,]*",
         ])
+    content = remove_by_regexes(content, [
+        r"gez.\s[A-Z]",
+        r"((Mit)\s)?(freundliche[mn]?|beste[n]?)\sGr[üu]ß[en]{0,2}",
+        r"Hochachtungsvoll\,\s"
+    ], from_end=True)
 
     return content
 
 
-def remove_by_regexes(content, regexes):
+def remove_by_regexes(content, regexes, from_end=False):
     """ Removes the header of documents based on given regex patterns.
     The content lines are scanned for the first occurance of all regexes and the returned output
     contains only the content after the last regex match.
     Therefore, if a regex is found twice, only the first match is considered.
     If two regexes match, the content is cut for the last match of the two.
+    If from_end is set, the regex removes from the end of the content.
     """
-    matches = []  # tuples (line, regex_end) for all first matches
+    matches = []  # tuples (line, regex_start, regex_end) for all first matches
     for regex in regexes:
         for idx, line in enumerate(content):
             res = re.search(regex, line, re.IGNORECASE)
             if res:
-                matches.append((idx, res.end()))
+                matches.append((idx, res.start(), res.end()))
                 break
 
     if len(matches) == 0:
         return content
 
-    last_match_line = np.max([match[0] for match in matches])
-    last_match_inline = 0
-    for line, inline in matches:
-        if line != last_match_line:
-            continue
-        last_match_inline = np.max([last_match_inline, inline])
+    if not from_end:
+        # find the last line containing a regex
+        last_match_line = np.max([match[0] for match in matches])
 
-    content = content[last_match_line:]
-    content[0] = content[0][last_match_inline:]
-    if content[0].strip == "":
-        content = content[1:]
+        # in the last line, find the latest end of a regex in that line
+        last_match_inline = 0
+        for line, start, end in matches:
+            if line != last_match_line:
+                continue
+            last_match_inline = np.max([last_match_inline, end])
+
+        # strip content from everything before the latest occcurance of the match
+        content = content[last_match_line:]
+        content[0] = content[0][last_match_inline:]
+        if content[0].strip() == "":
+            content = content[1:]
+    else:
+        # find the first line containing a regex
+        first_match_line = np.min([match[0] for match in matches])
+
+        # in the first line, find the first start of a regex in that line
+        first_match_inline = len(content[first_match_line])
+        for line, start, end in matches:
+            if line != first_match_line:
+                continue
+            first_match_inline = np.min([first_match_inline, start])
+
+        # strip content from everything before the latest occcurance of the match
+        content = content[:first_match_line+1]
+        content[-1] = content[-1][:first_match_inline]
+        if content[-1].strip() == "":
+            content = content[:-1]
+
     return content
 
 

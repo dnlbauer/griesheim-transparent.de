@@ -1,43 +1,26 @@
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-#-----------------------------------------------------------------------
-#some test synonym mappings unlikely to appear in real input text
-#aaafoo => aaabar
-#bbbfoo => bbbfoo bbbbar
-#cccfoo => cccbar cccbaz
-#fooaaa,baraaa,bazaaa
-Fotovoltaik,Photovoltaik
-Strasse,Straße
-NS,Niederschrift
-SVV,STVV,Stadtverordnetenversammlung
-JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
-WF,WIFI,Wirtschafts und Finanzausschuss,Wirtschaftsauschuss,Finanzausschuss,Wirtschaftsausschuss und Finanzausschuss
-UEM,Ausschuss für Umwelt Energie und Mobilität,Umweltausschuss,Energieausschuss,Mobilitätsausschuss
-SB,Stadtplanungs und Bauausschuss,Stadtplanungsausschuss,Bauausschuss
-Griesheim Nord, Flüsseviertel
-Griesheim,Griesm,Griesem
-Darmstadt,DA
-BV,Beschlussvorlage
 AG,Änderungsantrag
-Griesheimer Anger,Konversion Südost
-SWBA,Schwimmbadausschuss
-FW,Feuerwehrausschuss
-KITA,Kindertagesstätte
-IV,Informationsvorlage
-Miniwald,Tiny Forest
 Betriebskomission,Betriebskomision
+Bplan,Bebauungsplan
+BV,Beschlussvorlage
+Darmstadt,DA
+Fotovoltaik,Photovoltaik
+FW,Feuerwehrausschuss
+Griesheim,Griesm,Griesem
+Griesheimer Anger,Konversion Südost
+Griesheim Nord, Flüsseviertel
+IV,Informationsvorlage
+JSKS,Ausschuss für Jugend Soziales Kultur und Sport,Jugendausschuss,Kulturausschuss,Sportausschuss,Sozialausschuss
+KITA,Kindertagesstätte
+Miniwald,Tiny Forest
+NS,Niederschrift
+SB,Stadtplanungs und Bauausschuss,Stadtplanungsausschuss,Bauausschuss
+Strasse,Straße
+SVV,STVV,Stadtverordnetenversammlung
+SWBA,Schwimmbadausschuss
+UEM,Ausschuss für Umwelt Energie und Mobilität,Umweltausschuss,Energieausschuss,Mobilitätsausschuss
+WF,WIFI,Wirtschafts und Finanzausschuss,Wirtschaftsauschuss,Finanzausschuss,Wirtschaftsausschuss und Finanzausschuss
 # hierarchical mappings
+Antrag => Antrag,Antragsvorlage,Änderungsantrag,AG
+Beschluss => Beschluss,Beschlussvorlage,Beschlussfassung
 Protokoll => Protokoll,Niederschrift,NS
 Sachstand => Sachstand,Sachstandsbericht,Sachstandbericht
-Beschluss => Beschluss,Beschlussvorlage,Beschlussfassung
-Antrag => Antrag,Antragsvorlage,Änderungsantrag,AG

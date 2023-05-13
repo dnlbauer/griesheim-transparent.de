@@ -144,6 +144,11 @@ class PsqlExportPipeline:
             (self.Meeting.date == item.get("date"))
         ).exists()
 
+        self.meetings_organizations.append((item.get('id'), item.get("organization")))
+        self.meetings_documents.append((item.get("id"), item.get("file_ids")))
+        self.meetings_consultations.append((item.get("id"), item.get("consultation_ids")))
+        self.meetings_agenda_items.append((item.get("id"), item.get("agenda_ids")))
+
         if exists:
             return
 
@@ -167,10 +172,7 @@ class PsqlExportPipeline:
             }
         ).execute()
         spider.crawler.stats.inc_value("db.meetings_upserted", spider=spider)
-        self.meetings_organizations.append((item.get('id'), item.get("organization")))
-        self.meetings_documents.append((item.get("id"), item.get("file_ids")))
-        self.meetings_consultations.append((item.get("id"), item.get("consultation_ids")))
-        self.meetings_agenda_items.append((item.get("id"), item.get("agenda_ids")))
+
 
     def process_consultations(self, item, spider):
         exists = self.Consultation.select().where(
@@ -180,6 +182,9 @@ class PsqlExportPipeline:
             (self.Consultation.type == item.get("type")) &
             (self.Consultation.text == item.get("text"))
         ).exists()
+
+        self.consultations_documents.append((item.get("id"), item.get("file_ids")))
+        self.consultations_agenda_items.append((item.get("id"), item.get("agenda_ids")))
 
         if exists:
             return
@@ -205,8 +210,7 @@ class PsqlExportPipeline:
             }
         ).execute()
         spider.crawler.stats.inc_value("db.consultations_upserted", spider=spider)
-        self.consultations_documents.append((item.get("id"), item.get("file_ids")))
-        self.consultations_agenda_items.append((item.get("id"), item.get("agenda_ids")))
+
 
     def process_agenda_item(self, item, spider):
         exists = self.AgendaItem.select().where(
@@ -216,6 +220,9 @@ class PsqlExportPipeline:
             (self.AgendaItem.vote == item.get("vote")) &
             (self.AgendaItem.text == item.get("text"))
         ).exists()
+
+        self.agenda_items_documents.append((item.get("id"), item.get("file_ids")))
+        self.agenda_items_consultations.append((item.get("id"), item.get("consultation_ids")))
 
         if exists:
             return
@@ -241,8 +248,7 @@ class PsqlExportPipeline:
             }
         ).execute()
         spider.crawler.stats.inc_value("db.agenda_items_upserted", spider=spider)
-        self.agenda_items_documents.append((item.get("id"), item.get("file_ids")))
-        self.agenda_items_consultations.append((item.get("id"), item.get("consultation_ids")))
+
 
     def process_document(self, item, spider):
         path = os.path.join(spider.settings.get("FILES_STORE"), item.get("files")[0].get("path"))

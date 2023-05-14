@@ -28,38 +28,25 @@ FACET_ARGS = {
 }
 
 # highlighting
-HL_FIELDS = "doc_title consultation_topic consultation_text content_hp content content_hr"  # order matters!
-HL_MAX_SNIPPETS = 3
-
+# TODO test alternate field ? i.e. for images!
+HL_FIELDS = "content content_hr"  # order matters!
 HL_ARGS = {
     "hl": "true",
-    "hl.encoder": "html",
-    "hl.tag.pre": "<strong>",
-    "hl.tag.post": "</strong>",
     "hl.fl": HL_FIELDS,
-    "hl.method": "unified",
-    "hl.bs.country": "DE",
-    "hl.bs.language": "de",
-    "hl.bs.type": "LINE",
-    "hl.mergeContiguous": "false",
-    "hl.snippets": HL_MAX_SNIPPETS,
-    "hl.maxMultiValuedToMatch": HL_MAX_SNIPPETS,
-    "hl.fragsize": "250",
+    "hl.snippets": 5,
+    "hl.fragsize": 200,
     "hl.fragsizeIsMinimum": "false",
     "hl.defaultSummary": "false",
-    "hl.requireFieldMatch": "true"
 }
+
 
 # highlighting for landing page
 HL_NEWEST_ARGS = {
     "hl": "true",
-    "hl.encoder": "html",
     "hl.fl": "content",
-    "hl.bs.country": "DE",
-    "hl.bs.language": "de",
-    "hl.bs.type": "LINE",
-    "hl.fragsize": "100000",
-    "hl.snippets": "2147483647",
+    "hl.bs.type": "WORD",
+    "hl.fragsize": 200,
+    "hl.snippets": 10,
     "hl.defaultSummary": "true",
 }
 
@@ -91,7 +78,7 @@ def _parse_highlights(highlights, max_len, separator=" "):
     # as a soft limit (stopping once max_len is exceeded)
     def highlight2str(highlights):
         hl = ""
-        for field in HL_FIELDS.split(" "):
+        for field in highlights.keys():
             if hl:
                 return hl
             elif field in highlights:
@@ -228,7 +215,10 @@ def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellch
 
     # highlighting
     if hl:
-        args |= HL_ARGS
+        if query == "*" or query == "*:*":
+            args |= HL_NEWEST_ARGS
+        else:
+            args |= HL_ARGS
     else:
         args['hl'] = 'false'
 
@@ -286,7 +276,8 @@ def doc_id(query="*:*", limit=5, solr_conn=solr_connection()):
     documents = [_parse_search_result(doc, result) for doc in result.docs]
     # For newest, we want to concatenate highlighting data up to a max. len
     for doc in documents:
-        doc.highlight = _parse_highlights(result.highlighting[doc.id], max_len=10000, separator=" ")
+        if doc.id in result.highlighting:
+            doc.highlight = _parse_highlights(result.highlighting[doc.id], max_len=10000, separator=" ")
     facets = {}
 
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)

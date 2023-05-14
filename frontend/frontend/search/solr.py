@@ -28,8 +28,7 @@ FACET_ARGS = {
 }
 
 # highlighting
-# TODO test alternate field ? i.e. for images!
-HL_FIELDS = "content content_hr"  # order matters!
+HL_FIELDS = "content content_hr consultation_text consultation_text_hr"  # order matters!
 HL_ARGS = {
     "hl": "true",
     "hl.fl": HL_FIELDS,
@@ -78,7 +77,7 @@ def _parse_highlights(highlights, max_len, separator=" "):
     # as a soft limit (stopping once max_len is exceeded)
     def highlight2str(highlights):
         hl = ""
-        for field in highlights.keys():
+        for field in HL_FIELDS.split(" "):
             if hl:
                 return hl
             elif field in highlights:

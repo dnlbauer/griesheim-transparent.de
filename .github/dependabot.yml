@@ -8,16 +8,16 @@ updates:
   - package-ecosystem: "pip"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "docker"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "pip"
     directory: "/scraper"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "docker"
     directory: "/scraper"
     schedule:
-      interval: "weekly"
+      interval: "monthly"

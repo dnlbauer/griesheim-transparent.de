@@ -1,4 +1,4 @@
-![actions](https://github.com/dnlbauer/griesheim-transparent.de/actions/workflows/build.yml/badge.svg)
+![actions](https://github.com/dnlbauer/griesheim-transparent.de/actions/workflows/build.yml/badge.svg?branch=main)
 
 # griesheim-transparent.de
 

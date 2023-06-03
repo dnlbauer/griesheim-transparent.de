@@ -44,7 +44,7 @@ services:
   frontend_cron:
     <<: *frontend
     container_name: griesheimtransparent-frontend_cron
-    command: crond -f
+    command: cron -f
     expose: []
     restart: no
   database:
@@ -97,8 +97,6 @@ services:
       - SOLR_LOG_LEVEL=FINEST
     ports:
       - 8983:8983
-    volumes:
-      - solr_data:/var/solr
     networks:
       - griesheimtransparent
     restart: no

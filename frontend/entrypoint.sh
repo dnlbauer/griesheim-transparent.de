@@ -10,7 +10,7 @@ echo "Apply database migrations"
 python manage.py migrate --noinput
 python manage.py migrate --noinput --database=ris
 
-if [ "$1" = cron ]; then
+if [ "$1" = crond ]; then
   echo "Registering cron job"
   python manage.py crontab add
 else

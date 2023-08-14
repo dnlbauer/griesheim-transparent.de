@@ -15,7 +15,7 @@ requests==2.31.0
 rjsmin==1.2.1
 six==1.16.0
 sqlparse==0.4.4
-tornado==6.3.2
+tornado==6.3.3
 tzdata==2023.3
 urllib3==2.0.4
 watchdog==3.0.0

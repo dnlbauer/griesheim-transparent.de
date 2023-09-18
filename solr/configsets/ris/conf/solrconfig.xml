@@ -755,7 +755,7 @@
       <str name="echoParams">explicit</str>
       <str name="defType">edismax</str>
       <str name="q.op">AND</str>
-      <str name="mm">75%</str>
+      <str name="mm">-30%</str>
 
       <!-- boost more recent documents (slope of reciprocal at 1/4 year) -->
       <str name="bf">

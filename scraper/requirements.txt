@@ -30,5 +30,5 @@ constantly~=15.1.0
 hyperlink~=21.0.0
 jmespath~=1.0.1
 idna~=3.4
-filelock~=3.12.2
+filelock~=3.12.4
 pytz~=2023.3

@@ -120,7 +120,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-../.env
 venv
 env/
 RIScraper/venv/
@@ -161,10 +160,10 @@ cython_debug/
 *.iml
 out
 
-*/.env
-deployment/data
 test
 
+deployment/scraper_files
+deployment/data
 deployment/secrets
 dump.sql
 

@@ -1,12 +1,27 @@
 version: '3.8'
 
 services:
+  caddy:
+    container_name: gt-caddy
+    image: caddy:2.7.5-alpine
+    depends_on:
+      - frontend
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - django_staticfiles:/static
+    networks:
+      - griesheimtransparent
+    restart: unless-stopped
   frontend: &frontend
     image: griesheimtransparent-frontend
-    container_name: griesheimtransparent-frontend
-    build: "./../frontend"
+    container_name: gt-frontend
+    build: ../frontend
     depends_on:
-      - database
+      - scraper-database
       - solr
       - previewservice
       - tika
@@ -16,13 +31,13 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr
       - SOLR_COLLECTION=ris
-      - RIS_DB_HOST=database
+      - RIS_DB_HOST=scraper-database
       - RIS_DB_PORT=5432
-      - RIS_DB_NAME=${POSTGRES_DB}
-      - RIS_DB_USER=${POSTGRES_USER}
-      - RIS_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - RIS_DB_NAME=${SCRAPER_DB}
+      - RIS_DB_USER=${SCRAPER_DB_USER}
+      - RIS_DB_PASSWORD=${SCRAPER_DB_PASSWORD}
       - DEBUG=${DEBUG}
-      - UPDATE_SOLR_CRON=0 */3 * * *
+      - UPDATE_SOLR_CRON=${UPDATE_SOLR_CRON}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DATABASE_PATH=/django_db/db.sqlite
       - DJANGO_SU_NAME=${DJANGO_SU_NAME}
@@ -31,66 +46,71 @@ services:
       - PREVIEW_HOST=http://previewservice:8000
       - TIKA_HOST=http://tika:9998
       - PDFACT_HOST=http://pdfact:80
+      - GOTENBERG_HOST=http://gotenberg:3000
     volumes:
       - django_db:/django_db
       - django_staticfiles:/app/staticfiles
-      - scraper_files:/filestore 
+      - ./scraper_files:/filestore
     ports:
       - 8000:8000
+    # dev (serve static files)
+    #command: python manage.py runserver 0.0.0.0:8000
+    # prod/with webserver
     command: gunicorn frontend.wsgi:application --bind 0.0.0.0:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      start_period: 10s
+      retries: 10
     networks:
       - griesheimtransparent
-    restart: no
+    restart: unless-stopped
+  # container for frontend cron jobs (processing)
   frontend_cron:
     <<: *frontend
-    container_name: griesheimtransparent-frontend_cron
+    container_name: gt-frontend_cron
+    ports: []
     command: crond -f
-    expose: []
-    restart: no
-  database:
-    image: postgres
-    container_name: griesheimtransparent-postgres
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_DB=${POSTGRES_DB}
-    ports:
-      - 5432:5432
-    networks:
-      - griesheimtransparent
-    restart: no
-    volumes:
-      - scraper_db:/var/lib/postgresql
-  tika:
-    image: apache/tika:1.28.4-full
-    container_name: griesheimtransparent-tika
-    ports:
-      - 9995:9998
-    networks:
-      - griesheimtransparent
-    restart: no
+    healthcheck:
+      test: ["NONE"]  # container dies with cron
+  # scraper cron service
   scraper:
     image: griesheimtransparent-scraper
-    container_name: griesheimtransparent-scraper
+    container_name: gt-scraper
     build: ../scraper
     depends_on:
-      - database
+      - scraper-database
     environment:
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_USER=${POSTGRES_USER}
-      - DB_NAME=${POSTGRES_DB}
-      - DB_HOST=database
+      - DB_NAME=${SCRAPER_DB}
+      - DB_USER=${SCRAPER_DB_USER}
+      - DB_PASSWORD=${SCRAPER_DB_PASSWORD}
+      - DB_HOST=scraper-database
       - DB_PORT=5432
-    # command: crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END 03/2023
+    #command: crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END=03/2023
     entrypoint: crond -f -d 0
     networks:
       - griesheimtransparent
     volumes:
-      - scraper_files:/scraper/filestore
-    restart: no
+      - ./scraper_files:/scraper/filestore
+    restart: unless-stopped
+  # database for scraper
+  scraper-database:
+    image: postgres
+    container_name: gt-scraper-postgres
+    environment:
+      - POSTGRES_DB=${SCRAPER_DB}
+      - POSTGRES_USER=${SCRAPER_DB_USER}
+      - POSTGRES_PASSWORD=${SCRAPER_DB_PASSWORD}
+    ports:
+      - 5432:5432
+    networks:
+      - griesheimtransparent
+    volumes:
+      - scraper_db:/var/lib/postgresql
+    restart: unless-stopped
+  # solr search engine
   solr:
     image: griesheimtransparent-solr
-    container_name: griesheimtransparent-solr
+    container_name: gt-solr
     build: ../solr
     user: "8983"
     environment:
@@ -99,34 +119,50 @@ services:
       - 8983:8983
     networks:
       - griesheimtransparent
-    restart: no
-  previewservice:
-    image: fpurchess/preview-service
-    container_name: griesheimtransparent-previewservice
-    ports:
-      - 8000:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983/solr/ris/admin/ping"]
+    restart: unless-stopped
+  # tika (pdf to text)
+  tika:
+    image: apache/tika:1.28.4-full
+    container_name: gt-tika
+    expose:
+      - 9998
     networks:
       - griesheimtransparent
-    restart: no
+    restart: unless-stopped
+  # pdf to text with pdfact
   pdfact:
     image: dnlbauer/pdfact-service:latest
-    container_name: griesheimtransparent-pdfact
-    ports:
-      - 80:80
+    container_name: gt-pdfact
+    expose:
+      - 80
     networks:
       - griesheimtransparent
-    restart: no
+    restart: unless-stopped
+  # gotenberg file conversion (doc to pdf)
   gotenberg:
     image: gotenberg/gotenberg:7
-    container_name: griesheimtransparent-gotenberg
-    ports:
-      - 3000:3000
+    container_name: gt-gotenberg
+    expose:
+      - 3000
+    networks:
+      - griesheimtransparent
+    restart: unless-stopped
+  # pdf preview image generator
+  previewservice:
+    image: fpurchess/preview-service
+    container_name: gt-previewservice
+    expose:
+      - 8000
+    networks:
+      - griesheimtransparent
+    restart: unless-stopped
 networks:
   griesheimtransparent:
 volumes:
+  caddy_data:
+  django_staticfiles:
   solr_data:
   django_db:
-  django_staticfiles:
   scraper_db:
-  scraper_files:
-

@@ -117,6 +117,8 @@ services:
       - SOLR_LOG_LEVEL=FINEST
     ports:
       - 8983:8983
+    volumes:
+      - solr_data:/var/solr
     networks:
       - griesheimtransparent
     healthcheck:

@@ -1,0 +1,19 @@
+localhost {
+
+  log default {
+    format console
+  }
+
+  handle_path /static/* {
+    root * /static
+    file_server
+  }
+
+  @frontend {
+    not path /static/*
+  }
+
+  reverse_proxy @frontend {
+    to frontend:8000
+  }
+}

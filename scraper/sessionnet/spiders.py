@@ -170,7 +170,7 @@ class SessionNetSpider(scrapy.Spider):
           self.logger.error(f"Error crawling meeting {id}! Message: {error.strip()}")
           return
 
-        info_table_selector_base = "//div[contains(@class, '{0}') and contains(@class, 'smc-dg-td-2')]//text()"
+        info_table_selector_base = "//div[not(contains(@class, 'smc-cell-head')) and contains(@class, 'smc-table-cell') and contains(@class, '{0}')]//text()"
         title_short = response.selector.xpath(info_table_selector_base.format("siname")).get()
         organization = response.selector.xpath(info_table_selector_base.format("sigrname")).get()
 
@@ -257,7 +257,7 @@ class SessionNetSpider(scrapy.Spider):
 
         topic = response.selector.xpath("//h1//text()").get()
 
-        info_table_selector_base = "//div[contains(@class, '{0}') and contains(@class, 'smc-dg-td-2')]//text()"
+        info_table_selector_base = "//div[not(contains(@class, 'smc-cell-head')) and contains(@class, '{0}') and contains(@class, 'smc-table-cell')]//text()"
         name = response.selector.xpath(info_table_selector_base.format("voname")).get()
         consultation_type = response.selector.xpath(info_table_selector_base.format("vovaname")).get()
 

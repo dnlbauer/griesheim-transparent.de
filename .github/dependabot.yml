@@ -9,6 +9,8 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "Twisted"
   - package-ecosystem: "docker"
     directory: "/frontend"
     schedule:

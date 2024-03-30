@@ -102,15 +102,15 @@ def _parse_highlights(highlights, max_len, separator=" "):
 def _parse_search_result(doc, response):
     id = doc["id"]
     document_id = doc["document_id"]
-    download_link = f"https://sessionnet.krz.de/griesheim/bi/getfile.asp?id={document_id}"
+    download_link = f"https://sessionnet.owl-it.de/griesheim/bi/getfile.asp?id={document_id}"
 
     short_name = None
     link = None
     if "consultation_id" in doc:
-        link = f"https://sessionnet.krz.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
+        link = f"https://sessionnet.owl-it.de/griesheim/bi/vo0050.asp?__kvonr={doc['consultation_id']}"
         short_name = doc['consultation_name']
     elif "meeting_id" in doc:
-        link = f"https://sessionnet.krz.de/griesheim/bi/si0050.asp?__ksinr={doc['meeting_id'][0]}"
+        link = f"https://sessionnet.owl-it.de/griesheim/bi/si0050.asp?__ksinr={doc['meeting_id'][0]}"
         if "meeting_title_short" in doc and len(doc['meeting_title_short']) == 1:
             short_name = doc['meeting_title_short'][0]
 

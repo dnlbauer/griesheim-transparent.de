@@ -17,9 +17,9 @@ Link = namedtuple("Link", "link text")
 class SessionNetSpider(scrapy.Spider):
     name = "sessionnet"
 
-    organizations_base_url = "https://sessionnet.krz.de/griesheim/bi/gr0040.asp?__cwpall=1&"
-    persons_base_url = "https://sessionnet.krz.de/griesheim/bi/kp0041.asp?__cwpall=1&"
-    calendar_base_url = "https://sessionnet.krz.de/griesheim/bi/si0040.asp"
+    organizations_base_url = "https://sessionnet.owl-it.de/griesheim/bi/gr0040.asp?__cwpall=1&"
+    persons_base_url = "https://sessionnet.owl-it.de/griesheim/bi/kp0041.asp?__cwpall=1&"
+    calendar_base_url = "https://sessionnet.owl-it.de/griesheim/bi/si0040.asp"
 
     def start_requests(self):
         if self.settings.get("SCRAPE_ORGANIZATIONS"):

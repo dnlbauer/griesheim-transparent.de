@@ -24,4 +24,4 @@ gunicorn==22.0.0
 tika==2.6.0
 django-health-check~=3.18.1
 pytz~=2024.1
-numpy~=1.26.1
+numpy~=1.26.4

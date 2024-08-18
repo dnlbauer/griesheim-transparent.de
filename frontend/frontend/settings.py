@@ -72,12 +72,7 @@ MIDDLEWARE = [
     "frontend.middleware.RestrictUserMiddleware"
 ]
 
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    }
-}
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = "frontend.urls"
 

@@ -12,7 +12,7 @@ psycopg2==2.9.9
 pysolr==3.9.0
 rcssmin==1.1.2
 requests==2.32.3
-rjsmin==1.2.1
+rjsmin==1.2.2
 six==1.16.0
 sqlparse==0.5.0
 tornado==6.4.1

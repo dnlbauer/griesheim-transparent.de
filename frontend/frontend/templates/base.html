@@ -5,12 +5,13 @@
         <title>{% block pretitle %}{% endblock %}Griesheim Transparent{% block title %}{% endblock %}</title>
         <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="Griesheimer Politik durchsuchbar machen: Volltextsuche für das Ratsinfosystem der Stadt Griesheimer (DaDi).">
+        <meta property="og:description" name="description" content="Griesheimer Politik durchsuchbar machen: Volltextsuche für das Ratsinfosystem der Stadt Griesheimer (Darmstadt-Dieburg). Ermöglicht den einfachen Zugriff auf Informationen aus der Griesheimer Politik und Verwaltung.">
         <meta name="revisit" content="30 days">
         <meta property="og:title" content="Griesheim Transparent"/>
-        <meta property="og:description" content="Griesheim Transparent: Volltext Suche für Dokumente aus dem Griesheimer Ratsinfosystem."/>
         <meta property="og:site_name" content="Griesheim Transparent" />
         <meta property="og:image" content="{% static 'sharepic.jpg' %}" />
+		<meta name="keywords" content="Griesheim, Bürgerbeteiligung, Bürgerinformation, Politik, Ratsinfosystem, Stadtverordnetenversammlung, Verwaltung">
+		<meta name="author" content="Daniel Bauer">
         <link rel="stylesheet" href="{% static 'css/tachyons.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">

@@ -23,6 +23,6 @@ websocket-client==1.8.0
 gunicorn==23.0.0
 tika==2.6.0
 django-health-check~=3.18.1
-pytz~=2024.1
+pytz~=2024.2
 numpy~=2.1.1
 whitenoise~=6.8.2

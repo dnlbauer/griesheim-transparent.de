@@ -1,5 +1,5 @@
 psycopg2~=2.9.10
 Scrapy~=2.12.0
 peewee~=3.17.8
-pytz~=2024.2
+pytz~=2025.1
 Twisted~=24.11

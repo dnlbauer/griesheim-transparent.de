@@ -35,6 +35,10 @@ def _parse_parge(request, default=1):
 
 def _is_authenticated_su(request):
     """ True if the user is an authenticatd superuser"""
+    if request.user.is_authenticated and request.user.is_superuser and request.user.is_active:
+        return True
+
+    # Check HTTP Basic Auth
     if "HTTP_AUTHORIZATION" in request.META:
         auth = request.META["HTTP_AUTHORIZATION"].split()
         if len(auth) == 2 and auth[0] == "Basic":

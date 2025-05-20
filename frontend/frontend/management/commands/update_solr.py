@@ -108,7 +108,12 @@ class Command(BaseCommand):
                                content]  # replace multiple new lines
 
                 print("Sending document to preview service")
-                preview_image = get_preview_image_for_doc(file_path, skip_cache=self.force)
+                try:
+                    preview_image = get_preview_image_for_doc(file_path, skip_cache=self.force)
+                except ExternalServiceUnsuccessfulException as e:
+                    # Empty preview image
+                    print(f"Failed to get preview image for {file_path}: {e}")
+                    preview_image = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
 
             solr_doc = parse_solr_document(document, content, metadata, preview_image)
             solr_docs.append(solr_doc)

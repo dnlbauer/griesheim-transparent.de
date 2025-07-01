@@ -10,7 +10,7 @@ fontawesomefree==6.5.1
 idna==3.10
 psycopg2==2.9.10
 pysolr==3.9.0
-rcssmin==1.1.2
+rcssmin==1.2.1
 requests==2.32.4
 rjsmin==1.2.4
 six==1.16.0

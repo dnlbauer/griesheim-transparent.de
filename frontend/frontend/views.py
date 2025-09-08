@@ -8,7 +8,6 @@ from django.contrib.auth import authenticate
 from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
 
 from .models import Query

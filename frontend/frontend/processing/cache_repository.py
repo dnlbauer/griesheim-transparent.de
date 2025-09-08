@@ -1,6 +1,6 @@
 from os import makedirs
 from os.path import basename, dirname, exists, join
-from typing import Any, cast
+from typing import cast
 
 from django.conf import settings
 

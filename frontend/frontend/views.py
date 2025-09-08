@@ -1,7 +1,6 @@
 import base64
 import logging
 from multiprocessing import Process
-from typing import Dict
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -15,7 +14,7 @@ from .search import solr
 
 logger = logging.getLogger(__name__)
 
-BASE_CONTEXT: Dict[str, str | bool] = {
+BASE_CONTEXT: dict[str, str | bool] = {
     "DEBUG": settings.DEBUG  # config js debugging
 }
 

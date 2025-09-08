@@ -1,3 +1,4 @@
+
 from django.apps import apps
 from django.contrib import admin
 from django.db import models
@@ -22,7 +23,7 @@ class QueryLogAdmin(admin.ModelAdmin):
     search_fields = ["query"]
 
 
-def create_model_admin(model):
+def create_model_admin(model: type[models.Model]) -> type[admin.ModelAdmin]:
     """Auto-generate admin class with list_display and filters"""
 
     list_display_fields = []

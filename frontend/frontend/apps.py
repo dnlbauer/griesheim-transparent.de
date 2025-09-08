@@ -13,7 +13,7 @@ from frontend.healthcheck import (
 class MyAppConfig(AppConfig):
     name = "frontend"
 
-    def ready(self):
+    def ready(self) -> None:
         plugin_dir.register(SolrHealthCheckBackend)
         plugin_dir.register(PreviewServiceHealthCheckBackend)
         plugin_dir.register(TikaHealthCheckBackend)

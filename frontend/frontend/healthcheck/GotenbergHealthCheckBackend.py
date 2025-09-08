@@ -9,10 +9,10 @@ from health_check.exceptions import ServiceUnavailable
 class GotenbergHealthCheckBackend(BaseHealthCheckBackend):
     critical_service = True
 
-    def identifier(self):
+    def identifier(self) -> str:
         return "Gotenberg"
 
-    def check_status(self):
+    def check_status(self) -> None:
         url = self._get_healthcheck_url()
         try:
             r = urllib.request.urlopen(url)
@@ -25,5 +25,5 @@ class GotenbergHealthCheckBackend(BaseHealthCheckBackend):
         except Exception as e:
             raise ServiceUnavailable(f"{url}: {str(e)}") from e
 
-    def _get_healthcheck_url(self):
+    def _get_healthcheck_url(self) -> str:
         return f"{settings.GOTENBERG_HOST}/health"

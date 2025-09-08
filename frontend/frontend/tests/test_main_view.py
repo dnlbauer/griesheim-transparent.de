@@ -1,8 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+from django.test import Client
 
 
 @patch("frontend.views.solr")
-def test_main_view(solr_mock, client):
+def test_main_view(solr_mock: Mock, client: Client) -> None:
     solr_mock.count.return_value = 1337
     response = client.get("/")
 

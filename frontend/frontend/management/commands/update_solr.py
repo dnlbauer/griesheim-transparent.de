@@ -6,6 +6,7 @@ from typing import Any
 import pysolr
 from django.conf import settings
 from django.core.management import BaseCommand
+from django.core.management.base import CommandParser
 
 from frontend.processing.external_services import (
     ExternalServiceUnsuccessfulException,
@@ -15,7 +16,7 @@ from frontend.processing.external_services import (
     get_preview_image_for_doc,
 )
 from frontend.processing.file_repository import FileRepository
-from frontend.processing.processing import parse_solr_document
+from frontend.processing.processing import SolrImportDoc, parse_solr_document
 from ris.models import Document
 
 
@@ -24,14 +25,14 @@ class Command(BaseCommand):
 
     DEFAULT_CHUNK_SIZE = 10  # chunk size for solr document commit
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.file_repository = FileRepository()
         self.solr = pysolr.Solr(f"{settings.SOLR_HOST}/{settings.SOLR_COLLECTION}")
         self.processed = 0
         self.total = Document.objects.all().count()
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--chunk_size",
             help=f"chunk size for sending documents to solr (default: {self.DEFAULT_CHUNK_SIZE})",
@@ -50,7 +51,7 @@ class Command(BaseCommand):
             "-o", help="Output file: Also store results in this file as json lines"
         )
 
-    def _parse_args(self, **options):
+    def _parse_args(self, **options: Any) -> None:
         self.chunk_size = self.DEFAULT_CHUNK_SIZE
         self.force = options["force"]
         self.allow_ocr = options["no_ocr"]
@@ -63,7 +64,7 @@ class Command(BaseCommand):
         else:
             self.output = None
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         self._parse_args(**options)
         print(f"Processing {self.total} documents...")
 
@@ -72,12 +73,18 @@ class Command(BaseCommand):
         for document in Document.objects.all():
             print(f"Processing {document.file_name} (id={str(document.id)})")
 
-            file_path = self.file_repository.get_file_path(document.uri)
-            if document.content_type and not document.content_type.lower().endswith("pdf"):
+            repository_file_path: str = self.file_repository.get_file_path(document.uri)
+            if document.content_type and not document.content_type.lower().endswith(
+                "pdf"
+            ):
                 try:
-                    file_path = convert_to_pdf(file_path, skip_cache=self.force)
+                    file_path = convert_to_pdf(
+                        repository_file_path, skip_cache=self.force
+                    )
                 except ExternalServiceUnsuccessfulException:
                     file_path = None
+            else:
+                file_path = repository_file_path
 
             # perform text analysis
             content: list[str] | None = []
@@ -142,7 +149,7 @@ class Command(BaseCommand):
         self.submit(solr_docs, commit=True)
         print(f"Processed {self.processed} documents.")
 
-    def submit(self, solr_docs, commit=False):
+    def submit(self, solr_docs: list[SolrImportDoc], commit: bool = False) -> None:
         self.processed += len(solr_docs)
         print(
             f"Submitting {len(solr_docs)} documents to solr. (Processed={self.processed}/{self.total})"

@@ -15,5 +15,5 @@ class Query(models.Model):
     num_results = models.IntegerField(null=True)
     query_time = models.IntegerField(null=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.date} - {self.query}"

@@ -1,12 +1,14 @@
 import base64
 import logging
 from multiprocessing import Process
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.management import call_command
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
 
 from .models import Query
@@ -14,12 +16,8 @@ from .search import solr
 
 logger = logging.getLogger(__name__)
 
-BASE_CONTEXT: dict[str, str | bool] = {
-    "DEBUG": settings.DEBUG  # config js debugging
-}
 
-
-def _parse_parge(request, default=1):
+def _parse_parge(request: HttpRequest, default: int = 1) -> int:
     """The requested page. Defaults to first page is no or an invalid page is requested"""
     page = request.GET.get("page", default)
     if not isinstance(page, int) and not page.isnumeric():
@@ -32,7 +30,7 @@ def _parse_parge(request, default=1):
             return page
 
 
-def _is_authenticated_su(request):
+def _is_authenticated_su(request: HttpRequest) -> bool:
     """True if the user is an authenticatd superuser"""
     if (
         request.user.is_authenticated
@@ -54,7 +52,7 @@ def _is_authenticated_su(request):
 update_proc: Process | None = None
 
 
-def update(request):
+def update(request: HttpRequest) -> HttpResponse:
     """Triggers async update of the solar index (runs update_solr management task.
     Therefore, a new process is started and the view returnes immediatly.
     If the update process is already running, it gets killed and a new one
@@ -69,7 +67,7 @@ def update(request):
         # start update in a new process
         chunk_size = int(request.GET.get("chunk_size", 10))
 
-        def proc(chunk_size):
+        def proc(chunk_size: int) -> None:
             call_command("update_solr", chunk_size=10)
 
         update_proc = Process(target=proc, args=(chunk_size,))
@@ -86,8 +84,11 @@ class MainView(TemplateView):
     template_name = "main/main.html"
     autofocus = True  # Focus on search input field?
 
-    def get(self, request, **kwargs):
-        context = BASE_CONTEXT.copy()
+    def get(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
+        # TODO properly type context
+        context: dict[str, Any] = {
+            "DEBUG": settings.DEBUG  # config js debugging
+        }
 
         # parse query parameters
         query = request.GET.get("query", None)
@@ -133,7 +134,7 @@ class SearchView(MainView):
     template_name = "search/search.html"
     autofocus = False  # no autofocus on search
 
-    def get(self, request, **kwargs):
+    def get(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
         query = request.GET.get("query", None)
 
         # redirect to landing page if nothing was searched
@@ -148,7 +149,7 @@ class SuggestView(TemplateView):
 
     template_name = "components/suggestions.html"
 
-    def get(self, request, **kwargs):
+    def get(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
         query = request.GET.get("query", None)
         if query is None:
             suggestions = []
@@ -168,22 +169,22 @@ class SuggestView(TemplateView):
         )
 
 
-def error_handler(request, code, message):
+def error_handler(request: HttpRequest, code: int, message: str) -> HttpResponse:
     context = {"status_code": code, "message": message}
     return render(request, "error.html", status=code, context=context)
 
 
-def handler_400(request, *args, **kwargs):
+def handler_400(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
     return error_handler(request, 400, "Ungültige Anfrage.")
 
 
-def handler_403(request, *args, **kwargs):
+def handler_403(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
     return error_handler(request, 403, "Zugriff verweigert.")
 
 
-def handler_404(request, *args, **kwargs):
+def handler_404(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
     return error_handler(request, 404, "Seite konnte nicht gefunden werden.")
 
 
-def handler_500(request, *args, **kwargs):
+def handler_500(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
     return error_handler(request, 500, "Serverfehler.")

@@ -84,6 +84,7 @@ exclude = [
 plugins = ["mypy_django_plugin.main"]
 warn_return_any = true
 warn_unused_configs = true
+# TODO: This should be set to true once we have typing for all functions.
 disallow_untyped_defs = false
 check_untyped_defs = true
 ignore_missing_imports = true

@@ -1,10 +1,7 @@
-FROM python:3.13-alpine
+FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 # Install system dependencies
 RUN apk update \
@@ -16,7 +13,7 @@ WORKDIR /
 COPY pyproject.toml uv.lock* ./
 
 # Install Python dependencies with uv
-RUN uv sync --frozen --no-dev
+RUN uv pip install --system --no-cache -r pyproject.toml
 
 # copy app
 COPY sessionnet /scraper/sessionnet

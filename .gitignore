@@ -121,6 +121,7 @@ celerybeat.pid
 
 # Environments
 venv
+.venv
 env/
 RIScraper/venv/
 ENV/

@@ -32,6 +32,8 @@ jobs:
       run: uv run ruff check
     - name: Run ruff formatting check
       run: uv run ruff format --check
+    - name: Run mypy type check
+      run: uv run mypy
 
   build_solr:
     runs-on: ubuntu-latest

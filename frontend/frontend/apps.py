@@ -1,6 +1,8 @@
 from django.apps import AppConfig
 from health_check.plugins import plugin_dir
+
 from frontend.healthcheck import *
+
 
 class MyAppConfig(AppConfig):
     name = "frontend"

@@ -1,5 +1,6 @@
 import inspect
 
+
 class DatabaseRouter:
     """
     Routes risdb models to RIS database and everthing else to the default

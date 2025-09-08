@@ -3,12 +3,17 @@ import os
 import re
 
 import pysolr
-from django.core.management import BaseCommand
 from django.conf import settings
+from django.core.management import BaseCommand
+
+from frontend.processing.external_services import (
+    ExternalServiceUnsuccessfulException,
+    analyze_document_pdfact,
+    analyze_document_tika,
+    convert_to_pdf,
+    get_preview_image_for_doc,
+)
 from frontend.processing.file_repository import FileRepository
-from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, \
-    analyze_document_tika, \
-    convert_to_pdf, ExternalServiceUnsuccessfulException
 from frontend.processing.processing import parse_solr_document
 from ris.models import Document
 
@@ -38,7 +43,7 @@ class Command(BaseCommand):
                             help="allow ocr for documents (takes a long time)",
                             action="store_false")
         parser.add_argument("-o",
-                            help=f"Output file: Also store results in this file as json lines")
+                            help="Output file: Also store results in this file as json lines")
 
     def _parse_args(self, **options):
         self.chunk_size = self.DEFAULT_CHUNK_SIZE

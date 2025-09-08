@@ -6,9 +6,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.management import call_command
 from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
-
-from django.shortcuts import render, redirect
 
 from .models import Query
 from .search import solr

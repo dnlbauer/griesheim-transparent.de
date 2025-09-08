@@ -5,9 +5,8 @@ This provides test-specific configurations that don't require
 external services or environment variables.
 """
 
-import os.path
-from os.path import join
 from pathlib import Path
+
 from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -125,7 +124,7 @@ PASSWORD_HASHERS = [
 class DisableMigrations:
     def __contains__(self, item):
         return True
-    
+
     def __getitem__(self, item):
         return None
 

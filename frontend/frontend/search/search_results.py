@@ -1,5 +1,6 @@
 import math
 
+
 class SearchResult:
     def __init__(self, id, document_id, title, organization, highlight, link, download_link,
                  doc_type, short_name, date, preview_image, filetype):

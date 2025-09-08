@@ -4,7 +4,7 @@ from django.conf import settings
 
 def pairwise(iterable):
     """ converts a list to a list of pairs """
-    return list(zip(iterable[0::2], iterable[1::2]))
+    return list(zip(iterable[0::2], iterable[1::2], strict=False))
 
 def solr_connection(handler='/select'):
     """ connect to solr """

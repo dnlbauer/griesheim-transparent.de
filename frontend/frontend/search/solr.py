@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from frontend.search import SearchResult, SearchResults
-from frontend.search.utils import pairwise, solr_page, solr_connection
+from frontend.search.utils import pairwise, solr_connection, solr_page
 
 # default number of documents to return
 NUM_ROWS = 10

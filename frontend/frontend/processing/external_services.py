@@ -1,8 +1,8 @@
-import tika
 import base64
 import json
 
 import requests
+import tika
 from django.conf import settings
 from tika import parser
 

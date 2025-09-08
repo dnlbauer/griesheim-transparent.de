@@ -1,6 +1,7 @@
 import base64
 import logging
 from multiprocessing import Process
+from typing import Dict
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -14,7 +15,7 @@ from .search import solr
 
 logger = logging.getLogger(__name__)
 
-BASE_CONTEXT = {
+BASE_CONTEXT: Dict[str, str | bool] = {
     "DEBUG": settings.DEBUG  # config js debugging
 }
 
@@ -51,7 +52,7 @@ def _is_authenticated_su(request):
     return False
 
 
-update_proc = None
+update_proc: Process | None = None
 
 
 def update(request):
@@ -87,7 +88,7 @@ class MainView(TemplateView):
     autofocus = True  # Focus on search input field?
 
     def get(self, request, **kwargs):
-        context = BASE_CONTEXT
+        context = BASE_CONTEXT.copy()
 
         # parse query parameters
         query = request.GET.get("query", None)
@@ -109,7 +110,7 @@ class MainView(TemplateView):
                 user=request.user.username if request.user.is_authenticated else None,
                 organization=organization,
                 doc_type=doc_type,
-                sort=sort,
+                sort=sort.value,
                 page=page,
                 num_results=result.hits,
                 query_time=result.qtime,

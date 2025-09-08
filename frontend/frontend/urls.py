@@ -44,7 +44,7 @@ urlpatterns = [
 ]
 
 if not settings.DEBUG:
-    handler400 = "frontend.views.handler_400"
-    handler403 = "frontend.views.handler_403"
-    handler404 = "frontend.views.handler_404"
-    handler500 = "frontend.views.handler_500"
+    handler400 = "frontend.views.handler_400"  # type: ignore[assignment]
+    handler403 = "frontend.views.handler_403"  # type: ignore[assignment]
+    handler404 = "frontend.views.handler_404"  # type: ignore[assignment]
+    handler500 = "frontend.views.handler_500"  # type: ignore[assignment]

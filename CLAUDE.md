@@ -85,6 +85,7 @@ uv run python manage.py check
 uv run pytest  # Run tests
 uv run ruff check  # Lint code
 uv run ruff format  # Format code
+uv run mypy  # Type check code
 
 # Database
 uv run python manage.py migrate

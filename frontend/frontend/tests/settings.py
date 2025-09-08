@@ -18,7 +18,7 @@ SECRET_KEY = get_random_secret_key()
 
 # Allow all hosts for testing
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS: list[str] = []
 
 # Application definition
 INSTALLED_APPS = [
@@ -113,7 +113,7 @@ ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = []
 
 # Disable cron jobs for tests
-CRONJOBS = []
+CRONJOBS: list[str] = []
 
 # Speed up password hashing for tests
 PASSWORD_HASHERS = [

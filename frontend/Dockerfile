@@ -1,11 +1,8 @@
 # pull official base image
-FROM python:3.13-alpine
+FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 # Install system dependencies
 RUN apk add --no-cache postgresql-libs \
@@ -15,8 +12,8 @@ RUN apk add --no-cache postgresql-libs \
 # Copy dependency files
 COPY pyproject.toml uv.lock* ./
 
-# Install Python dependencies with uv
-RUN uv sync --frozen --no-dev
+# Install Python dependencies with uv to system
+RUN uv pip install --system --no-cache -r pyproject.toml
 
 # Clean up build dependencies
 RUN apk --purge del .build-deps

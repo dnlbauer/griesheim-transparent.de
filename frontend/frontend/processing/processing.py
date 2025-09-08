@@ -1,10 +1,9 @@
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
-from frontend.frontend.processing.external_services import cast
 from ris.models import AgendaItem, Consultation, Document, Meeting, Organization
 
 SOLR_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"

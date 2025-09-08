@@ -1,127 +1,248 @@
 # CLAUDE.md
 
-This file provides guidance to a coding agent when working with code in this repository.
+This file provides Claude Code with context and guidelines for working with this repository.
 
 ## Project Overview
 
-This is a transparency platform for local politics. The platform provides
-access to information about local government activities, decisions, and documents.
-Currently, the platform is tailored for the municipality of Griesheim, Hesse, Germany.
+A transparency platform for local politics providing citizens access to municipal government documents, decisions, and activities. Currently deployed for Griesheim, Hesse, Germany.
 
-The system consists of:
+**Core Purpose**: Extract, process, and make searchable municipal documents from SessionNet systems.
 
-- **Scraper**: Scrapy-based web scraper that extracts documents from the municipal "Ratsinformationssystem".
-- **Frontend**: Django web application providing the frontend with the search interface and document processing
-- **Solr**: Search platform for indexing and querying documents
-- **Supporting services**: PostgreSQL, Tika, preview service, Gotenberg for document processing
-
-## Key Dependencies
-
-- **Frontend**: Django, pysolr, requests, tika, gunicorn
-- **Scraper**: Scrapy, psycopg2, peewee ORM
-- **External services**: Apache Tika, PDFAct, Gotenberg, preview-service
-
-## Architecture
-
-### Core Components
-
-- **scraper/**: Scrapy project (`sessionnet`) that scrapes municipal documents from SessionNet
-- **frontend/**: Django application with two main functions:
-  - Web interface for citizens to search documents (`frontend/` app)
-  - Background processing to sync scraped data to Solr (`ris/` app for database models)
-- **solr/**: Solr configuration for search indexing
-- **deployment/**: Docker Compose setup for local development
+### System Architecture
+- **Scraper**: Scrapy spider extracting documents from municipal SessionNet
+- **Frontend**: Django web app with citizen search interface + background document processing
+- **Solr**: Full-text search and document indexing
+- **Services**: PostgreSQL, Apache Tika, Gotenberg, preview-service
 
 ### Data Flow
+1. Scraper → Documents/metadata → PostgreSQL
+2. Django management command → Document processing → Solr indexing
+3. Citizens → Django frontend → Solr search results
 
-1. Scraper runs via cron to extract documents and metadata → PostgreSQL database
-2. Frontend management command `update_solr` processes documents:
-   - Converts files to PDF via Gotenberg
-   - Extracts text content via Tika/PDFAct
-   - Generates preview images
-   - Indexes content in Solr
-3. Django frontend queries Solr for search functionality
+## Development Context
 
-### Key Files
+### Stack
+- **Backend**: Django 4.1+, Python 3.10+
+- **Database**: SQLite (frontend), PostgreSQL (scraped data)
+- **Search**: Apache Solr with pysolr client
+- **Scraping**: Scrapy framework
+- **Document Processing**: Apache Tika, PDFAct, Gotenberg
+- **Deployment**: Docker Compose
 
-- `scraper/sessionnet/spiders.py`: Main scraping logic
-- `scraper/sessionnet/pipelines.py`: Data processing pipeline
-- `frontend/frontend/management/commands/update_solr.py`: Solr synchronization
-- `frontend/ris/models.py`: Database models for scraped data
-- `deployment/dev.yaml`: Complete docker-compose development environment
+### Critical Constraints
+- Multi-database setup: SQLite for Django app, PostgreSQL for scraped data
+- External service dependencies for document processing
+- German locale (de-de) and timezone (Europe/Berlin)
+- No hardcoded secrets - all config via environment variables
 
-## Development Commands
+## Code Organization
 
-### Local Development with Docker
+### Key Directories
+- `scraper/sessionnet/`: Scrapy spider and processing pipeline
+- `frontend/frontend/`: Django web app (views, templates, search)
+- `frontend/ris/`: Database models for scraped data
+- `frontend/frontend/management/commands/`: Custom Django commands
+- `deployment/`: Docker Compose configurations
+- `solr/`: Solr schema and configuration
 
+### Critical Files
+- `scraper/sessionnet/spiders.py`: SessionNet scraping logic
+- `frontend/ris/models.py`: Data models (Document, Organization, Person)
+- `frontend/frontend/management/commands/update_solr.py`: Document processing pipeline
+- `frontend/frontend/settings.py`: Multi-database and service configuration
+- `deployment/dev.yaml`: Complete development environment
+
+## Development Workflow
+
+### Quick Start
 ```bash
-# Start full development environment
-cd deployment
-docker-compose -f dev.yaml up
+# Option 1: Docker (recommended for full stack)
+cd deployment && docker-compose -f dev.yaml up
 
-# Build individual services
-docker build -t griesheimtransparent-frontend frontend/
-docker build -t griesheimtransparent-scraper scraper/
-docker build -t griesheimtransparent-solr solr/
+# Option 2: Local development (requires setup)
+cd frontend/
+source venv/bin/activate  # Activate virtual environment first
+python manage.py runserver
 ```
 
-### Frontend (Django)
+### Recommended Development Process
+1. **Explore**: Read relevant files before making changes
+2. **Plan**: Create clear implementation plan
+3. **Code**: Make incremental changes
+4. **Test**: Run tests and verify functionality
+5. **Commit**: Use descriptive commit messages
 
+### Common Commands
+
+#### Frontend Development
 ```bash
 cd frontend/
+source venv/bin/activate  # Always activate venv first
 
-# Run development server
+# Development
 python manage.py runserver
-
-# Database operations
-python manage.py migrate  # For frontend database
-python manage.py migrate --database=ris  # For scraper database
-
-# Sync scraped data to Solr index
-python manage.py update_solr
-
-# Collect static files
-python manage.py collectstatic
-
-# Run tests
 python manage.py test
+python manage.py check
+
+# Database
+python manage.py migrate
+python manage.py migrate --database=ris
+python manage.py makemigrations
+
+# Data Processing
+python manage.py update_solr  # Process documents to Solr
+python manage.py collectstatic
 ```
 
-### Scraper (Scrapy)
-
+#### Scraper Operations
 ```bash
 cd scraper/
+source venv/bin/activate  # Always activate venv first
 
-# Run scraper manually
+# Manual scraping
 scrapy crawl sessionnet
-
-# Scrape specific date range
 scrapy crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END=03/2023
-
-# Run with crontab (automated)
-# See scraper/crontab for scheduled runs
 ```
 
-### Database Configuration
+### Environment Setup
 
-- **Frontend database**: SQLite (`/django_db/db.sqlite`) for Django app data
-- **Scraper database**: PostgreSQL for scraped document metadata
-- Database connections configured via environment variables (see `deployment/dev.yaml`)
+#### Python Environment
+```bash
+# Frontend setup
+cd frontend/
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 
-## Environment Variables
+# Scraper setup  
+cd ../scraper/
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-Critical environment variables (defined in `deployment/dev.yaml`):
+#### Database Configuration
+- **Frontend**: SQLite at `/django_db/db.sqlite` (Django app data)
+- **Scraper**: PostgreSQL (document metadata)
+- **Router**: `frontend.databaserouter.DatabaseRouter` handles multi-DB routing
 
-- `DJANGO_SECRET_KEY`: Django secret key
-- `SOLR_HOST`, `SOLR_COLLECTION`: Solr connection
-- `RIS_DB_*`: PostgreSQL scraper database credentials
-- `DEBUG`: Django debug mode
-- External service hosts: `TIKA_HOST`, `PDFACT_HOST`, `GOTENBERG_HOST`, `PREVIEW_HOST`
+#### Required Environment Variables
+```bash
+# Core Django
+DJANGO_SECRET_KEY=your-django-secret-key-here
+DEBUG=true
+ALLOWED_HOSTS=localhost,127.0.0.1
 
-## Build and CI
+# PostgreSQL (scraped data)
+RIS_DB_HOST=localhost
+RIS_DB_PORT=5432
+RIS_DB_NAME=database_name
+RIS_DB_USER=db_username
+RIS_DB_PASSWORD=db_password
 
-- GitHub Actions builds and publishes Docker images for all components
-- CI configuration: `.github/workflows/build.yml`
-- Dependabot configured for automated dependency updates
+# Search and processing services
+SOLR_HOST=http://localhost:8983/solr
+SOLR_COLLECTION=ris
+TIKA_HOST=http://localhost:9998
+PDFACT_HOST=http://localhost:80
+GOTENBERG_HOST=http://localhost:3000
+PREVIEW_HOST=http://localhost:8000
+```
 
-**IMPORTANT: Update this document as the codebase evolves!**
+## Testing & Quality Assurance
+
+### Testing Environment Setup
+For commands that require database connections, start PostgreSQL via Docker:
+```bash
+cd deployment/
+docker-compose -f dev.yaml up -d scraper-database  # Start PostgreSQL only
+
+# Set environment variables for testing (use values from deployment/.env)
+export DEBUG=true
+export RIS_DB_HOST=localhost
+export RIS_DB_PORT=5432
+export RIS_DB_NAME=your_db_name
+export RIS_DB_USER=your_db_user
+export RIS_DB_PASSWORD=your_db_password
+```
+
+### Testing Strategy
+```bash
+cd frontend/
+source venv/bin/activate  # Always activate venv first
+
+# Run all tests
+python manage.py test
+
+# Test specific apps
+python manage.py test frontend ris
+
+# Django system checks
+python manage.py check
+python manage.py check --deploy
+```
+
+### Database Operations
+```bash
+cd frontend/
+source venv/bin/activate  # Always activate venv first
+
+# Migrations
+python manage.py makemigrations  # Create new migrations
+python manage.py migrate         # Apply to SQLite
+python manage.py migrate --database=ris  # Apply to PostgreSQL
+
+# Inspection
+python manage.py showmigrations
+python manage.py dbshell [--database=ris]
+```
+
+## Code Standards
+
+### Django Patterns
+- **Models**: Extend `BaseModel` for `created_at`/`last_modified` fields
+- **Commands**: Inherit from `BaseCommand` for management commands
+- **Settings**: Use `django-environ` for configuration
+- **Database**: Multi-DB routing via `DatabaseRouter`
+
+### Code Conventions
+- **Naming**: PascalCase classes, snake_case functions, UPPER_CASE constants
+- **Imports**: Standard library → third-party → local imports
+- **Private methods**: Prefix with underscore (`_parse_args`)
+- **Database models**: Explicit `db_table` names, no DB constraints on ForeignKeys
+
+### Architecture Guidelines
+- **External services**: Centralize in `processing/external_services.py`
+- **Utilities**: Common functions in dedicated utils modules
+- **Configuration**: Environment variables only (no hardcoded values)
+- **Logging**: Module-level loggers with `logging.getLogger(__name__)`
+- **Error handling**: Specific exceptions, proper context managers
+
+### Security Requirements
+- **Secrets**: Environment variables only
+- **Authentication**: Support both session and HTTP Basic Auth
+- **Database**: Django ORM prevents SQL injection
+- **CSRF**: Maintain Django middleware protection
+
+## Development Guidelines
+
+### When Making Changes
+1. **Read first**: Understand existing patterns before coding
+2. **Test changes**: Run `python manage.py test` and `python manage.py check`
+3. **Follow conventions**: Match existing code style and patterns
+4. **Update docs**: Keep this file current with changes
+
+### Deployment
+- **CI/CD**: GitHub Actions builds Docker images
+- **Config**: `.github/workflows/build.yml`
+- **Dependencies**: Dependabot automated updates
+
+### Getting Help
+Refer to key files when understanding functionality:
+- Models: `frontend/ris/models.py`
+- Scraping: `scraper/sessionnet/spiders.py`
+- Document processing: `frontend/frontend/management/commands/update_solr.py`
+- Configuration: `frontend/frontend/settings.py`
+
+---
+*Keep this document updated as the codebase evolves!*

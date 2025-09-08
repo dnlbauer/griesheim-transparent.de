@@ -128,8 +128,8 @@ services:
   tika:
     image: apache/tika:1.28.4-full
     container_name: gt-tika
-    expose:
-      - 9998
+    ports:
+      - 9998:9998
     networks:
       - griesheimtransparent
     restart: unless-stopped
@@ -137,8 +137,8 @@ services:
   pdfact:
     image: dnlbauer/pdfact-service:latest
     container_name: gt-pdfact
-    expose:
-      - 80
+    ports:
+      - 80:8080
     networks:
       - griesheimtransparent
     restart: unless-stopped
@@ -146,8 +146,8 @@ services:
   gotenberg:
     image: gotenberg/gotenberg:7
     container_name: gt-gotenberg
-    expose:
-      - 3000
+    ports:
+      - 3000:3000
     networks:
       - griesheimtransparent
     restart: unless-stopped
@@ -155,8 +155,8 @@ services:
   previewservice:
     image: fpurchess/preview-service
     container_name: gt-previewservice
-    expose:
-      - 8000
+    ports:
+      - 8000:8001
     networks:
       - griesheimtransparent
     restart: unless-stopped

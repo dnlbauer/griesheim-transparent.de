@@ -4,8 +4,8 @@ from typing import Any, cast
 
 import pysolr
 
-from frontend.frontend.search.search_results import Facets
 from frontend.search import SearchResult, SearchResults
+from frontend.search.search_results import Facets
 from frontend.search.utils import pairwise, solr_connection, solr_page
 
 # default number of documents to return

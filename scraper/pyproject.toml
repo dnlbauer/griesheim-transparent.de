@@ -1,14 +1,13 @@
-[tool.poetry]
-name = "scraper"
-version = "0.1.0"
-description = ""
-authors = ["danijoo <danijob88@googlemail.com>"]
-readme = "README.md"
+[project]
+name = "griesheim-transparent-scraper"
+version = "1.0.0"
+description = "Scrapy spider for extracting municipal documents from SessionNet"
+requires-python = ">=3.13"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+dependencies = [
+    "psycopg2~=2.9.10",
+    "Scrapy~=2.13.3",
+    "peewee~=3.18.2",
+    "pytz~=2025.2",
+    "Twisted~=25.5",
+]

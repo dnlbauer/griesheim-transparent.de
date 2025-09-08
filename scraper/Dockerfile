@@ -3,16 +3,20 @@ FROM python:3.13-alpine
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+# Install system dependencies
 RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev coreutils \
-    && pip install psycopg2-binary
+    && apk add postgresql-dev gcc python3-dev musl-dev coreutils
 
 WORKDIR /
 
-# install requirements
-COPY requirements.txt /requirements.txt
-RUN pip install --upgrade pip --no-cache-dir \
-    && pip install -r requirements.txt --no-cache-dir
+# Copy dependency files
+COPY pyproject.toml uv.lock* ./
+
+# Install Python dependencies with uv
+RUN uv sync --frozen --no-dev
 
 # copy app
 COPY sessionnet /scraper/sessionnet

@@ -1,6 +1,5 @@
 import pysolr
-
-from frontend import settings
+from django.conf import settings
 
 
 def pairwise(iterable):

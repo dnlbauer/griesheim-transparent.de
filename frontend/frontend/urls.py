@@ -18,7 +18,7 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.conf.urls import handler400, handler403, handler404, handler500
 
-from frontend import settings
+from django.conf import settings
 from frontend.views import MainView, SearchView, SuggestView, update
 
 urlpatterns = [

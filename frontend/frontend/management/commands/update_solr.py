@@ -4,8 +4,7 @@ import re
 
 import pysolr
 from django.core.management import BaseCommand
-
-from frontend import settings
+from django.conf import settings
 from frontend.processing.file_repository import FileRepository
 from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, \
     analyze_document_tika, \

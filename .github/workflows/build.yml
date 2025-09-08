@@ -79,7 +79,7 @@ jobs:
         context: "./solr"
         push: ${{ github.event_name != 'pull_request_target' }}
         tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outpyts.labels }}
+        labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
   build_frontend:
@@ -108,7 +108,7 @@ jobs:
         context: "./frontend"
         push: ${{ github.event_name != 'pull_request_target' }}
         tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outpyts.labels }}
+        labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
   build_scraper:
@@ -136,7 +136,7 @@ jobs:
         context: "./scraper"
         push: ${{ github.event_name != 'pull_request_target' }}
         tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outpyts.labels }}
+        labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
   dependabot_auto_merge:

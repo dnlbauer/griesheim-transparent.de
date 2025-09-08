@@ -59,10 +59,10 @@ A transparency platform for local politics providing citizens access to municipa
 # Option 1: Docker (recommended for full stack)
 cd deployment && docker-compose -f dev.yaml up
 
-# Option 2: Local development (requires setup)
+# Option 2: Local development (requires uv setup)
 cd frontend/
-source venv/bin/activate  # Activate virtual environment first
-python manage.py runserver
+uv sync  # Create virtual environment and install dependencies
+uv run python manage.py runserver
 ```
 
 ### Recommended Development Process
@@ -77,48 +77,47 @@ python manage.py runserver
 #### Frontend Development
 ```bash
 cd frontend/
-source venv/bin/activate  # Always activate venv first
+uv sync  # Install/update dependencies
 
 # Development
-python manage.py runserver
-python manage.py test
-python manage.py check
+uv run python manage.py runserver
+uv run python manage.py test
+uv run python manage.py check
 
 # Database
-python manage.py migrate
-python manage.py migrate --database=ris
-python manage.py makemigrations
+uv run python manage.py migrate
+uv run python manage.py migrate --database=ris
+uv run python manage.py makemigrations
 
 # Data Processing
-python manage.py update_solr  # Process documents to Solr
-python manage.py collectstatic
+uv run python manage.py update_solr  # Process documents to Solr
+uv run python manage.py collectstatic
 ```
 
 #### Scraper Operations
 ```bash
 cd scraper/
-source venv/bin/activate  # Always activate venv first
+uv sync  # Install/update dependencies
 
 # Manual scraping
-scrapy crawl sessionnet
-scrapy crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END=03/2023
+uv run scrapy crawl sessionnet
+uv run scrapy crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END=03/2023
 ```
 
 ### Environment Setup
 
 #### Python Environment
+
+**Prerequisites**: Install uv first: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
 ```bash
 # Frontend setup
 cd frontend/
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+uv sync  # Creates virtual environment and installs dependencies automatically
 
 # Scraper setup  
 cd ../scraper/
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+uv sync  # Creates virtual environment and installs dependencies automatically
 ```
 
 #### Database Configuration
@@ -169,32 +168,32 @@ export RIS_DB_PASSWORD=your_db_password
 ### Testing Strategy
 ```bash
 cd frontend/
-source venv/bin/activate  # Always activate venv first
+uv sync  # Ensure dependencies are installed
 
 # Run all tests
-python manage.py test
+uv run python manage.py test
 
 # Test specific apps
-python manage.py test frontend ris
+uv run python manage.py test frontend ris
 
 # Django system checks
-python manage.py check
-python manage.py check --deploy
+uv run python manage.py check
+uv run python manage.py check --deploy
 ```
 
 ### Database Operations
 ```bash
 cd frontend/
-source venv/bin/activate  # Always activate venv first
+uv sync  # Ensure dependencies are installed
 
 # Migrations
-python manage.py makemigrations  # Create new migrations
-python manage.py migrate         # Apply to SQLite
-python manage.py migrate --database=ris  # Apply to PostgreSQL
+uv run python manage.py makemigrations  # Create new migrations
+uv run python manage.py migrate         # Apply to SQLite
+uv run python manage.py migrate --database=ris  # Apply to PostgreSQL
 
 # Inspection
-python manage.py showmigrations
-python manage.py dbshell [--database=ris]
+uv run python manage.py showmigrations
+uv run python manage.py dbshell [--database=ris]
 ```
 
 ## Code Standards
@@ -228,9 +227,10 @@ python manage.py dbshell [--database=ris]
 
 ### When Making Changes
 1. **Read first**: Understand existing patterns before coding
-2. **Test changes**: Run `python manage.py test` and `python manage.py check`
+2. **Test changes**: Run `uv run python manage.py test` and `uv run python manage.py check`
 3. **Follow conventions**: Match existing code style and patterns
 4. **Update docs**: Keep this file current with changes
+
 
 ### Deployment
 - **CI/CD**: GitHub Actions builds Docker images

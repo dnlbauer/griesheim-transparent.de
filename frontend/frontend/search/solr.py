@@ -1,7 +1,11 @@
 from datetime import datetime
 from enum import Enum
+from typing import Any, cast
+
+import pysolr
 
 from frontend.search import SearchResult, SearchResults
+from frontend.search.search_results import Facets
 from frontend.search.utils import pairwise, solr_connection, solr_page
 
 # default number of documents to return
@@ -63,7 +67,9 @@ class SortOrder(Enum):
     date = "date"
 
 
-def _parse_highlights(highlights, max_len, separator=" "):
+def _parse_highlights(
+    highlights: dict[str, list[str]], max_len: int, separator: str = " "
+) -> str | None:
     # remove empty string highlights
     for key in highlights:
         non_empty = [hl for hl in highlights[key] if hl.strip()]
@@ -74,7 +80,7 @@ def _parse_highlights(highlights, max_len, separator=" "):
 
     # concatenate highlights into a single string with max_len
     # as a soft limit (stopping once max_len is exceeded)
-    def highlight2str(highlights):
+    def highlight2str(highlights: dict[str, list[str]]) -> str:
         hl = ""
         for field in HL_FIELDS.split(" "):
             if hl:
@@ -89,7 +95,7 @@ def _parse_highlights(highlights, max_len, separator=" "):
                         return hl
         return hl
 
-    hl = highlight2str(highlights)
+    hl: str = highlight2str(highlights)
 
     if hl:
         # append the seperator if the sentence is not finished
@@ -99,7 +105,7 @@ def _parse_highlights(highlights, max_len, separator=" "):
     return None
 
 
-def _parse_search_result(doc, response):
+def _parse_search_result(doc: dict[str, Any], response: pysolr.Results) -> SearchResult:
     id = doc["id"]
     document_id = doc["document_id"]
     download_link = (
@@ -186,17 +192,22 @@ SUGGEST_ARGS = {
 }
 
 
-def _parse_facets(facets):
+def _parse_facets(
+    raw_facets: dict[str, dict[str, Any]],
+) -> Facets:
     parsed_results = {}
-    if "facet_fields" in facets:
+    if "facet_fields" in raw_facets:
         for name in FACET_FIELDS:
             field_name = FACET_FIELDS[name]
-            if field_name in facets["facet_fields"]:
-                parsed_results[name] = pairwise(facets["facet_fields"][field_name])
+            if field_name in raw_facets["facet_fields"]:
+                parsed_results[name] = cast(
+                    list[tuple[str, int]],
+                    pairwise(raw_facets["facet_fields"][field_name]),
+                )
     return parsed_results
 
 
-def _parse_spellcheck(result):
+def _parse_spellcheck(result: pysolr.Results) -> tuple[str, int] | tuple[None, None]:
     """parse spell checks and returns the best suggestion query string and number of hits
     Returns the suggested query term and expected hits for this query"""
     if result.spellcheck is not None and not result.spellcheck["correctlySpelled"]:
@@ -210,7 +221,16 @@ def _parse_spellcheck(result):
     return None, None
 
 
-def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellcheck):
+def _create_solr_args(
+    query: str,
+    page: int,
+    sort: SortOrder,
+    limit: int | None,
+    facet_filter: dict[str, str],
+    hl: bool,
+    facet: bool,
+    spellcheck: bool,
+) -> dict[str, Any]:
     """parses the set of solr arguments to a single dictionary matching the query"""
     args = dict(SOLR_ARGS)
 
@@ -255,33 +275,34 @@ def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellch
 
     # rows / paging
     if limit is not None:
-        args["rows"] = int(limit)
+        num_rows_per_page = int(limit)
     else:
-        args["rows"] = NUM_ROWS
-    args |= solr_page(page - 1, args["rows"])
+        num_rows_per_page = NUM_ROWS
+    args["rows"] = num_rows_per_page
+    args |= solr_page(page - 1, num_rows_per_page)
 
     return args
 
 
-def count(query, solr_conn=None):
+def count(query: str, solr_conn: pysolr.Solr | None = None) -> int:
     """get a count of documents matching the query"""
     if solr_conn is None:
         solr_conn = solr_connection()
     result = solr_conn.search(query, rows=0)
-    return result.hits
+    return int(result.hits)
 
 
 def search(
-    query,
-    page=1,
-    sort=SortOrder.relevance,
-    limit=None,
-    facet_filter=None,
-    hl=True,
-    facet=True,
-    spellcheck=True,
-    solr_conn=None,
-):
+    query: str,
+    page: int = 1,
+    sort: SortOrder = SortOrder.relevance,
+    limit: int | None = None,
+    facet_filter: dict[str, str] | None = None,
+    hl: bool = True,
+    facet: bool = True,
+    spellcheck: bool = True,
+    solr_conn: pysolr.Solr | None = None,
+) -> SearchResults:
     """perform a search request"""
     if facet_filter is None:
         facet_filter = {}
@@ -303,15 +324,17 @@ def search(
         facets,
         page,
         NUM_ROWS,
-        result.hits,
-        result.qtime,
+        cast(int, result.hits),
+        cast(int, result.qtime),
         spellcheck_query,
         spellcheck_hits,
     )
 
 
 # same as `search` but fills highlight with content
-def doc_id(query="*:*", limit=5, solr_conn=None):
+def doc_id(
+    query: str = "*:*", limit: int = 5, solr_conn: pysolr.Solr | None = None
+) -> SearchResults:
     """Search for newest documents for this query. Defaults to all documents"""
     if solr_conn is None:
         solr_conn = solr_connection()
@@ -331,12 +354,19 @@ def doc_id(query="*:*", limit=5, solr_conn=None):
             doc.highlight = _parse_highlights(
                 result.highlighting[doc.id], max_len=10000, separator=" "
             )
-    facets: dict[str, str] = {}
+    facets: Facets = {}
 
-    return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
+    return SearchResults(
+        documents,
+        facets,
+        page,
+        NUM_ROWS,
+        cast(int, result.hits),
+        cast(int, result.qtime),
+    )
 
 
-def suggest(query, solr_conn=None):
+def suggest(query: str, solr_conn: pysolr.Solr | None = None) -> list[str]:
     """Get search suggestions for the given query"""
     if solr_conn is None:
         solr_conn = solr_connection("/suggest")

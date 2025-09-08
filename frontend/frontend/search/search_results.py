@@ -1,22 +1,27 @@
 import math
+from collections.abc import Iterator
+from datetime import datetime
+
+type Facet = tuple[str, int]  # facet value to count
+type Facets = dict[str, list[Facet]]  # facet name to list of facets
 
 
 class SearchResult:
     def __init__(
         self,
-        id,
-        document_id,
-        title,
-        organization,
-        highlight,
-        link,
-        download_link,
-        doc_type,
-        short_name,
-        date,
-        preview_image,
-        filetype,
-    ):
+        id: str,
+        document_id: str,
+        title: str | None,
+        organization: str | None,
+        highlight: str | None,
+        link: str | None,
+        download_link: str,
+        doc_type: str | None,
+        short_name: str | None,
+        date: datetime | None,
+        preview_image: str | None,
+        filetype: str | None,
+    ) -> None:
         self.id = id
         self.document_id = document_id
         self.title = title
@@ -34,15 +39,15 @@ class SearchResult:
 class SearchResults:
     def __init__(
         self,
-        documents,
-        facets,
-        page,
-        rows,
-        hits,
-        qtime,
-        spellcheck_suggested_query=None,
-        spellcheck_suggested_query_hits=None,
-    ):
+        documents: list[SearchResult],
+        facets: Facets,
+        page: int,
+        rows: int,
+        hits: int,
+        qtime: int,
+        spellcheck_suggested_query: str | None = None,
+        spellcheck_suggested_query_hits: int | None = None,
+    ) -> None:
         self.documents = documents
         self.facets = facets
         self.page = page
@@ -52,16 +57,16 @@ class SearchResults:
         self.spellcheck_suggested_query = spellcheck_suggested_query
         self.spellcheck_suggested_query_hits = spellcheck_suggested_query_hits
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[SearchResult]:
         return iter(self.documents)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.documents)
 
     @property
-    def has_previous(self):
+    def has_previous(self) -> bool:
         return self.page > 1
 
     @property
-    def has_next(self):
+    def has_next(self) -> bool:
         return self.page < self.max_page

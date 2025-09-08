@@ -158,14 +158,6 @@ For commands that require database connections, start PostgreSQL via Docker:
 ```bash
 cd deployment/
 docker-compose -f dev.yaml up -d scraper-database  # Start PostgreSQL only
-
-# Set environment variables for testing (use values from deployment/.env)
-export DEBUG=true
-export RIS_DB_HOST=localhost
-export RIS_DB_PORT=5432
-export RIS_DB_NAME=your_db_name
-export RIS_DB_USER=your_db_user
-export RIS_DB_PASSWORD=your_db_password
 ```
 
 ### Testing Strategy

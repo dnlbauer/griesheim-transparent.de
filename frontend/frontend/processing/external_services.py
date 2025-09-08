@@ -1,5 +1,6 @@
 import base64
 import json
+from typing import Any, cast
 
 import requests
 import tika
@@ -20,14 +21,14 @@ class ExternalServiceUnsuccessfulException(Exception):
     pass
 
 
-def get_preview_image_for_doc(file_path, skip_cache=False):
+def get_preview_image_for_doc(file_path: str, skip_cache: bool = False) -> str:
     """Perform a request against the external preview image service
     to generate a preview thumbnail for the document"""
 
     if not skip_cache:
         cached = cache.get_cache_content(file_path, "preview")
         if cached:
-            return cached
+            return cast(str, cached)
 
     binary = files.get_file_content(file_path)
 
@@ -48,7 +49,10 @@ def get_preview_image_for_doc(file_path, skip_cache=False):
         )
 
 
-def analyze_document_tika(file_path, ocr=False, skip_cache=False):
+# TODO properly type tika response
+def analyze_document_tika(
+    file_path: str, ocr: bool = False, skip_cache: bool = False
+) -> dict[str, Any]:
     """Extract document text with tika or tesseract(ocr)"""
 
     if not ocr:
@@ -66,7 +70,7 @@ def analyze_document_tika(file_path, ocr=False, skip_cache=False):
     if not skip_cache:
         cached = cache.get_cache_content(file_path, f"tika{'.ocr' if ocr else ''}")
         if cached:
-            return json.loads(cached)
+            return cast(dict[str, Any], json.loads(cached))
 
     parsed = parser.from_file(
         files.get_file_path(file_path),
@@ -78,25 +82,25 @@ def analyze_document_tika(file_path, ocr=False, skip_cache=False):
         cache.insert_in_cache(
             file_path, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4)
         )
-        return parsed
+        return cast(dict[str, Any], parsed)
     else:
         raise ExternalServiceUnsuccessfulException(
             f"Failed to process document with tika: {file_path}"
         )
 
 
-def analyze_document_pdfact(file_path, skip_cache=False):
+def analyze_document_pdfact(file_path: str, skip_cache: bool = False) -> list[str]:
     """Analyze document with pdfact and return the whole text"""
 
-    def is_valid_response(response):
-        return response and len(response) > 0
+    def is_valid_response(response: list[str]) -> bool:
+        return bool(response and len(response) > 0)
 
     if not skip_cache:
         cached = cache.get_cache_content(file_path, "pdfact")
         if cached:
             content = json.loads(cached)
             if is_valid_response(content):
-                return content
+                return cast(list[str], content)
             else:
                 raise ExternalServiceUnsuccessfulException("pdfact returned no text")
 
@@ -123,9 +127,9 @@ def analyze_document_pdfact(file_path, skip_cache=False):
         raise ExternalServiceUnsuccessfulException("pdfact returned no text")
 
 
-def convert_to_pdf(file_path, skip_cache=False):
+def convert_to_pdf(file_path: str, skip_cache: bool = False) -> str:
     if not skip_cache and cache.exists_in_cache(file_path, "converted.pdf"):
-        return cache.get_cache_file_path(file_path, "converted.pdf")
+        return cast(str, cache.get_cache_file_path(file_path, "converted.pdf"))
 
     form_data = {"files": files.open_file(file_path, "rb")}
     response = requests.post(

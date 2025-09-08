@@ -1,36 +1,49 @@
 import re
 from datetime import datetime
+from typing import Any, cast
 
 import numpy as np
 
-from ris.models import Organization
+from ris.models import AgendaItem, Consultation, Document, Meeting, Organization
 
 SOLR_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
-def get_relevant_events(doc):
+def get_relevant_events(
+    doc: Document,
+) -> tuple[Consultation | None, set[Meeting], set[AgendaItem]]:
     """Returns a list of consultations, meetings, agenda_items relevant
     for this document"""
 
     consultation = doc.consultation_set.first()
-    meetings = set(doc.meeting_set.all())
-    agenda_items = set(doc.agendaitem_set.all())
+    meetings: set[Meeting] = set(doc.meeting_set.all())
+    agenda_items: set[AgendaItem] = set(doc.agendaitem_set.all())
 
     # addend agenda items belonging to this consultation
     if consultation is not None:
         consultation_agenda_items = consultation.agendaitem_set.all()
         for item in consultation_agenda_items:
             agenda_items.add(item)
-            meetings.add(item.meeting)
+            if item.meeting:
+                meetings.add(item.meeting)
         consultation_meetings = consultation.meeting_set.all()
-        for item in consultation_meetings:
-            meetings.add(item)
+        for meeting in consultation_meetings:
+            meetings.add(meeting)
 
     return consultation, meetings, agenda_items
 
 
-def parse_solr_document(doc, content, metadata, preview_image):
-    solr_doc = {
+# TODO Create a proper data class for SolrImportDoc
+type SolrImportDoc = dict[str, Any]
+
+
+def parse_solr_document(
+    doc: Document,
+    content: list[str] | None,
+    metadata: dict[str, str] | None,
+    preview_image: str | None,
+) -> SolrImportDoc:
+    solr_doc: SolrImportDoc = {
         "id": str(doc.id),
         "last_analyzed": datetime.now().strftime(SOLR_DATE_FORMAT),
         "document_id": doc.document_id,
@@ -84,7 +97,9 @@ def parse_solr_document(doc, content, metadata, preview_image):
         solr_doc["meeting_title"].append(meeting.title)
         solr_doc["meeting_title_short"].append(meeting.title_short)
         solr_doc["meeting_date"].append(meeting.date.strftime(SOLR_DATE_FORMAT))
-        solr_doc["meeting_organization_name"].append(meeting.organization.name)
+        solr_doc["meeting_organization_name"].append(
+            cast(Organization, meeting.organization).name
+        )
         if last_seen is None or last_seen < meeting.date:
             last_seen = meeting.date
         if first_seen is None or first_seen > meeting.date:
@@ -97,10 +112,15 @@ def parse_solr_document(doc, content, metadata, preview_image):
 
     solr_doc["meeting_count"] = len(solr_doc["meeting_id"])
 
-    def get_metadata_value(metadata, fields):
+    def get_metadata_value(
+        metadata: dict[str, str] | None, fields: list[str]
+    ) -> str | None:
+        if metadata is None:
+            return None
         for i in fields:
             if i in metadata:
                 return metadata[i]
+        return None
 
     if metadata is not None:
         author = get_metadata_value(
@@ -138,7 +158,7 @@ def parse_solr_document(doc, content, metadata, preview_image):
 
     # Niederschrift type recognized by keyword "Niederschrift" title
     if "doc_type" not in solr_doc or solr_doc["doc_type"] is None:
-        if "niederschrift" in doc.title.lower():
+        if doc.title and "niederschrift" in doc.title.lower():
             solr_doc["doc_type"] = "Niederschrift"
 
     # add content strings from tika/pdfact
@@ -152,7 +172,7 @@ def parse_solr_document(doc, content, metadata, preview_image):
     return solr_doc
 
 
-def process_content(content, doc_type):
+def process_content(content: list[str], doc_type: str | None) -> list[str]:
     if doc_type == "Beschlussvorlage":
         content = remove_by_regexes(
             content,
@@ -189,7 +209,9 @@ def process_content(content, doc_type):
     return content
 
 
-def remove_by_regexes(content, regexes, from_end=False):
+def remove_by_regexes(
+    content: list[str], regexes: list[str], from_end: bool = False
+) -> list[str]:
     """Removes the header of documents based on given regex patterns.
     The content lines are scanned for the first occurance of all regexes and the returned output
     contains only the content after the last regex match.
@@ -210,14 +232,14 @@ def remove_by_regexes(content, regexes, from_end=False):
 
     if not from_end:
         # find the last line containing a regex
-        last_match_line = np.max([match[0] for match in matches])
+        last_match_line = int(np.max([match[0] for match in matches]))
 
         # in the last line, find the latest end of a regex in that line
         last_match_inline = 0
-        for line, _, end in matches:
-            if line != last_match_line:
+        for line2, _, end2 in matches:
+            if line2 != last_match_line:
                 continue
-            last_match_inline = np.max([last_match_inline, end])
+            last_match_inline = int(np.max([last_match_inline, end2]))
 
         # strip content from everything before the latest occcurance of the match
         content = content[last_match_line:]
@@ -226,14 +248,14 @@ def remove_by_regexes(content, regexes, from_end=False):
             content = content[1:]
     else:
         # find the first line containing a regex
-        first_match_line = np.min([match[0] for match in matches])
+        first_match_line = int(np.min([match[0] for match in matches]))
 
         # in the first line, find the first start of a regex in that line
         first_match_inline = len(content[first_match_line])
-        for line, start, _ in matches:
-            if line != first_match_line:
+        for line3, start3, _ in matches:
+            if line3 != first_match_line:
                 continue
-            first_match_inline = np.min([first_match_inline, start])
+            first_match_inline = int(np.min([first_match_inline, start3]))
 
         # strip content from everything before the latest occcurance of the match
         content = content[: first_match_line + 1]
@@ -244,13 +266,13 @@ def remove_by_regexes(content, regexes, from_end=False):
     return content
 
 
-def parse_consultation_organization(organizations):
+def parse_consultation_organization(organizations_base: str) -> list[str]:
     # SPD-Fraktion -> SPD
     # Fraktionen CDU, SPD und B90/Die Grünen -> CDU, SPD, B90/Die Grünen
-    organizations = re.sub(r"\-?Fraktion(en)?\s*", "", organizations).replace(
+    organizations_base = re.sub(r"\-?Fraktion(en)?\s*", "", organizations_base).replace(
         " und ", ", "
     )
-    organizations = [org.strip() for org in organizations.split(",")]
+    organizations = [org.strip() for org in organizations_base.split(",")]
     replacements = [
         (r"Bürgermeister.*", "Bürgermeister"),
         (r".*Grüne.*", "B90/Grüne"),

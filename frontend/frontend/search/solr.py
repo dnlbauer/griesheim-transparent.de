@@ -200,7 +200,10 @@ def _parse_facets(
         for name in FACET_FIELDS:
             field_name = FACET_FIELDS[name]
             if field_name in raw_facets["facet_fields"]:
-                parsed_results[name] = pairwise(raw_facets["facet_fields"][field_name])
+                parsed_results[name] = cast(
+                    list[tuple[str, int]],
+                    pairwise(raw_facets["facet_fields"][field_name]),
+                )
     return parsed_results
 
 

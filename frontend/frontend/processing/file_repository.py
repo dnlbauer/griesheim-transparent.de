@@ -4,7 +4,6 @@ from django.conf import settings
 
 
 class FileRepository:
-
     def __init__(self):
         self.base_path = settings.DOCUMENT_STORE
 

@@ -1,5 +1,5 @@
 from os import makedirs
-from os.path import basename, join, exists, dirname
+from os.path import basename, dirname, exists, join
 
 from django.conf import settings
 

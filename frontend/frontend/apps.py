@@ -1,6 +1,14 @@
 from django.apps import AppConfig
 from health_check.plugins import plugin_dir
-from frontend.healthcheck import *
+
+from frontend.healthcheck import (
+    GotenbergHealthCheckBackend,
+    PDFActHealthCheckBackend,
+    PreviewServiceHealthCheckBackend,
+    SolrHealthCheckBackend,
+    TikaHealthCheckBackend,
+)
+
 
 class MyAppConfig(AppConfig):
     name = "frontend"

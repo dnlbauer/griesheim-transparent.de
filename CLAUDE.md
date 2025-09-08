@@ -81,8 +81,10 @@ uv sync  # Install/update dependencies
 
 # Development
 uv run python manage.py runserver
-uv run python manage.py test
 uv run python manage.py check
+uv run pytest  # Run tests
+uv run ruff check  # Lint code
+uv run ruff format  # Format code
 
 # Database
 uv run python manage.py migrate

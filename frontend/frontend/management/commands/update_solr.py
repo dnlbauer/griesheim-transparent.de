@@ -3,12 +3,17 @@ import os
 import re
 
 import pysolr
-from django.core.management import BaseCommand
 from django.conf import settings
+from django.core.management import BaseCommand
+
+from frontend.processing.external_services import (
+    ExternalServiceUnsuccessfulException,
+    analyze_document_pdfact,
+    analyze_document_tika,
+    convert_to_pdf,
+    get_preview_image_for_doc,
+)
 from frontend.processing.file_repository import FileRepository
-from frontend.processing.external_services import get_preview_image_for_doc, analyze_document_pdfact, \
-    analyze_document_tika, \
-    convert_to_pdf, ExternalServiceUnsuccessfulException
 from frontend.processing.processing import parse_solr_document
 from ris.models import Document
 
@@ -26,19 +31,23 @@ class Command(BaseCommand):
         self.total = Document.objects.all().count()
 
     def add_arguments(self, parser):
-        parser.add_argument("--chunk_size",
-                            help=f"chunk size for sending documents to solr (default: {self.DEFAULT_CHUNK_SIZE})",
-                            type=int,
-                            default=self.DEFAULT_CHUNK_SIZE
-                            )
-        parser.add_argument("--force",
-                            help="force update for all documents",
-                            action="store_true")
-        parser.add_argument("--no-ocr",
-                            help="allow ocr for documents (takes a long time)",
-                            action="store_false")
-        parser.add_argument("-o",
-                            help=f"Output file: Also store results in this file as json lines")
+        parser.add_argument(
+            "--chunk_size",
+            help=f"chunk size for sending documents to solr (default: {self.DEFAULT_CHUNK_SIZE})",
+            type=int,
+            default=self.DEFAULT_CHUNK_SIZE,
+        )
+        parser.add_argument(
+            "--force", help="force update for all documents", action="store_true"
+        )
+        parser.add_argument(
+            "--no-ocr",
+            help="allow ocr for documents (takes a long time)",
+            action="store_false",
+        )
+        parser.add_argument(
+            "-o", help="Output file: Also store results in this file as json lines"
+        )
 
     def _parse_args(self, **options):
         self.chunk_size = self.DEFAULT_CHUNK_SIZE
@@ -82,7 +91,9 @@ class Command(BaseCommand):
 
                 # analyze document with tika
                 print("Sending document to tika")
-                tika_result = analyze_document_tika(file_path, False, skip_cache=self.force)
+                tika_result = analyze_document_tika(
+                    file_path, False, skip_cache=self.force
+                )
 
                 # use tika content if pdfact returned nothing
                 if not content:
@@ -94,7 +105,9 @@ class Command(BaseCommand):
                     # Run OCR/tesseract if there is no content from tika without ocr
                     if self.allow_ocr and (not content or content == "Page 1"):
                         print("PDF has no text content. Sending document to tika/ocr")
-                        tika_result = analyze_document_tika(file_path, True, skip_cache=self.force)
+                        tika_result = analyze_document_tika(
+                            file_path, True, skip_cache=self.force
+                        )
                         if tika_result and tika_result["content"] is not None:
                             content = [tika_result["content"].strip()]
                             if content and len(content) == 0:
@@ -103,12 +116,15 @@ class Command(BaseCommand):
                 metadata = tika_result["metadata"] if tika_result else {}
 
                 if content:
-                    content = [re.sub(r"(\n)\n+", "\n", paragraph) for paragraph in
-                               content]  # replace multiple new lines
+                    content = [
+                        re.sub(r"(\n)\n+", "\n", paragraph) for paragraph in content
+                    ]  # replace multiple new lines
 
                 print("Sending document to preview service")
                 try:
-                    preview_image = get_preview_image_for_doc(file_path, skip_cache=self.force)
+                    preview_image = get_preview_image_for_doc(
+                        file_path, skip_cache=self.force
+                    )
                 except ExternalServiceUnsuccessfulException as e:
                     # Empty preview image
                     print(f"Failed to get preview image for {file_path}: {e}")
@@ -127,7 +143,9 @@ class Command(BaseCommand):
 
     def submit(self, solr_docs, commit=False):
         self.processed += len(solr_docs)
-        print(f"Submitting {len(solr_docs)} documents to solr. (Processed={self.processed}/{self.total})")
+        print(
+            f"Submitting {len(solr_docs)} documents to solr. (Processed={self.processed}/{self.total})"
+        )
         self.solr.add(solr_docs, commit=commit)
         if self.output:
             with open(self.output, "a", encoding="utf-8") as f:

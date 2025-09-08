@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-import os.path
+
 from os.path import join
 from pathlib import Path
+
 import environ
 from django.core.management.utils import get_random_secret_key
 
@@ -24,20 +25,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = env.bool("DEBUG", default=False)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-if (DEBUG):
+if DEBUG:
     SECRET_KEY = get_random_secret_key()
 else:
-    SECRET_KEY = env('SECRET_KEY')
+    SECRET_KEY = env("SECRET_KEY")
 
 # share referrer
 SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
 
-ALLOWED_HOSTS = [host for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
-CSRF_TRUSTED_ORIGINS = [f"http://{host}" for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
-CSRF_TRUSTED_ORIGINS += [f"https://{host}" for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0]
+ALLOWED_HOSTS = [
+    host for host in env("ALLOWED_HOSTS", default="").split(",") if len(host) > 0
+]
+CSRF_TRUSTED_ORIGINS = [
+    f"http://{host}"
+    for host in env("ALLOWED_HOSTS", default="").split(",")
+    if len(host) > 0
+]
+CSRF_TRUSTED_ORIGINS += [
+    f"https://{host}"
+    for host in env("ALLOWED_HOSTS", default="").split(",")
+    if len(host) > 0
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -53,11 +64,15 @@ INSTALLED_APPS = [
     "django_crontab",
     "health_check",
     "health_check.db",
-    'health_check.contrib.migrations',
+    "health_check.contrib.migrations",
 ]
 
 CRONJOBS = [
-    (env("UPDATE_SOLR_CRON", default="0 */3 * * *"), "django.core.management.call_command", ["update_solr"])
+    (
+        env("UPDATE_SOLR_CRON", default="0 */3 * * *"),
+        "django.core.management.call_command",
+        ["update_solr"],
+    )
 ]
 
 MIDDLEWARE = [
@@ -69,10 +84,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "frontend.middleware.RestrictUserMiddleware"
+    "frontend.middleware.RestrictUserMiddleware",
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ROOT_URLCONF = "frontend.urls"
 
@@ -108,10 +123,10 @@ DATABASES = {
         "PORT": env("RIS_DB_PORT"),
         "NAME": env("RIS_DB_NAME"),
         "USER": env("RIS_DB_USER"),
-        "PASSWORD": env("RIS_DB_PASSWORD")
-    }
+        "PASSWORD": env("RIS_DB_PASSWORD"),
+    },
 }
-DATABASE_ROUTERS = ['frontend.databaserouter.DatabaseRouter']
+DATABASE_ROUTERS = ["frontend.databaserouter.DatabaseRouter"]
 
 
 # Password validation
@@ -144,7 +159,7 @@ USE_I18N = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
@@ -157,7 +172,7 @@ CACHE_DIR = join(DOCUMENT_STORE, "analysis")
 
 # Connection to solr
 SOLR_HOST = env("SOLR_HOST", default="http://localhost:8983/solr")
-SOLR_COLLECTION = env('SOLR_COLLECTION', default="ris")
+SOLR_COLLECTION = env("SOLR_COLLECTION", default="ris")
 
 # Connection and settings for pdf preview thumbnails
 PREVIEW_HOST = env("PREVIEW_HOST", default="http://localhost:8000")

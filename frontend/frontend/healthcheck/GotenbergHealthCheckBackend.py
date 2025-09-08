@@ -23,7 +23,7 @@ class GotenbergHealthCheckBackend(BaseHealthCheckBackend):
             if content["status"] != "up":
                 raise ServiceUnavailable(f"Status: {content['status']}")
         except Exception as e:
-            raise ServiceUnavailable(f"{url}: {str(e)}")
+            raise ServiceUnavailable(f"{url}: {str(e)}") from e
 
     def _get_healthcheck_url(self):
         return f"{settings.GOTENBERG_HOST}/health"

@@ -35,7 +35,7 @@ def create_model_admin(model):
 
         # Add text and id fields to search_fields
         if (
-            isinstance(field, (models.CharField, models.TextField))
+            isinstance(field, models.CharField | models.TextField)
             or field_name == "id"
             or field_name.endswith("id")
         ):
@@ -43,7 +43,7 @@ def create_model_admin(model):
 
         # Add filterable fields
         if isinstance(
-            field, (models.BooleanField, models.DateTimeField, models.ForeignKey)
+            field, models.BooleanField | models.DateTimeField | models.ForeignKey
         ):
             list_filter_fields.append(field_name)
 

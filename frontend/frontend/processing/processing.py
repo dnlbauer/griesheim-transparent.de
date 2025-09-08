@@ -30,25 +30,25 @@ def get_relevant_events(doc):
 
 
 def parse_solr_document(doc, content, metadata, preview_image):
-    solr_doc = dict(
-        id=str(doc.id),
-        last_analyzed=datetime.now().strftime(SOLR_DATE_FORMAT),
-        document_id=doc.document_id,
-        size=doc.size,
-        content_type=doc.content_type,
-        doc_title=doc.title,
-        agenda_item_id=[],
-        agenda_item_title=[],
-        agenda_item_text=[],
-        meeting_id=[],
-        meeting_title=[],
-        meeting_title_short=[],
-        meeting_date=[],
-        meeting_organization_name=[],
-        filename=doc.file_name,
-        preview_image=preview_image,
-        content=[]
-    )
+    solr_doc = {
+        "id": str(doc.id),
+        "last_analyzed": datetime.now().strftime(SOLR_DATE_FORMAT),
+        "document_id": doc.document_id,
+        "size": doc.size,
+        "content_type": doc.content_type,
+        "doc_title": doc.title,
+        "agenda_item_id": [],
+        "agenda_item_title": [],
+        "agenda_item_text": [],
+        "meeting_id": [],
+        "meeting_title": [],
+        "meeting_title_short": [],
+        "meeting_date": [],
+        "meeting_organization_name": [],
+        "filename": doc.file_name,
+        "preview_image": preview_image,
+        "content": []
+    }
 
     # include data from associated events
     consultation, meetings, agenda_items = get_relevant_events(doc)
@@ -183,7 +183,7 @@ def remove_by_regexes(content, regexes, from_end=False):
 
         # in the last line, find the latest end of a regex in that line
         last_match_inline = 0
-        for line, start, end in matches:
+        for line, _, end in matches:
             if line != last_match_line:
                 continue
             last_match_inline = np.max([last_match_inline, end])
@@ -199,7 +199,7 @@ def remove_by_regexes(content, regexes, from_end=False):
 
         # in the first line, find the first start of a regex in that line
         first_match_inline = len(content[first_match_line])
-        for line, start, end in matches:
+        for line, start, _ in matches:
             if line != first_match_line:
                 continue
             first_match_inline = np.min([first_match_inline, start])

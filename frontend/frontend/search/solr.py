@@ -208,7 +208,7 @@ def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellch
         args['sort'] = "score desc"
 
     # filter documents based on selected facets
-    fq = list(filter(lambda fq: fq[-2] != "*", map(lambda name: "{!tag=facetignore}"f"{FACET_FIELDS[name]}:\"{facet_filter[name]}\"", facet_filter.keys())))
+    fq = list(filter(lambda fq: fq[-2] != "*", ("{!tag=facetignore}"f"{FACET_FIELDS[name]}:\"{facet_filter[name]}\"" for name in facet_filter.keys())))
     if len(fq) > 0:
         args['fq'] = fq
 
@@ -241,16 +241,20 @@ def _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellch
 
     return args
 
-def count(query, solr_conn=solr_connection()):
+def count(query, solr_conn=None):
     """ get a count of documents matching the query """
+    if solr_conn is None:
+        solr_conn = solr_connection()
     result = solr_conn.search(query, rows=0)
     return result.hits
 
 
-def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter=None, hl=True, facet=True, spellcheck=True, solr_conn=solr_connection()):
+def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter=None, hl=True, facet=True, spellcheck=True, solr_conn=None):
     """ perform a search request """
     if facet_filter is None:
         facet_filter = {}
+    if solr_conn is None:
+        solr_conn = solr_connection()
 
     args = _create_solr_args(query, page, sort, limit, facet_filter, hl, facet, spellcheck)
     result = solr_conn.search(query, **args)
@@ -263,8 +267,10 @@ def search(query, page=1, sort=SortOrder.relevance, limit=None, facet_filter=Non
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime, spellcheck_query, spellcheck_hits)
 
 # same as `search` but fills highlight with content
-def doc_id(query="*:*", limit=5, solr_conn=solr_connection()):
+def doc_id(query="*:*", limit=5, solr_conn=None):
     """ Search for newest documents for this query. Defaults to all documents """
+    if solr_conn is None:
+        solr_conn = solr_connection()
     page = 1
 
     args = _create_solr_args(query, page, SortOrder.date, limit, {}, False, False, False)
@@ -281,9 +287,11 @@ def doc_id(query="*:*", limit=5, solr_conn=solr_connection()):
 
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
 
-def suggest(query, solr_conn=solr_connection('/suggest')):
+def suggest(query, solr_conn=None):
     """ Get search suggestions for the given query """
+    if solr_conn is None:
+        solr_conn = solr_connection('/suggest')
     response = solr_conn.search(query, **SUGGEST_ARGS)
     suggestions = response.raw_response['suggest']['default'][query]['suggestions']
-    return list(map(lambda s: s['term'], suggestions))
+    return [s['term'] for s in suggestions]
 

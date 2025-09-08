@@ -22,7 +22,7 @@ BASE_CONTEXT = {
 def _parse_parge(request, default=1):
     """ The requested page. Defaults to first page is no or an invalid page is requested"""
     page = request.GET.get("page", default)
-    if type(page) != int and not page.isnumeric():
+    if not isinstance(page, int) and not page.isnumeric():
         return default
     else:
         page = int(page)
@@ -91,7 +91,7 @@ class MainView(TemplateView):
 
         # perform solr query
         if query is not None:
-            result = solr.search(query, page, sort, facet_filter=dict(doc_type=doc_type, organization=organization))
+            result = solr.search(query, page, sort, facet_filter={"doc_type": doc_type, "organization": organization})
             Query(
                 query=query,
                 user=request.user.username if request.user.is_authenticated else None,
@@ -148,10 +148,10 @@ class SuggestView(TemplateView):
         return render(request, self.template_name, context={"suggestions": suggestions}, status=status)
 
 def error_handler(request, code, message):
-    context = dict(
-        status_code=code,
-        message=message
-    )
+    context = {
+        "status_code": code,
+        "message": message
+    }
     return render(request, "error.html", status=code, context=context)
 
 def handler_400(request, *args, **kwargs):

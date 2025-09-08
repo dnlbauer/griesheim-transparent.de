@@ -1,7 +1,7 @@
 """
 Test settings for Django project.
 
-This provides test-specific configurations that don't require 
+This provides test-specific configurations that don't require
 external services or environment variables.
 """
 

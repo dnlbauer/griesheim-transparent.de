@@ -32,7 +32,7 @@ def get_preview_image_for_doc(file_path, skip_cache=False):
     binary = files.get_file_content(file_path)
 
     url = f"{settings.PREVIEW_HOST}/preview/{settings.PREVIEW_RESOLUTION}"
-    response = requests.post(url, files=dict(file=binary))
+    response = requests.post(url, files={"file": binary})
 
     if response.status_code == 200:
         image_base64 = base64.b64encode(response.content).decode("utf-8")
@@ -93,7 +93,7 @@ def analyze_document_pdfact(file_path, skip_cache=False):
 
     binary = files.get_file_content(file_path)
 
-    response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files=dict(file=binary))
+    response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files={"file": binary})
     if response.status_code != 200:  # something went wrong
         raise ExternalServiceUnsuccessfulException(f"Failed to extract text using pdfact: {file_path}")
 

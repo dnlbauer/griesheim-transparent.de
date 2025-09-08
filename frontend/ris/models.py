@@ -11,7 +11,7 @@ class BaseModel(models.Model):
 
 class Organization(BaseModel):
     class Meta:
-        db_table = 'organizations'
+        db_table = "organizations"
 
     id = models.AutoField(primary_key=True)
     organization_id = models.IntegerField(unique=True, null=True)
@@ -24,7 +24,9 @@ class Person(BaseModel):
         unique_together = ("name", "person_id")
 
     id = models.AutoField(primary_key=True)
-    person_id = models.IntegerField(null=True)  # not all persons are linked person objects?
+    person_id = models.IntegerField(
+        null=True
+    )  # not all persons are linked person objects?
     name = models.TextField(unique=True)
 
 
@@ -35,14 +37,16 @@ class Membership(BaseModel):
 
     id = models.AutoField(primary_key=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE, db_constraint=False)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, db_constraint=False)
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, db_constraint=False
+    )
     from_date = models.DateTimeField(null=True)
     to_date = models.DateTimeField(null=True)
 
 
 class Document(BaseModel):
     class Meta:
-        db_table = 'documents'
+        db_table = "documents"
 
     id = models.AutoField(primary_key=True)
     document_id = models.IntegerField(unique=True)
@@ -56,7 +60,7 @@ class Document(BaseModel):
 
 class Consultation(BaseModel):
     class Meta:
-        db_table = 'consultations'
+        db_table = "consultations"
 
     id = models.AutoField(primary_key=True)
     consultation_id = models.IntegerField(unique=True)
@@ -69,21 +73,23 @@ class Consultation(BaseModel):
 
 class Meeting(BaseModel):
     class Meta:
-        db_table = 'meetings'
+        db_table = "meetings"
 
     id = models.AutoField(primary_key=True)
     meeting_id = models.IntegerField(unique=True)
     title = models.TextField()
     title_short = models.TextField()
     date = models.DateTimeField()
-    organization = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE, db_constraint=False)
+    organization = models.ForeignKey(
+        Organization, null=True, on_delete=models.CASCADE, db_constraint=False
+    )
     documents = models.ManyToManyField(Document, db_constraint=False)
     consultations = models.ManyToManyField(Consultation, db_constraint=False)
 
 
 class AgendaItem(BaseModel):
     class Meta:
-        db_table = 'agendaitems'
+        db_table = "agendaitems"
 
     id = models.AutoField(primary_key=True)
     agenda_item_id = models.IntegerField(unique=True)
@@ -91,6 +97,10 @@ class AgendaItem(BaseModel):
     decision = models.TextField(null=True)
     vote = models.TextField(null=True)
     text = models.TextField(null=True)
-    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.CASCADE, db_constraint=False)
+    meeting = models.ForeignKey(
+        Meeting, null=True, on_delete=models.CASCADE, db_constraint=False
+    )
     documents = models.ManyToManyField(Document)
-    consultation = models.ForeignKey(Consultation, null=True, on_delete=models.CASCADE, db_constraint=False)
+    consultation = models.ForeignKey(
+        Consultation, null=True, on_delete=models.CASCADE, db_constraint=False
+    )

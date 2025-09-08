@@ -17,7 +17,7 @@ DEBUG = True
 SECRET_KEY = get_random_secret_key()
 
 # Allow all hosts for testing
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = []
 
 # Application definition
@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     "django_crontab",
     "health_check",
     "health_check.db",
-    'health_check.contrib.migrations',
+    "health_check.contrib.migrations",
 ]
 
 MIDDLEWARE = [
@@ -46,7 +46,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "frontend.middleware.RestrictUserMiddleware"
+    "frontend.middleware.RestrictUserMiddleware",
 ]
 
 ROOT_URLCONF = "frontend.urls"
@@ -76,7 +76,7 @@ USE_TZ = True
 USE_I18N = True
 
 # Static files
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
@@ -84,17 +84,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Test databases - use SQLite in-memory for both databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
     },
-    'ris': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-    }
+    "ris": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    },
 }
 
-DATABASE_ROUTERS = ['frontend.databaserouter.DatabaseRouter']
+DATABASE_ROUTERS = ["frontend.databaserouter.DatabaseRouter"]
 
 # Disable external service dependencies for tests
 SOLR_HOST = "http://mock-solr:8983/solr"
@@ -109,7 +109,7 @@ DOCUMENT_STORE = "/tmp/test_filestore"
 CACHE_DIR = "/tmp/test_cache"
 
 # Allow all hosts for testing
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = []
 
 # Disable cron jobs for tests
@@ -117,8 +117,9 @@ CRONJOBS = []
 
 # Speed up password hashing for tests
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.MD5PasswordHasher',
+    "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
+
 
 # Disable migrations for faster tests
 class DisableMigrations:
@@ -127,5 +128,6 @@ class DisableMigrations:
 
     def __getitem__(self, item):
         return None
+
 
 MIGRATION_MODULES = DisableMigrations()

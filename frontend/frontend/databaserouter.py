@@ -14,7 +14,7 @@ class DatabaseRouter:
         module = inspect.getmodule(model)
         if not module:
             return False
-        base, _sep, _stem = module.__name__.partition('.')
+        base, _sep, _stem = module.__name__.partition(".")
         return base == "ris"
 
     def _route(self, model):
@@ -36,4 +36,3 @@ class DatabaseRouter:
         if app_label == "ris":
             return db == "ris"
         return db == "default"
-

@@ -2,8 +2,21 @@ import math
 
 
 class SearchResult:
-    def __init__(self, id, document_id, title, organization, highlight, link, download_link,
-                 doc_type, short_name, date, preview_image, filetype):
+    def __init__(
+        self,
+        id,
+        document_id,
+        title,
+        organization,
+        highlight,
+        link,
+        download_link,
+        doc_type,
+        short_name,
+        date,
+        preview_image,
+        filetype,
+    ):
         self.id = id
         self.document_id = document_id
         self.title = title
@@ -17,13 +30,23 @@ class SearchResult:
         self.preview_image = preview_image
         self.filetype = filetype
 
+
 class SearchResults:
-    def __init__(self, documents, facets, page, rows, hits, qtime,
-                 spellcheck_suggested_query=None, spellcheck_suggested_query_hits=None):
+    def __init__(
+        self,
+        documents,
+        facets,
+        page,
+        rows,
+        hits,
+        qtime,
+        spellcheck_suggested_query=None,
+        spellcheck_suggested_query_hits=None,
+    ):
         self.documents = documents
         self.facets = facets
         self.page = page
-        self.max_page = math.ceil(hits/rows)
+        self.max_page = math.ceil(hits / rows)
         self.hits = hits
         self.qtime = qtime
         self.spellcheck_suggested_query = spellcheck_suggested_query

@@ -21,8 +21,8 @@ class ExternalServiceUnsuccessfulException(Exception):
 
 
 def get_preview_image_for_doc(file_path, skip_cache=False):
-    """ Perform a request against the external preview image service
-    to generate a preview thumbnail for the document """
+    """Perform a request against the external preview image service
+    to generate a preview thumbnail for the document"""
 
     if not skip_cache:
         cached = cache.get_cache_content(file_path, "preview")
@@ -40,22 +40,24 @@ def get_preview_image_for_doc(file_path, skip_cache=False):
         cache.insert_in_cache(file_path, "preview", image_base64)
         return image_base64
     else:
-        raise ExternalServiceUnsuccessfulException(f"Failed to get preview image for {file_path}")
+        raise ExternalServiceUnsuccessfulException(
+            f"Failed to get preview image for {file_path}"
+        )
 
 
 def analyze_document_tika(file_path, ocr=False, skip_cache=False):
-    """ Extract document text with tika or tesseract(ocr) """
+    """Extract document text with tika or tesseract(ocr)"""
 
     if not ocr:
         headers = {
             "X-Tika-PDFOcrStrategy": "no_ocr",
-            "X-Tika-PDFSuppressDuplicateOverlappingText": "true"
+            "X-Tika-PDFSuppressDuplicateOverlappingText": "true",
         }
     else:
         headers = {
             "X-Tika-PDFOcrStrategy": "OCR_ONLY",
             "X-Tika-OCRLanguage": "deu",
-            "X-Tika-OCRTimeout": str(30 * 60)
+            "X-Tika-OCRTimeout": str(30 * 60),
         }
 
     if not skip_cache:
@@ -67,17 +69,21 @@ def analyze_document_tika(file_path, ocr=False, skip_cache=False):
         files.get_file_path(file_path),
         serverEndpoint=settings.TIKA_HOST,
         headers=headers,
-        requestOptions={'timeout': 30 * 60}
+        requestOptions={"timeout": 30 * 60},
     )
     if parsed:
-        cache.insert_in_cache(file_path, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4))
+        cache.insert_in_cache(
+            file_path, f"tika{'.ocr' if ocr else ''}", json.dumps(parsed, indent=4)
+        )
         return parsed
     else:
-        raise ExternalServiceUnsuccessfulException(f"Failed to process document with tika: {file_path}")
+        raise ExternalServiceUnsuccessfulException(
+            f"Failed to process document with tika: {file_path}"
+        )
 
 
 def analyze_document_pdfact(file_path, skip_cache=False):
-    """ Analyze document with pdfact and return the whole text """
+    """Analyze document with pdfact and return the whole text"""
 
     def is_valid_response(response):
         return response and len(response) > 0
@@ -93,9 +99,13 @@ def analyze_document_pdfact(file_path, skip_cache=False):
 
     binary = files.get_file_content(file_path)
 
-    response = requests.post(url=f"{settings.PDFACT_HOST}/analyze", files={"file": binary})
+    response = requests.post(
+        url=f"{settings.PDFACT_HOST}/analyze", files={"file": binary}
+    )
     if response.status_code != 200:  # something went wrong
-        raise ExternalServiceUnsuccessfulException(f"Failed to extract text using pdfact: {file_path}")
+        raise ExternalServiceUnsuccessfulException(
+            f"Failed to extract text using pdfact: {file_path}"
+        )
 
     # parse response
     json_response = response.json()
@@ -115,7 +125,9 @@ def convert_to_pdf(file_path, skip_cache=False):
         return cache.get_cache_file_path(file_path, "converted.pdf")
 
     form_data = {"files": files.open_file(file_path, "rb")}
-    response = requests.post(url=f"{settings.GOTENBERG_HOST}/forms/libreoffice/convert", files=form_data)
+    response = requests.post(
+        url=f"{settings.GOTENBERG_HOST}/forms/libreoffice/convert", files=form_data
+    )
     if response.status_code != 200:  # something went wrong
         raise ExternalServiceUnsuccessfulException("Failed to convert document to pdf.")
 

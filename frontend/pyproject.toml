@@ -34,3 +34,17 @@ dependencies = [
     "numpy~=2.0.2",
     "whitenoise~=6.8.2",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest~=7.4.3",
+    "pytest-env~=1.1.3",
+    "pytest-django~=4.5.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["frontend/tests", "ris/tests"]
+addopts = "--tb=short"
+env = [
+    "DJANGO_SETTINGS_MODULE=frontend.tests.settings"
+]

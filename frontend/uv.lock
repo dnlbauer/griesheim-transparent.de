@@ -52,6 +52,15 @@ wheels = [
 ]
 
 [[package]]
+name = "colorama"
+version = "0.4.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335 },
+]
+
+[[package]]
 name = "django"
 version = "5.1.4"
 source = { registry = "https://pypi.org/simple" }
@@ -162,6 +171,13 @@ dependencies = [
     { name = "whitenoise" },
 ]
 
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-django" },
+    { name = "pytest-env" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "asgiref", specifier = "==3.8.1" },
@@ -179,6 +195,9 @@ requires-dist = [
     { name = "numpy", specifier = "~=2.0.2" },
     { name = "psycopg2", specifier = "==2.9.10" },
     { name = "pysolr", specifier = "==3.9.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = "~=7.4.3" },
+    { name = "pytest-django", marker = "extra == 'dev'", specifier = "~=4.5.2" },
+    { name = "pytest-env", marker = "extra == 'dev'", specifier = "~=1.1.3" },
     { name = "pytz", specifier = "~=2025.2" },
     { name = "rcssmin", specifier = "==1.2.1" },
     { name = "requests", specifier = "==2.32.4" },
@@ -193,6 +212,7 @@ requires-dist = [
     { name = "websocket-client", specifier = "==1.8.0" },
     { name = "whitenoise", specifier = "~=6.8.2" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "gunicorn"
@@ -216,6 +236,15 @@ wheels = [
 ]
 
 [[package]]
+name = "iniconfig"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/97/ebf4da567aa6827c909642694d71c9fcf53e5b504f2d96afea02718862f3/iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7", size = 4793 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760", size = 6050 },
+]
+
+[[package]]
 name = "numpy"
 version = "2.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -228,6 +257,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469 },
+]
+
+[[package]]
+name = "pluggy"
+version = "1.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538 },
 ]
 
 [[package]]
@@ -247,6 +285,45 @@ dependencies = [
     { name = "requests" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/9c/c6/9f0b80f17747db12acbdf421a22acdad23c93eea7046181ae6ebdf427bfd/pysolr-3.9.0.tar.gz", hash = "sha256:6ef05feb87c614894243eddc62e9b0a6134a889c159ae868655cf6cd749545e6", size = 55817 }
+
+[[package]]
+name = "pytest"
+version = "7.4.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "iniconfig" },
+    { name = "packaging" },
+    { name = "pluggy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/80/1f/9d8e98e4133ffb16c90f3b405c43e38d3abb715bb5d7a63a5a684f7e46a3/pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280", size = 1357116 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/ff/f6e8b8f39e08547faece4bd80f89d5a8de68a38b2d179cc1c4490ffa3286/pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8", size = 325287 },
+]
+
+[[package]]
+name = "pytest-django"
+version = "4.5.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/42/6d6563165b82289d4a30ea477f85c04386303e51cf4e4e4651d4f9910830/pytest-django-4.5.2.tar.gz", hash = "sha256:d9076f759bb7c36939dbdd5ae6633c18edfc2902d1a69fdbefd2426b970ce6c2", size = 79949 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/21/b65ecd6686da400e2f6e3c49c2a428325abd979c9670cd97e1671f53296e/pytest_django-4.5.2-py3-none-any.whl", hash = "sha256:c60834861933773109334fe5a53e83d1ef4828f2203a1d6a0fa9972f4f75ab3e", size = 20752 },
+]
+
+[[package]]
+name = "pytest-env"
+version = "1.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/02/cc/df6940b2527bfa634c00940dfb6e3ec873bdfb7507b55894c93283fa3178/pytest_env-1.1.3.tar.gz", hash = "sha256:fcd7dc23bb71efd3d35632bde1bbe5ee8c8dc4489d6617fb010674880d96216b", size = 8627 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/b2/bdc663a5647ce2034f7e8420122af340df87c01ba97745fc753b8c917acb/pytest_env-1.1.3-py3-none-any.whl", hash = "sha256:aada77e6d09fcfb04540a6e462c58533c37df35fa853da78707b17ec04d17dfc", size = 6154 },
+]
 
 [[package]]
 name = "pytz"

@@ -43,6 +43,7 @@ dev = [
     "ruff~=0.8.0",
     "mypy",
     "django-stubs",
+    "types-requests",
 ]
 
 [tool.pytest.ini_options]
@@ -80,6 +81,7 @@ files = ["."]
 exclude = [
     "migrations/",
 ]
+plugins = ["mypy_django_plugin.main"]
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -87,4 +89,11 @@ check_untyped_defs = true
 ignore_missing_imports = true
 
 [tool.django-stubs]
-django_settings_module = "frontend.settings"
+django_settings_module = "frontend.tests.settings"
+
+[dependency-groups]
+dev = [
+    "django-stubs>=5.2.2",
+    "mypy>=1.17.1",
+    "types-requests>=2.32.4.20250809",
+]

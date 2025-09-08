@@ -53,6 +53,7 @@ env = [
 [tool.ruff]
 target-version = "py313"
 line-length = 88
+extend-exclude = ["*migrations/*.py"]
 
 [tool.ruff.lint]
 select = [

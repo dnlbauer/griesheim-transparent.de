@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Dict
 
 from frontend.search import SearchResult, SearchResults
 from frontend.search.utils import pairwise, solr_connection, solr_page
@@ -8,7 +9,7 @@ from frontend.search.utils import pairwise, solr_connection, solr_page
 NUM_ROWS = 10
 
 # settings to pass to solr
-SOLR_ARGS = {
+SOLR_ARGS: Dict[str, str | int | list[str]] = {
     "search_handler": "/select",
     "fl": "id,first_seen,preview_image,consultation_organization,filename",
 }
@@ -16,7 +17,7 @@ SOLR_ARGS = {
 # facet specific settings
 FACET_FIELDS = {"doc_type": "doc_type", "organization": "meeting_organization_name_s"}
 
-FACET_ARGS = {
+FACET_ARGS: Dict[str, str | int | list[str]] = {
     "facet": "true",
     "facet.field": ["{!ex=facetignore}" + i for i in FACET_FIELDS.values()],
     "facet.missing": "false",
@@ -28,7 +29,7 @@ FACET_ARGS = {
 HL_FIELDS = (
     "content content_hr consultation_text consultation_text_hr"  # order matters!
 )
-HL_ARGS = {
+HL_ARGS: Dict[str, str | int | list[str]] = {
     "hl": "true",
     "hl.fl": HL_FIELDS,
     "hl.snippets": 5,
@@ -39,7 +40,7 @@ HL_ARGS = {
 
 
 # highlighting for landing page
-HL_NEWEST_ARGS = {
+HL_NEWEST_ARGS: Dict[str, str | int] = {
     "hl": "true",
     "hl.fl": "content",
     "hl.bs.type": "WORD",
@@ -49,7 +50,7 @@ HL_NEWEST_ARGS = {
 }
 
 # spellchecking arguments
-SPELLCHECK_ARGS = {
+SPELLCHECK_ARGS: Dict[str, str | int] = {
     "spellcheck": "true",
     "spellcheck.extendedResults": "true",  # required for correctlySpelled field
     "spellcheck.onlyMorePopular": "true",
@@ -331,7 +332,7 @@ def doc_id(query="*:*", limit=5, solr_conn=None):
             doc.highlight = _parse_highlights(
                 result.highlighting[doc.id], max_len=10000, separator=" "
             )
-    facets = {}
+    facets: Dict[str, str] = {}
 
     return SearchResults(documents, facets, page, NUM_ROWS, result.hits, result.qtime)
 

@@ -31,7 +31,10 @@ def get_preview_image_for_doc(file_path, skip_cache=False):
 
     binary = files.get_file_content(file_path)
 
-    url = f"{settings.PREVIEW_HOST}/preview/{settings.PREVIEW_RESOLUTION}"
+    resolution: str | None = getattr(settings, "PREVIEW_RESOLUTION", None)
+    if not resolution:
+        raise ValueError("PREVIEW_RESOLUTION not set in settings")
+    url = f"{settings.PREVIEW_HOST}/preview/{resolution}"
     response = requests.post(url, files={"file": binary})
 
     if response.status_code == 200:

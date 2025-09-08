@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from typing import Any
 
 import pysolr
 from django.conf import settings
@@ -72,15 +73,15 @@ class Command(BaseCommand):
             print(f"Processing {document.file_name} (id={str(document.id)})")
 
             file_path = self.file_repository.get_file_path(document.uri)
-            if not document.content_type.lower().endswith("pdf"):
+            if document.content_type and not document.content_type.lower().endswith("pdf"):
                 try:
                     file_path = convert_to_pdf(file_path, skip_cache=self.force)
                 except ExternalServiceUnsuccessfulException:
                     file_path = None
 
             # perform text analysis
-            content = []
-            metadata = {}
+            content: list[str] | None = []
+            metadata: dict[str, Any] = {}
             preview_image = None
             if file_path is not None:
                 print("Sending document to pdfact")

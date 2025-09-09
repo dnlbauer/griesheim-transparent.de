@@ -31,7 +31,6 @@ dependencies = [
     "tika==2.6.0",
     "django-health-check~=3.18.3",
     "pytz~=2025.2",
-    "numpy~=2.0.2",
     "whitenoise~=6.8.2",
 ]
 

@@ -1,26 +1,6 @@
-
 from django.apps import apps
 from django.contrib import admin
 from django.db import models
-
-from frontend.models import Query
-
-
-@admin.register(Query)
-class QueryLogAdmin(admin.ModelAdmin):
-    list_display = (
-        "date",
-        "user",
-        "query",
-        "num_results",
-        "query_time",
-        "organization",
-        "doc_type",
-        "sort",
-        "page",
-    )
-    list_filter = ("date", "user", "query", "organization", "doc_type", "sort", "page")
-    search_fields = ["query"]
 
 
 def create_model_admin(model: type[models.Model]) -> type[admin.ModelAdmin]:
@@ -62,8 +42,8 @@ def create_model_admin(model: type[models.Model]) -> type[admin.ModelAdmin]:
     return admin_class
 
 
-# Auto-discover and register all RIS models with generated admin classes
-ris_app = apps.get_app_config("ris")
-for model in ris_app.get_models():
+# Auto-discover and register all models with generated admin classes
+models_app = apps.get_app_config("models")
+for model in models_app.get_models():
     if not model._meta.abstract:
         admin.site.register(model, create_model_admin(model))

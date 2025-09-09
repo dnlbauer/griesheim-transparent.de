@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   caddy:
-    container_name: gt-caddy
+    container_name: parliscope-caddy
     image: caddy:2.7.5-alpine
     depends_on:
-      - frontend
+      - parliscope
     ports:
       - 80:80
       - 443:443
@@ -14,12 +14,12 @@ services:
       - caddy_data:/data
       - django_staticfiles:/static
     networks:
-      - griesheimtransparent
+      - parliscope
     restart: unless-stopped
-  frontend: &frontend
-    image: griesheimtransparent-frontend
-    container_name: gt-frontend
-    build: ../frontend
+  parliscope: &parliscope
+    image: parliscope-parliscope
+    container_name: parliscope-parliscope
+    build: ../parliscope
     depends_on:
       - scraper-database
       - solr
@@ -31,11 +31,11 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr
       - SOLR_COLLECTION=ris
-      - RIS_DB_HOST=scraper-database
-      - RIS_DB_PORT=5432
-      - RIS_DB_NAME=${SCRAPER_DB}
-      - RIS_DB_USER=${SCRAPER_DB_USER}
-      - RIS_DB_PASSWORD=${SCRAPER_DB_PASSWORD}
+      - SCRAPED_DB_HOST=scraper-database
+      - SCRAPED_DB_PORT=5432
+      - SCRAPED_DB_NAME=${SCRAPER_DB}
+      - SCRAPED_DB_USER=${SCRAPER_DB_USER}
+      - SCRAPED_DB_PASSWORD=${SCRAPER_DB_PASSWORD}
       - DEBUG=${DEBUG}
       - UPDATE_SOLR_CRON=${UPDATE_SOLR_CRON}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
@@ -56,26 +56,26 @@ services:
     # dev (serve static files)
     #command: python manage.py runserver 0.0.0.0:8000
     # prod/with webserver
-    command: gunicorn frontend.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn parliscope.wsgi:application --bind 0.0.0.0:8000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       start_period: 10s
       retries: 10
     networks:
-      - griesheimtransparent
+      - parliscope
     restart: unless-stopped
-  # container for frontend cron jobs (processing)
-  frontend_cron:
-    <<: *frontend
-    container_name: gt-frontend_cron
+  # container for parliscope cron jobs (processing)
+  parliscope_cron:
+    <<: *parliscope
+    container_name: parliscope-parliscope_cron
     ports: []
     command: crond -f
     healthcheck:
       test: ["NONE"]  # container dies with cron
   # scraper cron service
   scraper:
-    image: griesheimtransparent-scraper
-    container_name: gt-scraper
+    image: parliscope-scraper
+    container_name: parliscope-scraper
     build: ../scraper
     depends_on:
       - scraper-database
@@ -88,14 +88,14 @@ services:
     #command: crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END=03/2023
     entrypoint: crond -f -d 0
     networks:
-      - griesheimtransparent
+      - parliscope
     volumes:
       - ./scraper_files:/scraper/filestore
     restart: unless-stopped
   # database for scraper
   scraper-database:
     image: postgres
-    container_name: gt-scraper-postgres
+    container_name: parliscope-scraper-postgres
     environment:
       - POSTGRES_DB=${SCRAPER_DB}
       - POSTGRES_USER=${SCRAPER_DB_USER}
@@ -103,14 +103,14 @@ services:
     ports:
       - 5432:5432
     networks:
-      - griesheimtransparent
+      - parliscope
     volumes:
       - scraper_db:/var/lib/postgresql
     restart: unless-stopped
   # solr search engine
   solr:
-    image: griesheimtransparent-solr
-    container_name: gt-solr
+    image: parliscope-solr
+    container_name: parliscope-solr
     build: ../solr
     user: "8983"
     environment:
@@ -120,48 +120,48 @@ services:
     volumes:
       - solr_data:/var/solr
     networks:
-      - griesheimtransparent
+      - parliscope
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8983/solr/ris/admin/ping"]
     restart: unless-stopped
   # tika (pdf to text)
   tika:
     image: apache/tika:1.28.4-full
-    container_name: gt-tika
+    container_name: parliscope-tika
     ports:
       - 9998:9998
     networks:
-      - griesheimtransparent
+      - parliscope
     restart: unless-stopped
   # pdf to text with pdfact
   pdfact:
     image: dnlbauer/pdfact-service:latest
-    container_name: gt-pdfact
+    container_name: parliscope-pdfact
     ports:
       - 80:8080
     networks:
-      - griesheimtransparent
+      - parliscope
     restart: unless-stopped
   # gotenberg file conversion (doc to pdf)
   gotenberg:
     image: gotenberg/gotenberg:7
-    container_name: gt-gotenberg
+    container_name: parliscope-gotenberg
     ports:
       - 3000:3000
     networks:
-      - griesheimtransparent
+      - parliscope
     restart: unless-stopped
   # pdf preview image generator
   previewservice:
     image: fpurchess/preview-service
-    container_name: gt-previewservice
+    container_name: parliscope-previewservice
     ports:
       - 8000:8001
     networks:
-      - griesheimtransparent
+      - parliscope
     restart: unless-stopped
 networks:
-  griesheimtransparent:
+  parliscope:
 volumes:
   caddy_data:
   django_staticfiles:

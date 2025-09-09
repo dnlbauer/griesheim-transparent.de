@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from health_check.plugins import plugin_dir
 
-from frontend.healthcheck import (
+from healthcheck import (
     GotenbergHealthCheckBackend,
     PDFActHealthCheckBackend,
     PreviewServiceHealthCheckBackend,
@@ -10,8 +10,8 @@ from frontend.healthcheck import (
 )
 
 
-class MyAppConfig(AppConfig):
-    name = "frontend"
+class HealthCheckConfig(AppConfig):
+    name = "healthcheck"
 
     def ready(self) -> None:
         plugin_dir.register(SolrHealthCheckBackend)

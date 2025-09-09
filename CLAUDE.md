@@ -10,7 +10,7 @@ A transparency platform for local politics providing citizens access to municipa
 
 ### System Architecture
 - **Scraper**: Scrapy spider extracting documents from municipal SessionNet
-- **Frontend**: Django web app with citizen search interface + background document processing
+- **Parliscope**: Django web app with citizen search interface + background document processing
 - **Solr**: Full-text search and document indexing
 - **Services**: PostgreSQL, Apache Tika, Gotenberg, preview-service
 
@@ -23,7 +23,7 @@ A transparency platform for local politics providing citizens access to municipa
 
 ### Stack
 - **Backend**: Django 4.1+, Python 3.10+
-- **Database**: SQLite (frontend), PostgreSQL (scraped data)
+- **Database**: SQLite (parliscope), PostgreSQL (scraped data)
 - **Search**: Apache Solr with pysolr client
 - **Scraping**: Scrapy framework
 - **Document Processing**: Apache Tika, PDFAct, Gotenberg
@@ -39,17 +39,18 @@ A transparency platform for local politics providing citizens access to municipa
 
 ### Key Directories
 - `scraper/sessionnet/`: Scrapy spider and processing pipeline
-- `frontend/frontend/`: Django web app (views, templates, search)
-- `frontend/ris/`: Database models for scraped data
-- `frontend/frontend/management/commands/`: Custom Django commands
+- `parliscope/frontend/`: Django web app (views, templates, search)
+- `parliscope/models/`: Database models for scraped data
+- `parliscope/healthcheck/`: Health check backends for external services
+- `parliscope/frontend/management/commands/`: Custom Django commands
 - `deployment/`: Docker Compose configurations
 - `solr/`: Solr schema and configuration
 
 ### Critical Files
 - `scraper/sessionnet/spiders.py`: SessionNet scraping logic
-- `frontend/ris/models.py`: Data models (Document, Organization, Person)
-- `frontend/frontend/management/commands/update_solr.py`: Document processing pipeline
-- `frontend/frontend/settings.py`: Multi-database and service configuration
+- `parliscope/models/models.py`: Data models (Document, Organization, Person)
+- `parliscope/frontend/management/commands/update_solr.py`: Document processing pipeline
+- `parliscope/parliscope/settings.py`: Multi-database and service configuration
 - `deployment/dev.yaml`: Complete development environment
 
 ## Development Workflow
@@ -60,7 +61,7 @@ A transparency platform for local politics providing citizens access to municipa
 cd deployment && docker-compose -f dev.yaml up
 
 # Option 2: Local development (requires uv setup)
-cd frontend/
+cd parliscope/
 uv sync  # Create virtual environment and install dependencies
 uv run python manage.py runserver
 ```
@@ -74,9 +75,9 @@ uv run python manage.py runserver
 
 ### Common Commands
 
-#### Frontend Development
+#### Parliscope Development
 ```bash
-cd frontend/
+cd parliscope/
 uv sync  # Install/update dependencies
 
 # Development
@@ -89,7 +90,7 @@ uv run mypy  # Type check code
 
 # Database
 uv run python manage.py migrate
-uv run python manage.py migrate --database=ris
+uv run python manage.py migrate --database=scraped
 uv run python manage.py makemigrations
 
 # Data Processing
@@ -114,8 +115,8 @@ uv run scrapy crawl sessionnet -s SCRAPE_START=01/2023 -s SCRAPE_END=03/2023
 **Prerequisites**: Install uv first: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ```bash
-# Frontend setup
-cd frontend/
+# Parliscope setup
+cd parliscope/
 uv sync  # Creates virtual environment and installs dependencies automatically
 
 # Scraper setup  
@@ -124,9 +125,9 @@ uv sync  # Creates virtual environment and installs dependencies automatically
 ```
 
 #### Database Configuration
-- **Frontend**: SQLite at `/django_db/db.sqlite` (Django app data)
+- **Parliscope**: SQLite at `/django_db/db.sqlite` (Django app data)
 - **Scraper**: PostgreSQL (document metadata)
-- **Router**: `frontend.databaserouter.DatabaseRouter` handles multi-DB routing
+- **Router**: `parliscope.databaserouter.DatabaseRouter` handles multi-DB routing
 
 #### Required Environment Variables
 ```bash
@@ -136,11 +137,11 @@ DEBUG=true
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 # PostgreSQL (scraped data)
-RIS_DB_HOST=localhost
-RIS_DB_PORT=5432
-RIS_DB_NAME=database_name
-RIS_DB_USER=db_username
-RIS_DB_PASSWORD=db_password
+SCRAPED_DB_HOST=localhost
+SCRAPED_DB_PORT=5432
+SCRAPED_DB_NAME=database_name
+SCRAPED_DB_USER=db_username
+SCRAPED_DB_PASSWORD=db_password
 
 # Search and processing services
 SOLR_HOST=http://localhost:8983/solr
@@ -162,14 +163,14 @@ docker-compose -f dev.yaml up -d scraper-database  # Start PostgreSQL only
 
 ### Testing Strategy
 ```bash
-cd frontend/
+cd parliscope/
 uv sync  # Ensure dependencies are installed
 
 # Run all tests
 uv run python manage.py test
 
 # Test specific apps
-uv run python manage.py test frontend ris
+uv run python manage.py test frontend models healthcheck
 
 # Django system checks
 uv run python manage.py check
@@ -178,17 +179,17 @@ uv run python manage.py check --deploy
 
 ### Database Operations
 ```bash
-cd frontend/
+cd parliscope/
 uv sync  # Ensure dependencies are installed
 
 # Migrations
 uv run python manage.py makemigrations  # Create new migrations
 uv run python manage.py migrate         # Apply to SQLite
-uv run python manage.py migrate --database=ris  # Apply to PostgreSQL
+uv run python manage.py migrate --database=scraped  # Apply to PostgreSQL
 
 # Inspection
 uv run python manage.py showmigrations
-uv run python manage.py dbshell [--database=ris]
+uv run python manage.py dbshell [--database=scraped]
 ```
 
 ## Code Standards
@@ -234,10 +235,11 @@ uv run python manage.py dbshell [--database=ris]
 
 ### Getting Help
 Refer to key files when understanding functionality:
-- Models: `frontend/ris/models.py`
+- Models: `parliscope/models/models.py`
 - Scraping: `scraper/sessionnet/spiders.py`
-- Document processing: `frontend/frontend/management/commands/update_solr.py`
-- Configuration: `frontend/frontend/settings.py`
+- Document processing: `parliscope/frontend/management/commands/update_solr.py`
+- Configuration: `parliscope/parliscope/settings.py`
+- Health checks: `parliscope/healthcheck/`
 
 ---
 *Keep this document updated as the codebase evolves!*

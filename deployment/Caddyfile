@@ -9,11 +9,11 @@ localhost {
     file_server
   }
 
-  @frontend {
+  @parliscope {
     not path /static/*
   }
 
-  reverse_proxy @frontend {
-    to frontend:8000
+  reverse_proxy @parliscope {
+    to parliscope:8000
   }
 }

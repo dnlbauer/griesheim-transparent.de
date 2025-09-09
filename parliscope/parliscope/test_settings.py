@@ -10,7 +10,7 @@ from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Test settings
 DEBUG = True
@@ -28,8 +28,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "parliscope",
     "frontend",
-    "ris",
+    "models",
     "fontawesomefree",
     "django_crontab",
     "health_check",
@@ -67,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "frontend.wsgi.application"
+WSGI_APPLICATION = "parliscope.wsgi.application"
 
 # Internationalization
 LANGUAGE_CODE = "de-de"
@@ -88,13 +89,13 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
     },
-    "ris": {
+    "scraped": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
     },
 }
 
-DATABASE_ROUTERS = ["frontend.databaserouter.DatabaseRouter"]
+DATABASE_ROUTERS = ["parliscope.databaserouter.DatabaseRouter"]
 
 # Disable external service dependencies for tests
 SOLR_HOST = "http://mock-solr:8983/solr"

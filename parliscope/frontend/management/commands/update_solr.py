@@ -17,7 +17,7 @@ from frontend.processing.external_services import (
 )
 from frontend.processing.file_repository import FileRepository
 from frontend.processing.processing import SolrImportDoc, parse_solr_document
-from ris.models import Document
+from models.models import Document
 
 
 class Command(BaseCommand):

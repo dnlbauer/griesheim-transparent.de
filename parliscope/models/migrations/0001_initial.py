@@ -83,9 +83,9 @@ class Migration(migrations.Migration):
                 ('title', models.TextField()),
                 ('title_short', models.TextField()),
                 ('date', models.DateTimeField()),
-                ('consultations', models.ManyToManyField(db_constraint=False, to='ris.consultation')),
-                ('documents', models.ManyToManyField(db_constraint=False, to='ris.document')),
-                ('organization', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='ris.organization')),
+                ('consultations', models.ManyToManyField(db_constraint=False, to='models.consultation')),
+                ('documents', models.ManyToManyField(db_constraint=False, to='models.document')),
+                ('organization', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='models.organization')),
             ],
             options={
                 'db_table': 'meetings',
@@ -94,7 +94,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='consultation',
             name='documents',
-            field=models.ManyToManyField(to='ris.document'),
+            field=models.ManyToManyField(to='models.document'),
         ),
         migrations.CreateModel(
             name='AgendaItem',
@@ -107,9 +107,9 @@ class Migration(migrations.Migration):
                 ('decision', models.TextField(null=True)),
                 ('vote', models.TextField(null=True)),
                 ('text', models.TextField(null=True)),
-                ('consultation', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='ris.consultation')),
-                ('documents', models.ManyToManyField(to='ris.document')),
-                ('meeting', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='ris.meeting')),
+                ('consultation', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='models.consultation')),
+                ('documents', models.ManyToManyField(to='models.document')),
+                ('meeting', models.ForeignKey(db_constraint=False, null=True, on_delete=django.db.models.deletion.CASCADE, to='models.meeting')),
             ],
             options={
                 'db_table': 'agendaitems',
@@ -123,8 +123,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(primary_key=True, serialize=False)),
                 ('from_date', models.DateTimeField(null=True)),
                 ('to_date', models.DateTimeField(null=True)),
-                ('organization', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.CASCADE, to='ris.organization')),
-                ('person', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.CASCADE, to='ris.person')),
+                ('organization', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.CASCADE, to='models.organization')),
+                ('person', models.ForeignKey(db_constraint=False, on_delete=django.db.models.deletion.CASCADE, to='models.person')),
             ],
             options={
                 'db_table': 'memberships',

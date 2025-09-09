@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "parliscope",
     "frontend",
     "models",
+    "healthcheck",
     "fontawesomefree",
     "django_crontab",
     "health_check",

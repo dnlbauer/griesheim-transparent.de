@@ -37,20 +37,55 @@ A transparency platform for local politics providing citizens access to municipa
 
 ## Code Organization
 
+### Current Project Structure
+
+The project follows a modular Django architecture designed for scalability:
+
+```
+griesheim-transparent/
+├── deployment/                 # Docker configurations
+├── solr/                      # Search engine configuration  
+├── scraper/                   # Legacy Scrapy project (external)
+└── parliscope/                # MAIN DJANGO PROJECT
+    ├── manage.py              # Django management script
+    ├── parliscope/            # MAIN PROJECT APP (Django core)
+    │   ├── settings.py        # Main project settings
+    │   ├── urls.py           # Root URL configuration
+    │   ├── wsgi.py           # WSGI application
+    │   └── databaserouter.py  # Multi-database routing
+    ├── models/                # SHARED DATA MODELS (renamed from 'ris')
+    │   ├── models.py          # OParl-based data models
+    │   ├── admin.py           # Admin interface for models
+    │   └── migrations/        # Database migrations
+    ├── frontend/              # WEB INTERFACE APP
+    │   ├── views.py           # Web views and API endpoints
+    │   ├── urls.py           # Frontend URL patterns
+    │   ├── templates/         # HTML templates
+    │   ├── static/           # CSS, JS, images
+    │   ├── search/           # Search utilities
+    │   ├── management/commands/ # Custom Django commands
+    │   └── migrations/        # Frontend-specific migrations
+    └── healthcheck/           # HEALTH CHECK APP (extracted)
+        ├── apps.py           # Health check backend registration
+        └── backends/         # External service monitors
+```
+
 ### Key Directories
-- `scraper/sessionnet/`: Scrapy spider and processing pipeline
-- `parliscope/frontend/`: Django web app (views, templates, search)
-- `parliscope/models/`: Database models for scraped data
-- `parliscope/healthcheck/`: Health check backends for external services
-- `parliscope/frontend/management/commands/`: Custom Django commands
-- `deployment/`: Docker Compose configurations
-- `solr/`: Solr schema and configuration
+- `scraper/sessionnet/`: Legacy Scrapy spider (being migrated)
+- `parliscope/parliscope/`: Main Django project configuration and routing
+- `parliscope/frontend/`: Django web app (views, templates, search functionality)
+- `parliscope/models/`: Database models for scraped data (OParl-based)
+- `parliscope/healthcheck/`: Dedicated health check backends for external services
+- `parliscope/frontend/management/commands/`: Custom Django management commands
+- `deployment/`: Docker Compose configurations for all environments
+- `solr/`: Solr schema and configuration files
 
 ### Critical Files
-- `scraper/sessionnet/spiders.py`: SessionNet scraping logic
+- `scraper/sessionnet/spiders.py`: SessionNet scraping logic (legacy)
 - `parliscope/models/models.py`: Data models (Document, Organization, Person)
 - `parliscope/frontend/management/commands/update_solr.py`: Document processing pipeline
 - `parliscope/parliscope/settings.py`: Multi-database and service configuration
+- `parliscope/parliscope/databaserouter.py`: Database routing between SQLite and PostgreSQL
 - `deployment/dev.yaml`: Complete development environment
 
 ## Development Workflow
@@ -126,7 +161,7 @@ uv sync  # Creates virtual environment and installs dependencies automatically
 
 #### Database Configuration
 - **Parliscope**: SQLite at `/django_db/db.sqlite` (Django app data)
-- **Scraper**: PostgreSQL (document metadata)
+- **Models**: PostgreSQL (scraped document metadata)
 - **Router**: `parliscope.databaserouter.DatabaseRouter` handles multi-DB routing
 
 #### Required Environment Variables

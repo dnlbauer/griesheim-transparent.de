@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "parliscope",
     "frontend",
-    "ris",
+    "models",
     "fontawesomefree",
     "django_crontab",
     "health_check",
@@ -89,13 +89,13 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
     },
-    "ris": {
+    "scraped": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
     },
 }
 
-DATABASE_ROUTERS = ["frontend.databaserouter.DatabaseRouter"]
+DATABASE_ROUTERS = ["parliscope.databaserouter.DatabaseRouter"]
 
 # Disable external service dependencies for tests
 SOLR_HOST = "http://mock-solr:8983/solr"

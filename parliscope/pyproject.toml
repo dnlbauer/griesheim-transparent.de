@@ -46,7 +46,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["frontend/tests", "ris/tests"]
+testpaths = ["frontend/tests", "models/tests"]
 addopts = "--tb=short"
 env = [
     "DJANGO_SETTINGS_MODULE=parliscope.test_settings"
@@ -72,7 +72,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["parliscope", "frontend", "ris"]
+known-first-party = ["parliscope", "frontend", "models"]
 
 [tool.mypy]
 python_version = "3.13"

@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "parliscope",
     "frontend",
-    "ris",
+    "models",
     "fontawesomefree",
     "django_crontab",
     "health_check",
@@ -118,13 +118,13 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": env("DATABASE_PATH", default=BASE_DIR / "db.sqlite3"),
     },
-    "ris": {
+    "scraped": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "HOST": env("RIS_DB_HOST"),
-        "PORT": env("RIS_DB_PORT"),
-        "NAME": env("RIS_DB_NAME"),
-        "USER": env("RIS_DB_USER"),
-        "PASSWORD": env("RIS_DB_PASSWORD"),
+        "HOST": env("SCRAPED_DB_HOST"),
+        "PORT": env("SCRAPED_DB_PORT"),
+        "NAME": env("SCRAPED_DB_NAME"),
+        "USER": env("SCRAPED_DB_USER"),
+        "PASSWORD": env("SCRAPED_DB_PASSWORD"),
     },
 }
 DATABASE_ROUTERS = ["parliscope.databaserouter.DatabaseRouter"]

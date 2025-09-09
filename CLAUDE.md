@@ -136,11 +136,11 @@ DEBUG=true
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 # PostgreSQL (scraped data)
-RIS_DB_HOST=localhost
-RIS_DB_PORT=5432
-RIS_DB_NAME=database_name
-RIS_DB_USER=db_username
-RIS_DB_PASSWORD=db_password
+SCRAPED_DB_HOST=localhost
+SCRAPED_DB_PORT=5432
+SCRAPED_DB_NAME=database_name
+SCRAPED_DB_USER=db_username
+SCRAPED_DB_PASSWORD=db_password
 
 # Search and processing services
 SOLR_HOST=http://localhost:8983/solr

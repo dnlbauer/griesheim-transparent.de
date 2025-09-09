@@ -40,14 +40,15 @@ A transparency platform for local politics providing citizens access to municipa
 ### Key Directories
 - `scraper/sessionnet/`: Scrapy spider and processing pipeline
 - `parliscope/frontend/`: Django web app (views, templates, search)
-- `parliscope/ris/`: Database models for scraped data
+- `parliscope/models/`: Database models for scraped data
+- `parliscope/healthcheck/`: Health check backends for external services
 - `parliscope/frontend/management/commands/`: Custom Django commands
 - `deployment/`: Docker Compose configurations
 - `solr/`: Solr schema and configuration
 
 ### Critical Files
 - `scraper/sessionnet/spiders.py`: SessionNet scraping logic
-- `parliscope/ris/models.py`: Data models (Document, Organization, Person)
+- `parliscope/models/models.py`: Data models (Document, Organization, Person)
 - `parliscope/frontend/management/commands/update_solr.py`: Document processing pipeline
 - `parliscope/parliscope/settings.py`: Multi-database and service configuration
 - `deployment/dev.yaml`: Complete development environment
@@ -89,7 +90,7 @@ uv run mypy  # Type check code
 
 # Database
 uv run python manage.py migrate
-uv run python manage.py migrate --database=ris
+uv run python manage.py migrate --database=scraped
 uv run python manage.py makemigrations
 
 # Data Processing
@@ -126,7 +127,7 @@ uv sync  # Creates virtual environment and installs dependencies automatically
 #### Database Configuration
 - **Parliscope**: SQLite at `/django_db/db.sqlite` (Django app data)
 - **Scraper**: PostgreSQL (document metadata)
-- **Router**: `frontend.databaserouter.DatabaseRouter` handles multi-DB routing
+- **Router**: `parliscope.databaserouter.DatabaseRouter` handles multi-DB routing
 
 #### Required Environment Variables
 ```bash
@@ -169,7 +170,7 @@ uv sync  # Ensure dependencies are installed
 uv run python manage.py test
 
 # Test specific apps
-uv run python manage.py test frontend ris
+uv run python manage.py test frontend models healthcheck
 
 # Django system checks
 uv run python manage.py check
@@ -184,11 +185,11 @@ uv sync  # Ensure dependencies are installed
 # Migrations
 uv run python manage.py makemigrations  # Create new migrations
 uv run python manage.py migrate         # Apply to SQLite
-uv run python manage.py migrate --database=ris  # Apply to PostgreSQL
+uv run python manage.py migrate --database=scraped  # Apply to PostgreSQL
 
 # Inspection
 uv run python manage.py showmigrations
-uv run python manage.py dbshell [--database=ris]
+uv run python manage.py dbshell [--database=scraped]
 ```
 
 ## Code Standards
@@ -234,10 +235,11 @@ uv run python manage.py dbshell [--database=ris]
 
 ### Getting Help
 Refer to key files when understanding functionality:
-- Models: `parliscope/ris/models.py`
+- Models: `parliscope/models/models.py`
 - Scraping: `scraper/sessionnet/spiders.py`
 - Document processing: `parliscope/frontend/management/commands/update_solr.py`
 - Configuration: `parliscope/parliscope/settings.py`
+- Health checks: `parliscope/healthcheck/`
 
 ---
 *Keep this document updated as the codebase evolves!*

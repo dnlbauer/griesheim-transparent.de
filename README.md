@@ -2,31 +2,66 @@
 
 # griesheim-transparent.de
 
-Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de) - A search engine for documents of the Griesheim (Germany, Hessen, Darmstadt-Dieburg)
-city parliament.
+Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de) - A transparency platform providing citizens access to municipal government documents, decisions, and activities from Griesheim (Germany, Hesse, Darmstadt-Dieburg) city parliament.
 
-## Modules
-1) **scraper**: Scrapy-based webscraper for the "Ratsinformationssystem" aka. sessionnet https://sessionnet.owl-it.de/griesheim/bi/info.asp
-2) **parliscope**: Django project for frontend and management jobs for analysis
-3) **solr**: Solr Search Platform configuration
+## Project Structure
 
-  
-## Additional services
-The full service is build on several microservices required at indexing time and for data storage (see [docker compose file](deployment/dev.yaml) for details):
-- A postgresql database to store scraped metadata.
-- [Tika](https://hub.docker.com/r/apache/tika) for pdf metadata extraction, text extraction and OCR.
-- [fpurchess/preview-service](https://hub.docker.com/r/fpurchess/preview-service) for thumbnail generation.
-- [gotenberg](https://hub.docker.com/r/gotenberg/gotenberg) to convert different file formats to pdf.
+### Core Components
+1. **parliscope**: Django web application for citizen search interface and document processing
+   - **frontend**: Web interface with search functionality and document viewer
+   - **models**: Database models for scraped data (based on OParl standard)
+   - **healthcheck**: Health monitoring for external services
+   - **parliscope**: Main project configuration and settings
 
-## Workflow:
-- The scraper docker image runs a cron job to scrape the sessionnet regulary and stores metadata+binary files stored to postgresql and the datastore.
-- The frontend management task is also run in a cron job to periodically sync the scraped data into the solr index for searching. This includes:
-  - Combining metadata from scraped meetings, meeting agendas, consultations etc.
-  - Converting non-pdfs to pdf
-  - Extracting document metadata and content from pdfs with pdfact, tika and/or tika+tesseract (ocr)
-  - Generating preview images with the preview-service
-- The frontend django app makes the data available to the user by queyring the solr search platform
+2. **scraper**: Scrapy-based web scraper for SessionNet municipal information systems
+   - Extracts documents, meetings, and metadata from SessionNet
+   - Stores data in PostgreSQL database
+
+3. **solr**: Apache Solr search platform with German language configuration
+   - Full-text indexing and search capabilities
+   - Custom schema for municipal documents
+
+4. **deployment**: Docker Compose configurations for development and production
+
+## System Architecture
+
+### Data Flow
+1. **Scraper** → Documents/metadata → **PostgreSQL**
+2. **Django management commands** → Document processing → **Solr indexing**
+3. **Citizens** → Django frontend → **Solr search results**
+
+### External Services
+The platform integrates with several microservices for document processing:
+- **PostgreSQL**: Metadata storage for scraped data
+- **Apache Tika**: PDF text extraction, metadata extraction, and OCR
+- **PDFAct**: Advanced PDF text extraction with structure recognition
+- **Gotenberg**: Document format conversion to PDF
+- **Preview Service**: Document thumbnail generation
+
+## Development
+
+### Quick Start
+```bash
+# Full development environment with Docker
+cd deployment && docker-compose -f dev.yaml up
+
+# Local development (requires uv)
+cd parliscope/ && uv sync && uv run python manage.py runserver
+cd scraper/ && uv sync && uv run scrapy crawl sessionnet
+```
+
+### Key Features
+- **Multi-database setup**: SQLite for Django app data, PostgreSQL for scraped data
+- **Document processing pipeline**: OCR, text extraction, format conversion, thumbnails
+- **Full-text search**: German-language optimized Solr configuration
+- **Health monitoring**: Service availability checks for all external dependencies
+- **Responsive design**: Mobile-friendly interface for citizen access
+
+## Workflow
+1. **Automated scraping**: Cron job regularly extracts data from SessionNet
+2. **Document processing**: Management commands process documents through external services
+3. **Search indexing**: Processed documents are indexed in Solr for fast search
+4. **Citizen access**: Web interface provides search and document viewing capabilities
 
 ## License
 MIT
- 

@@ -31,11 +31,15 @@ class DatabaseRouter:
     def db_for_write(self, model: type[models.Model], **hints: Any) -> str:
         return self._route(model)
 
-    def allow_relation(self, obj1: models.Model, obj2: models.Model, **hints: Any) -> bool:
+    def allow_relation(
+        self, obj1: models.Model, obj2: models.Model, **hints: Any
+    ) -> bool:
         # allow relations between objects in the same database
         return self._is_risdb_model(type(obj1)) == self._is_risdb_model(type(obj2))
 
-    def allow_migrate(self, db: str, app_label: str, model_name: str | None = None, **hints: Any) -> bool:
+    def allow_migrate(
+        self, db: str, app_label: str, model_name: str | None = None, **hints: Any
+    ) -> bool:
         if app_label == "ris":
             return db == "ris"
         return db == "default"

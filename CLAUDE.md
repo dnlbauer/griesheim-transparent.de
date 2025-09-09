@@ -49,7 +49,7 @@ A transparency platform for local politics providing citizens access to municipa
 - `scraper/sessionnet/spiders.py`: SessionNet scraping logic
 - `parliscope/ris/models.py`: Data models (Document, Organization, Person)
 - `parliscope/frontend/management/commands/update_solr.py`: Document processing pipeline
-- `parliscope/frontend/settings.py`: Multi-database and service configuration
+- `parliscope/parliscope/settings.py`: Multi-database and service configuration
 - `deployment/dev.yaml`: Complete development environment
 
 ## Development Workflow
@@ -237,7 +237,7 @@ Refer to key files when understanding functionality:
 - Models: `parliscope/ris/models.py`
 - Scraping: `scraper/sessionnet/spiders.py`
 - Document processing: `parliscope/frontend/management/commands/update_solr.py`
-- Configuration: `parliscope/frontend/settings.py`
+- Configuration: `parliscope/parliscope/settings.py`
 
 ---
 *Keep this document updated as the codebase evolves!*

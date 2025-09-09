@@ -56,7 +56,7 @@ services:
     # dev (serve static files)
     #command: python manage.py runserver 0.0.0.0:8000
     # prod/with webserver
-    command: gunicorn frontend.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn parliscope.wsgi:application --bind 0.0.0.0:8000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       start_period: 10s

@@ -10,7 +10,7 @@ from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 
 # Test settings
 DEBUG = True
@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "parliscope",
     "frontend",
     "ris",
     "fontawesomefree",
@@ -67,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "frontend.wsgi.application"
+WSGI_APPLICATION = "parliscope.wsgi.application"
 
 # Internationalization
 LANGUAGE_CODE = "de-de"

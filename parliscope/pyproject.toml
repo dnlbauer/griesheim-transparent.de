@@ -49,7 +49,7 @@ dev = [
 testpaths = ["frontend/tests", "ris/tests"]
 addopts = "--tb=short"
 env = [
-    "DJANGO_SETTINGS_MODULE=frontend.tests.settings"
+    "DJANGO_SETTINGS_MODULE=parliscope.test_settings"
 ]
 
 [tool.ruff]
@@ -72,7 +72,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["frontend", "ris"]
+known-first-party = ["parliscope", "frontend", "ris"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -88,7 +88,7 @@ check_untyped_defs = true
 ignore_missing_imports = true
 
 [tool.django-stubs]
-django_settings_module = "frontend.tests.settings"
+django_settings_module = "parliscope.test_settings"
 
 [dependency-groups]
 dev = [

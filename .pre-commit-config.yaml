@@ -5,7 +5,7 @@ repos:
       - id: ruff-check
         args: [--fix]
         types_or: [ python, pyi ]
-        files: ^frontend/
+        files: ^parliscope/
       - id: ruff-format
         types_or: [ python, pyi ]
-        files: ^frontend/
+        files: ^parliscope/

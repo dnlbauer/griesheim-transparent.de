@@ -1,5 +1,5 @@
 [project]
-name = "griesheim-transparent-scraper"
+name = "parliscope-scraper"
 version = "1.0.0"
 description = "Scrapy spider for extracting municipal documents from SessionNet"
 requires-python = ">=3.13"

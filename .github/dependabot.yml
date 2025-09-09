@@ -6,13 +6,13 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/frontend"
+    directory: "/parliscope"
     schedule:
       interval: "monthly"
     ignore:
       - dependency-name: "Twisted"
   - package-ecosystem: "docker"
-    directory: "/frontend"
+    directory: "/parliscope"
     schedule:
       interval: "monthly"
   - package-ecosystem: "pip"

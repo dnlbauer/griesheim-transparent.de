@@ -7,7 +7,7 @@ city parliament.
 
 ## Modules
 1) **scraper**: Scrapy-based webscraper for the "Ratsinformationssystem" aka. sessionnet https://sessionnet.owl-it.de/griesheim/bi/info.asp
-2) **frontend**: Django Frontend and management jobs for analysis
+2) **parliscope**: Django project for frontend and management jobs for analysis
 3) **solr**: Solr Search Platform configuration
 
   

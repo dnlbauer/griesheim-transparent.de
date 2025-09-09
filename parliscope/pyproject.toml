@@ -1,5 +1,5 @@
 [project]
-name = "griesheim-transparent-frontend"
+name = "parliscope"
 version = "1.0.0"
 description = "Django web application for municipal transparency platform"
 requires-python = ">=3.13"

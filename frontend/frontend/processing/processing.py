@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 from typing import Any, cast
 
-
 from ris.models import AgendaItem, Consultation, Document, Meeting, Organization
 
 SOLR_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"

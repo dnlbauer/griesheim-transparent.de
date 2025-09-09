@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 from typing import Any, cast
 
-import numpy as np
 
 from ris.models import AgendaItem, Consultation, Document, Meeting, Organization
 
@@ -232,14 +231,14 @@ def remove_by_regexes(
 
     if not from_end:
         # find the last line containing a regex
-        last_match_line = int(np.max([match[0] for match in matches]))
+        last_match_line = int(max([match[0] for match in matches]))
 
         # in the last line, find the latest end of a regex in that line
         last_match_inline = 0
         for line2, _, end2 in matches:
             if line2 != last_match_line:
                 continue
-            last_match_inline = int(np.max([last_match_inline, end2]))
+            last_match_inline = int(max([last_match_inline, end2]))
 
         # strip content from everything before the latest occcurance of the match
         content = content[last_match_line:]
@@ -248,14 +247,14 @@ def remove_by_regexes(
             content = content[1:]
     else:
         # find the first line containing a regex
-        first_match_line = int(np.min([match[0] for match in matches]))
+        first_match_line = int(min([match[0] for match in matches]))
 
         # in the first line, find the first start of a regex in that line
         first_match_inline = len(content[first_match_line])
         for line3, start3, _ in matches:
             if line3 != first_match_line:
                 continue
-            first_match_inline = int(np.min([first_match_inline, start3]))
+            first_match_inline = int(min([first_match_inline, start3]))
 
         # strip content from everything before the latest occcurance of the match
         content = content[: first_match_line + 1]

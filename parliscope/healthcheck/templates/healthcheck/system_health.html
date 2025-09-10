@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<!-- Sync Status Overview -->
+<div class="module">
+    <table>
+        <caption>Sync Status</caption>
+        <tr>
+            <th scope="row">Database Documents</th>
+            <td><strong>{{ health_data.database_document_count|floatformat:0 }}</strong></td>
+            <td>{% if not health_data.database_available %}<span style="color: red;">{{ health_data.database_error }}</span>{% endif %}</td>
+        </tr>
+        <tr>
+            <th scope="row">Search Index Documents</th>
+            <td><strong>{{ health_data.solr_document_count|floatformat:0 }}</strong></td>
+            <td>{% if not health_data.solr_available %}<span style="color: red;">{{ health_data.solr_error }}</span>{% endif %}</td>
+        </tr>
+        <tr>
+            <th scope="row">Difference</th>
+            <td><strong>{{ health_data.sync_status.difference|floatformat:0 }}</strong></td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <th scope="row">Database ⇄ Search Index</th>
+            {% if health_data.sync_status.in_sync %}
+            <td style="color: green;"><strong>✓ In Sync</strong></td>
+            {% else %}
+            <td style="color: red;"><strong>✗ Out of Sync</strong></td>
+            {% endif %}
+        </tr>
+    </table>
+</div>
+{% endblock %}

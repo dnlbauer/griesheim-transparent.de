@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+
+{% block object-tools %}
+{{ block.super }}
+{% if request.resolver_match.url_name == 'index' %}
+<div class="module">
+    <table>
+        <caption>Health Check</caption>
+        <tbody>
+            <tr>
+                <th><a href="{% url 'admin:system_health' %}">System Health</a></th>
+                <td>View the health status of the system.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

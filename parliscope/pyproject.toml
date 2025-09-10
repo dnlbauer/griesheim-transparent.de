@@ -16,7 +16,7 @@ dependencies = [
     "fontawesomefree==6.5.1",
     "idna==3.10",
     "psycopg2==2.9.10",
-    "pysolr==3.9.0",
+    "pysolr==3.10.0",
     "rcssmin==1.2.1",
     "requests==2.32.4",
     "rjsmin==1.2.4",
@@ -31,7 +31,7 @@ dependencies = [
     "tika==2.6.0",
     "django-health-check~=3.18.3",
     "pytz~=2025.2",
-    "whitenoise~=6.8.2",
+    "whitenoise~=6.10.0",
 ]
 
 [project.optional-dependencies]

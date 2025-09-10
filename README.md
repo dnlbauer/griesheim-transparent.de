@@ -21,8 +21,7 @@ Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de
    - Full-text indexing and search capabilities
    - Custom schema for municipal documents
 
-4. **deployment**: Docker Compose configurations for development and production
-
+4. **deployment**: Docker Compose configurations for development
 ## System Architecture
 
 ### Data Flow

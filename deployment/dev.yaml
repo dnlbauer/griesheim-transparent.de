@@ -27,6 +27,7 @@ services:
       - tika
       - pdfact
       - gotenberg
+      - redis
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr
@@ -46,6 +47,7 @@ services:
       - TIKA_HOST=http://tika:9998
       - PDFACT_HOST=http://pdfact:80
       - GOTENBERG_HOST=http://gotenberg:3000
+      - CELERY_BROKER_URL=redis://redis:6379/0
     volumes:
       - django_staticfiles:/app/staticfiles
       - ./scraper_files:/filestore
@@ -70,6 +72,24 @@ services:
     command: crond -f
     healthcheck:
       test: ["NONE"]  # container dies with cron
+  redis:
+    image: redis:7.0-alpine
+    container_name: parliscope-redis
+    ports:
+      - 6379:6379
+    networks:
+      - parliscope
+    restart: unless-stopped
+  celery-beat:
+    <<: *parliscope
+    container_name: parliscope-celery-beat
+    ports: []
+    command: celery -A parliscope beat -l info -S django
+  celery-worker:
+    <<: *parliscope
+    container_name: parliscope-celery-worker
+    ports: []
+    command: celery -A parliscope worker -l info
   # scraper cron service
   scraper:
     image: parliscope-scraper

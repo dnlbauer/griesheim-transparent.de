@@ -115,19 +115,14 @@ WSGI_APPLICATION = "parliscope.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": env("DATABASE_PATH", default=BASE_DIR / "db.sqlite3"),
-    },
-    "scraped": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "HOST": env("SCRAPED_DB_HOST"),
-        "PORT": env("SCRAPED_DB_PORT"),
-        "NAME": env("SCRAPED_DB_NAME"),
-        "USER": env("SCRAPED_DB_USER"),
-        "PASSWORD": env("SCRAPED_DB_PASSWORD"),
+        "HOST": env("SCRAPED_DB_HOST", default="localhost"),
+        "PORT": env("SCRAPED_DB_PORT", default="5432"),
+        "NAME": env("SCRAPED_DB_NAME", default="riscraper"),
+        "USER": env("SCRAPED_DB_USER", default="riscraper"),
+        "PASSWORD": env("SCRAPED_DB_PASSWORD", default="riscraper"),
     },
 }
-DATABASE_ROUTERS = ["parliscope.databaserouter.DatabaseRouter"]
 
 
 # Password validation

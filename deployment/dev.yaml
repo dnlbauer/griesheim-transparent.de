@@ -39,7 +39,6 @@ services:
       - DEBUG=${DEBUG}
       - UPDATE_SOLR_CRON=${UPDATE_SOLR_CRON}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
-      - DATABASE_PATH=/django_db/db.sqlite
       - DJANGO_SU_NAME=${DJANGO_SU_NAME}
       - DJANGO_SU_PASSWD=${DJANGO_SU_PASSWD}
       - DJANGO_SU_EMAIL=${DJANGO_SU_EMAIL}
@@ -48,7 +47,6 @@ services:
       - PDFACT_HOST=http://pdfact:80
       - GOTENBERG_HOST=http://gotenberg:3000
     volumes:
-      - django_db:/django_db
       - django_staticfiles:/app/staticfiles
       - ./scraper_files:/filestore
     ports:
@@ -166,5 +164,4 @@ volumes:
   caddy_data:
   django_staticfiles:
   solr_data:
-  django_db:
   scraper_db:

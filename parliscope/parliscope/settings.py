@@ -14,7 +14,6 @@ from os.path import join
 from pathlib import Path
 
 import environ
-from django.core.management.utils import get_random_secret_key
 
 env = environ.Env()
 
@@ -29,7 +28,7 @@ DEBUG = env.bool("DEBUG", default=False)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
-    SECRET_KEY = get_random_secret_key()
+    SECRET_KEY = "my-debug-secret-key"
 else:
     SECRET_KEY = env("SECRET_KEY")
 
@@ -52,16 +51,16 @@ CSRF_TRUSTED_ORIGINS += [
 
 # Application definition
 INSTALLED_APPS = [
+    "parliscope",
+    "frontend",
+    "models",
+    "healthcheck",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "parliscope",
-    "frontend",
-    "models",
-    "healthcheck",
     "fontawesomefree",
     "django_crontab",
     "health_check",

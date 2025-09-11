@@ -84,12 +84,18 @@ services:
     <<: *parliscope
     container_name: parliscope-celery-beat
     ports: []
+    expose: []
     command: celery -A parliscope beat -l info -S django
+    healthcheck:
+      disable: true
   celery-worker:
     <<: *parliscope
     container_name: parliscope-celery-worker
     ports: []
+    expose: []
     command: celery -A parliscope worker -l info
+    healthcheck:
+      disable: true
   # scraper cron service
   scraper:
     image: parliscope-scraper

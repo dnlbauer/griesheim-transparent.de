@@ -1,4 +1,5 @@
 from .GotenbergHealthCheckBackend import GotenbergHealthCheckBackend
+from .MyCeleryPingHealthCheckBackend import MyCeleryPingHealthCheckBackend
 from .PDFActHealthCheckBackend import PDFActHealthCheckBackend
 from .PreviewServiceHealthCheckBackend import PreviewServiceHealthCheckBackend
 from .SolrHealthCheckBackend import SolrHealthCheckBackend
@@ -10,4 +11,5 @@ __all__ = [
     "PreviewServiceHealthCheckBackend",
     "SolrHealthCheckBackend",
     "TikaHealthCheckBackend",
+    "MyCeleryPingHealthCheckBackend",
 ]

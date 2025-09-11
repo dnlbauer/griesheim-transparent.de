@@ -180,7 +180,7 @@ services:
     image: fpurchess/preview-service
     container_name: parliscope-previewservice
     ports:
-      - 8000:8001
+      - 8001:8000
     networks:
       - parliscope
     restart: unless-stopped

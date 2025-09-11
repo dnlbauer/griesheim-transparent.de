@@ -62,20 +62,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "fontawesomefree",
-    "django_crontab",
     "health_check",
     "health_check.db",
     "health_check.contrib.migrations",
     "django_celery_results",
     "django_celery_beat",
-]
-
-CRONJOBS = [
-    (
-        env("UPDATE_SOLR_CRON", default="0 */3 * * *"),
-        "django.core.management.call_command",
-        ["update_solr"],
-    )
 ]
 
 MIDDLEWARE = [

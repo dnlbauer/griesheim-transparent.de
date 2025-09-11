@@ -64,14 +64,6 @@ services:
     networks:
       - parliscope
     restart: unless-stopped
-  # container for parliscope cron jobs (processing)
-  parliscope_cron:
-    <<: *parliscope
-    container_name: parliscope-parliscope_cron
-    ports: []
-    command: crond -f
-    healthcheck:
-      test: ["NONE"]  # container dies with cron
   redis:
     image: redis:7.0-alpine
     container_name: parliscope-redis

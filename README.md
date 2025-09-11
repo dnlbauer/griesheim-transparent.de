@@ -11,7 +11,7 @@ Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de
    - **frontend**: Web interface with search functionality and document viewer
    - **models**: Database models for scraped data (based on OParl standard)
    - **healthcheck**: Health monitoring for external services
-   - **parliscope**: Main project configuration and settings
+   - **parliscope**: Main project configuration, settings, and Celery setup
 
 2. **scraper**: Scrapy-based web scraper for SessionNet municipal information systems
    - Extracts documents, meetings, and metadata from SessionNet
@@ -21,7 +21,10 @@ Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de
    - Full-text indexing and search capabilities
    - Custom schema for municipal documents
 
-4. **deployment**: Docker Compose configurations for development
+4. **deployment**: Docker Compose configurations with Celery infrastructure
+   - Redis broker for task queue
+   - Celery Beat for scheduled tasks
+   - Celery Worker for background processing
 ## System Architecture
 
 ### Data Flow
@@ -32,6 +35,7 @@ Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de
 ### External Services
 The platform integrates with several microservices for document processing:
 - **PostgreSQL**: Metadata storage for scraped data
+- **Redis**: Message broker for Celery background task queue
 - **Apache Tika**: PDF text extraction, metadata extraction, and OCR
 - **PDFAct**: Advanced PDF text extraction with structure recognition
 - **Gotenberg**: Document format conversion to PDF
@@ -51,6 +55,7 @@ cd scraper/ && uv sync && uv run scrapy crawl sessionnet
 
 ### Key Features
 - **Multi-database setup**: SQLite for Django app data, PostgreSQL for scraped data
+- **Background task processing**: Celery with Redis broker for scalable document processing
 - **Document processing pipeline**: OCR, text extraction, format conversion, thumbnails
 - **Full-text search**: German-language optimized Solr configuration
 - **Health monitoring**: Service availability checks for all external dependencies

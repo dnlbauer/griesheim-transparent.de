@@ -3,6 +3,7 @@ from typing import Any
 
 import pysolr
 from celery import shared_task
+from celery.app.task import Task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 
@@ -21,11 +22,14 @@ logger = get_task_logger(__name__)
 
 
 @shared_task(bind=True)
-def update_solr_index(self, force=False, allow_ocr=True, chunk_size=10):
+def update_solr_index(
+    self: Task, force: bool = False, allow_ocr: bool = True, chunk_size: int = 10
+) -> None:
     """
     Celery task to update Solr index from RIS database.
 
     Args:
+
         force (bool): Force update for all documents
         allow_ocr (bool): Allow OCR for documents (takes a long time)
         chunk_size (int): Chunk size for sending documents to Solr

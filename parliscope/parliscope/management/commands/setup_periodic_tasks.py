@@ -1,5 +1,4 @@
 import json
-import os
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
@@ -14,16 +13,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--schedule",
-            default=os.environ.get("SOLR_UPDATE_SCHEDULE", "0 3 * * *"),
+            default="0 3 * * *",
             help="Cron schedule for Solr index updates (default: daily at 3 AM)",
         )
         parser.add_argument(
             "--chunk_size",
             help=f"chunk size for sending documents to solr (default: {self.DEFAULT_CHUNK_SIZE})",
             type=int,
-            default=int(
-                os.environ.get("SOLR_UPDATE_CHUNK_SIZE", str(self.DEFAULT_CHUNK_SIZE))
-            ),
+            default=self.DEFAULT_CHUNK_SIZE,
         )
         parser.add_argument(
             "--force",
@@ -34,13 +31,13 @@ class Command(BaseCommand):
             "--no-ocr",
             help="disallow ocr for documents (takes a long time)",
             action="store_true",
-            default=os.environ.get("SOLR_UPDATE_NO_OCR", "false").lower() == "true",
+            default=False,
         )
         parser.add_argument(
             "--disable",
             help="disable the periodic task (default: task is enabled)",
             action="store_true",
-            default=os.environ.get("SOLR_UPDATE_DISABLE", "false").lower() == "true",
+            default=False,
         )
 
     def handle(self, **options: Any) -> None:

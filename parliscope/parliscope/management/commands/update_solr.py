@@ -3,7 +3,7 @@ from typing import Any
 from django.core.management import BaseCommand
 from django.core.management.base import CommandParser
 
-from frontend.tasks import update_solr_index
+from parliscope.tasks.indexing import update_solr_index
 
 
 class Command(BaseCommand):

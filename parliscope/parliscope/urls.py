@@ -19,8 +19,11 @@ from django.conf.urls import handler400, handler403, handler404, handler500
 from django.contrib import admin
 from django.urls import include, path, re_path
 
+from . import views
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("update/", views.update, name="update"),  # System update endpoint
     re_path(r"healthcheck", include("health_check.urls")),
     path("", include("frontend.urls")),
 ]

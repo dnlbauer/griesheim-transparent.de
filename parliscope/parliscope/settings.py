@@ -178,3 +178,6 @@ CELERY_TASK_STORE_ERRORS_EVEN_IF_IGNORED = True  # store all task errors
 CELERY_TASK_TRACK_STARTED = True  # track when task was started
 CELERY_RESULT_EXPIRES = 60 * 60 * 24 * 14  # task results expire after 14 days
 CELERY_RESULT_EXTENDED = True  # store more info about task results
+CELERY_BEAT_SCHEDULER = (
+    "django_celery_beat.schedulers:DatabaseScheduler"  # use database for periodic tasks
+)

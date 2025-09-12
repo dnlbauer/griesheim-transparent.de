@@ -77,7 +77,7 @@ services:
     container_name: parliscope-celery-beat
     ports: []
     expose: []
-    command: celery -A parliscope beat -l info -S django
+    command: celery -A parliscope beat -l info
     healthcheck:
       disable: true
   celery-worker:

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
@@ -12,9 +13,9 @@ from models.models import Document
 logger = logging.getLogger(__name__)
 
 
-def get_detailed_system_health():
+def get_detailed_system_health() -> dict:
     """Get system health information"""
-    health_data = {}
+    health_data: dict[str, Any] = {}
 
     # Database document count
     try:
@@ -66,7 +67,7 @@ def system_health_view(request: HttpRequest) -> HttpResponse:
 class HealthMonitoringAdminSite(admin.AdminSite):
     """Custom admin site with system health monitoring page"""
 
-    def get_urls(self):
+    def get_urls(self) -> list:
         admin_urls = super().get_urls()
         custom_urls = [
             path(

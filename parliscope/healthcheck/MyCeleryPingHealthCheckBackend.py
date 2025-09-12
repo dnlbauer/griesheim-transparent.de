@@ -12,7 +12,7 @@ class MyCeleryPingHealthCheckBackend(BaseHealthCheckBackend):
 
     def check_status(self) -> None:
         try:
-            ping_result: list = app.control.ping(timeout=3)
+            ping_result: list[dict] | None = app.control.ping(timeout=3)
         except OSError as e:
             self.add_error(ServiceUnavailable("IOError"), e)
         except NotImplementedError as exc:
@@ -60,7 +60,7 @@ class MyCeleryPingHealthCheckBackend(BaseHealthCheckBackend):
         defined_queues = {queue.name for queue in defined_queues}
         active_queues = set()
 
-        for queues in app.control.inspect(active_workers).active_queues().values():
+        for queues in app.control.inspect(active_workers).active_queues().values():  # type: ignore
             active_queues.update([queue.get("name") for queue in queues])
 
         for queue in defined_queues.difference(active_queues):

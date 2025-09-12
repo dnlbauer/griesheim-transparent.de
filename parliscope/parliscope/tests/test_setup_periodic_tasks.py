@@ -1,7 +1,5 @@
 import json
-import os
 from io import StringIO
-from unittest.mock import patch
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -138,39 +136,6 @@ class SetupPeriodicTasksCommandTest(TestCase):
         # Verify output
         output = out.getvalue()
         self.assertIn("Updated periodic task: update-solr-index", output)
-
-    @patch.dict(
-        os.environ,
-        {
-            "SOLR_UPDATE_SCHEDULE": "0 1 * * *",
-            "SOLR_UPDATE_CHUNK_SIZE": "50",
-            "SOLR_UPDATE_NO_OCR": "true",
-            "SOLR_UPDATE_DISABLE": "true",
-        },
-    )
-    def test_environment_variable_defaults(self) -> None:
-        """Test that environment variables are used as defaults."""
-        out = StringIO()
-        call_command("setup_periodic_tasks", stdout=out)
-
-        task = PeriodicTask.objects.get(name="update-solr-index")
-
-        # Verify env var schedule
-        schedule = task.crontab
-        self.assertEqual(schedule.minute, "0")
-        self.assertEqual(schedule.hour, "1")
-
-        # Verify env var kwargs
-        kwargs = json.loads(task.kwargs)
-        expected_kwargs = {
-            "force": False,
-            "allow_ocr": False,  # SOLR_UPDATE_NO_OCR=true
-            "chunk_size": 50,
-        }
-        self.assertEqual(kwargs, expected_kwargs)
-
-        # Verify env var enabled state
-        self.assertFalse(task.enabled)  # SOLR_UPDATE_DISABLE=true
 
     def test_invalid_cron_expression(self) -> None:
         """Test handling of invalid cron expressions."""

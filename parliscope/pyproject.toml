@@ -96,6 +96,7 @@ django_settings_module = "parliscope.test_settings"
 
 [dependency-groups]
 dev = [
+    "celery-types>=0.23.0",
     "django-stubs>=5.2.0",
     "mypy>=1.17.1",
     "pre-commit>=4.3.0",

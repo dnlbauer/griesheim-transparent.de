@@ -1,14 +1,14 @@
 import base64
 import logging
-from multiprocessing import Process
 from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
+
+from frontend.tasks import update_solr_index
 
 from .models import Query
 from .search import solr
@@ -48,9 +48,6 @@ def _is_authenticated_su(request: HttpRequest) -> bool:
     return False
 
 
-update_proc: Process | None = None
-
-
 def update(request: HttpRequest) -> HttpResponse:
     """Triggers async update of the solar index (runs update_solr management task.
     Therefore, a new process is started and the view returnes immediatly.
@@ -58,19 +55,8 @@ def update(request: HttpRequest) -> HttpResponse:
     is started"""
 
     if _is_authenticated_su(request):
-        global update_proc
-        # check if update process is already running, kill it if yes
-        if update_proc is not None and update_proc.is_alive():
-            update_proc.kill()
-
-        # start update in a new process
         chunk_size = int(request.GET.get("chunk_size", 10))
-
-        def proc(chunk_size: int) -> None:
-            call_command("update_solr", chunk_size=10)
-
-        update_proc = Process(target=proc, args=(chunk_size,))
-        update_proc.start()
+        update_solr_index.delay(chunk_size=chunk_size)
 
         return HttpResponse("ok", content_type="text/plain")
 

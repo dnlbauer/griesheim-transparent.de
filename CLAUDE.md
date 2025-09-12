@@ -278,3 +278,4 @@ Refer to key files when understanding functionality:
 
 ---
 *Keep this document updated as the codebase evolves!*
+- when running python manage.py commands, use DEBUG=true

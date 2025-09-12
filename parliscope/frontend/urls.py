@@ -6,10 +6,9 @@ Frontend-specific URL patterns for the parliscope project.
 from django.urls import path
 from django.views.generic import TemplateView
 
-from frontend.views import MainView, SearchView, SuggestView, update
+from frontend.views import MainView, SearchView, SuggestView
 
 urlpatterns = [
-    path("update", update, name="update"),
     path("", MainView.as_view(), name="main"),
     path("search", SearchView.as_view(), name="search"),
     path("suggest", SuggestView.as_view(), name="suggest"),

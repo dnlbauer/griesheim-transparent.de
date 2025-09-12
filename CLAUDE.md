@@ -22,7 +22,7 @@ A transparency platform for local politics providing citizens access to municipa
 ## Development Context
 
 ### Stack
-- **Backend**: Django 4.1+, Python 3.10+
+- **Backend**: Django 4.1+, Python 3.13+
 - **Database**: SQLite (parliscope), PostgreSQL (scraped data)
 - **Search**: Apache Solr with pysolr client
 - **Scraping**: Scrapy framework

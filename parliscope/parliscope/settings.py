@@ -108,11 +108,11 @@ WSGI_APPLICATION = "parliscope.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "HOST": env("SCRAPED_DB_HOST", default="localhost"),
-        "PORT": env("SCRAPED_DB_PORT", default="5432"),
-        "NAME": env("SCRAPED_DB_NAME", default="riscraper"),
-        "USER": env("SCRAPED_DB_USER", default="riscraper"),
-        "PASSWORD": env("SCRAPED_DB_PASSWORD", default="riscraper"),
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
+        "NAME": env("DB_NAME", default="riscraper"),
+        "USER": env("DB_USER", default="riscraper"),
+        "PASSWORD": env("DB_PASSWORD", default="riscraper"),
     },
 }
 

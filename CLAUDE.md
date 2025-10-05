@@ -24,7 +24,7 @@ A transparency platform for local politics providing citizens access to municipa
 
 ### Stack
 - **Backend**: Django 4.1+, Python 3.13+
-- **Database**: SQLite (parliscope), PostgreSQL (scraped data)
+- **Database**: Database for all app data and scraped content
 - **Task Queue**: Celery with Redis broker for background processing
 - **Search**: Apache Solr with pysolr client
 - **Scraping**: Scrapy framework
@@ -32,7 +32,6 @@ A transparency platform for local politics providing citizens access to municipa
 - **Deployment**: Docker Compose
 
 ### Critical Constraints
-- Multi-database setup: SQLite for Django app, PostgreSQL for scraped data
 - External service dependencies for document processing
 - German locale (de-de) and timezone (Europe/Berlin)
 - No hardcoded secrets - all config via environment variables
@@ -77,7 +76,7 @@ griesheim-transparent/
 - `scraper/sessionnet/`: Legacy Scrapy spider (being migrated)
 - `parliscope/parliscope/`: Main Django project configuration and routing
 - `parliscope/frontend/`: Django web app (views, templates, search functionality)
-- `parliscope/models/`: Database models for scraped data (OParl-based)
+- `parliscope/models/`: Database models (OParl-based)
 - `parliscope/healthcheck/`: Dedicated health check backends for external services
 - `parliscope/frontend/management/commands/`: Custom Django management commands
 - `deployment/`: Docker Compose configurations for all environments
@@ -87,8 +86,7 @@ griesheim-transparent/
 - `scraper/sessionnet/spiders.py`: SessionNet scraping logic (legacy)
 - `parliscope/models/models.py`: Data models (Document, Organization, Person)
 - `parliscope/frontend/management/commands/update_solr.py`: Document processing pipeline
-- `parliscope/parliscope/settings.py`: Multi-database and service configuration
-- `parliscope/parliscope/databaserouter.py`: Database routing between SQLite and PostgreSQL
+- `parliscope/parliscope/settings.py`: Django configuration and service settings
 - `deployment/dev.yaml`: Complete development environment
 
 ## Development Workflow
@@ -128,7 +126,6 @@ uv run mypy  # Type check code
 
 # Database
 uv run python manage.py migrate
-uv run python manage.py migrate --database=scraped
 uv run python manage.py makemigrations
 
 # Data Processing
@@ -165,9 +162,7 @@ uv sync  # Creates virtual environment and installs dependencies automatically
 ```
 
 #### Database Configuration
-- **Parliscope**: SQLite at `/django_db/db.sqlite` (Django app data)
-- **Models**: PostgreSQL (scraped document metadata)
-- **Router**: `parliscope.databaserouter.DatabaseRouter` handles multi-DB routing
+- **Database**: SQL-based database (all application data)
 
 #### Required Environment Variables
 ```bash
@@ -176,12 +171,12 @@ DJANGO_SECRET_KEY=your-django-secret-key-here
 DEBUG=true
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# PostgreSQL (scraped data)
-SCRAPED_DB_HOST=localhost
-SCRAPED_DB_PORT=5432
-SCRAPED_DB_NAME=database_name
-SCRAPED_DB_USER=db_username
-SCRAPED_DB_PASSWORD=db_password
+# PostgreSQL
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=database_name
+DB_USER=db_username
+DB_PASSWORD=db_password
 
 # Celery background processing
 CELERY_BROKER_URL=redis://localhost:6379/0
@@ -227,12 +222,11 @@ uv sync  # Ensure dependencies are installed
 
 # Migrations
 uv run python manage.py makemigrations  # Create new migrations
-uv run python manage.py migrate         # Apply to SQLite
-uv run python manage.py migrate --database=scraped  # Apply to PostgreSQL
+uv run python manage.py migrate         # Apply migrations
 
 # Inspection
 uv run python manage.py showmigrations
-uv run python manage.py dbshell [--database=scraped]
+uv run python manage.py dbshell
 ```
 
 ## Code Standards
@@ -241,7 +235,6 @@ uv run python manage.py dbshell [--database=scraped]
 - **Models**: Extend `BaseModel` for `created_at`/`last_modified` fields
 - **Commands**: Inherit from `BaseCommand` for management commands
 - **Settings**: Use `django-environ` for configuration
-- **Database**: Multi-DB routing via `DatabaseRouter`
 
 ### Code Conventions
 - **Naming**: PascalCase classes, snake_case functions, UPPER_CASE constants

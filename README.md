@@ -9,7 +9,7 @@ Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de
 ### Core Components
 1. **parliscope**: Django web application for citizen search interface and document processing
    - **frontend**: Web interface with search functionality and document viewer
-   - **models**: Database models for scraped data (based on OParl standard)
+   - **models**: Database models (based on OParl standard)
    - **healthcheck**: Health monitoring for external services
    - **parliscope**: Main project configuration, settings, and Celery setup
 
@@ -34,7 +34,7 @@ Repository for [http://griesheim-transparent.de](http://griesheim-transparent.de
 
 ### External Services
 The platform integrates with several microservices for document processing:
-- **PostgreSQL**: Metadata storage for scraped data
+- **PostgreSQL**: Application database
 - **Redis**: Message broker for Celery background task queue
 - **Apache Tika**: PDF text extraction, metadata extraction, and OCR
 - **PDFAct**: Advanced PDF text extraction with structure recognition
@@ -54,7 +54,6 @@ cd scraper/ && uv sync && uv run scrapy crawl sessionnet
 ```
 
 ### Key Features
-- **Multi-database setup**: SQLite for Django app data, PostgreSQL for scraped data
 - **Background task processing**: Celery with Redis broker for scalable document processing
 - **Document processing pipeline**: OCR, text extraction, format conversion, thumbnails
 - **Full-text search**: German-language optimized Solr configuration
@@ -74,7 +73,6 @@ After deploying the application for the first time:
 1. **Run database migrations:**
    ```bash
    python manage.py migrate
-   python manage.py migrate --database=scraped
    ```
 
 2. **Create a superuser account:**

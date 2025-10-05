@@ -32,11 +32,11 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr
       - SOLR_COLLECTION=ris
-      - SCRAPED_DB_HOST=scraper-database
-      - SCRAPED_DB_PORT=5432
-      - SCRAPED_DB_NAME=${SCRAPER_DB}
-      - SCRAPED_DB_USER=${SCRAPER_DB_USER}
-      - SCRAPED_DB_PASSWORD=${SCRAPER_DB_PASSWORD}
+      - DB_HOST=scraper-database
+      - DB_PORT=5432
+      - DB_NAME=${SCRAPER_DB}
+      - DB_USER=${SCRAPER_DB_USER}
+      - DB_PASSWORD=${SCRAPER_DB_PASSWORD}
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DJANGO_SU_NAME=${DJANGO_SU_NAME}

@@ -10,8 +10,6 @@ dependencies = [
     "charset-normalizer==3.4.3",
     "django==5.2.7",
     "django-appconf==1.1.0",
-    "django-cron==0.6.0",
-    "django-crontab==0.7.1",
     "django-environ==0.12.0",
     "fontawesomefree==6.5.1",
     "idna==3.10",
@@ -32,6 +30,10 @@ dependencies = [
     "django-health-check~=3.20.0",
     "pytz~=2025.2",
     "whitenoise~=6.11.0",
+    "celery>=5.4.0",
+    "redis>=6.4.0",
+    "django-celery-results>=2.6.0",
+    "django-celery-beat>=2.8.1",
 ]
 
 [project.optional-dependencies]
@@ -46,7 +48,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["frontend/tests", "models/tests"]
+testpaths = ["frontend/tests", "models/tests", "parliscope/tests"]
 addopts = "--tb=short"
 env = [
     "DJANGO_SETTINGS_MODULE=parliscope.test_settings"
@@ -92,6 +94,7 @@ django_settings_module = "parliscope.test_settings"
 
 [dependency-groups]
 dev = [
+    "celery-types>=0.23.0",
     "django-stubs>=5.2.0",
     "mypy>=1.17.1",
     "pre-commit>=4.3.0",

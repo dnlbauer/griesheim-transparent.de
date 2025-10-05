@@ -3,6 +3,7 @@ from health_check.plugins import plugin_dir
 
 from healthcheck import (
     GotenbergHealthCheckBackend,
+    MyCeleryPingHealthCheckBackend,
     PDFActHealthCheckBackend,
     PreviewServiceHealthCheckBackend,
     SolrHealthCheckBackend,
@@ -19,3 +20,4 @@ class HealthCheckConfig(AppConfig):
         plugin_dir.register(TikaHealthCheckBackend)
         plugin_dir.register(PDFActHealthCheckBackend)
         plugin_dir.register(GotenbergHealthCheckBackend)
+        plugin_dir.register(MyCeleryPingHealthCheckBackend)

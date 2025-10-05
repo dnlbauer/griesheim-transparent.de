@@ -1,11 +1,7 @@
-import base64
 import logging
-from multiprocessing import Process
 from typing import Any
 
 from django.conf import settings
-from django.contrib.auth import authenticate
-from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
@@ -27,54 +23,6 @@ def _parse_parge(request: HttpRequest, default: int = 1) -> int:
             return 1
         else:
             return page
-
-
-def _is_authenticated_su(request: HttpRequest) -> bool:
-    """True if the user is an authenticatd superuser"""
-    if (
-        request.user.is_authenticated
-        and request.user.is_superuser
-        and request.user.is_active
-    ):
-        return True
-
-    # Check HTTP Basic Auth
-    if "HTTP_AUTHORIZATION" in request.META:
-        auth = request.META["HTTP_AUTHORIZATION"].split()
-        if len(auth) == 2 and auth[0] == "Basic":
-            username, passwd = base64.b64decode(auth[1]).decode("utf-8").split(":")
-            user = authenticate(username=username, password=passwd)
-            return user is not None and user.is_superuser and user.is_active
-    return False
-
-
-update_proc: Process | None = None
-
-
-def update(request: HttpRequest) -> HttpResponse:
-    """Triggers async update of the solar index (runs update_solr management task.
-    Therefore, a new process is started and the view returnes immediatly.
-    If the update process is already running, it gets killed and a new one
-    is started"""
-
-    if _is_authenticated_su(request):
-        global update_proc
-        # check if update process is already running, kill it if yes
-        if update_proc is not None and update_proc.is_alive():
-            update_proc.kill()
-
-        # start update in a new process
-        chunk_size = int(request.GET.get("chunk_size", 10))
-
-        def proc(chunk_size: int) -> None:
-            call_command("update_solr", chunk_size=10)
-
-        update_proc = Process(target=proc, args=(chunk_size,))
-        update_proc.start()
-
-        return HttpResponse("ok", content_type="text/plain")
-
-    return HttpResponse("Unauthorized", status=401, content_type="text/plain")
 
 
 class MainView(TemplateView):

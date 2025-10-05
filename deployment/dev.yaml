@@ -27,6 +27,7 @@ services:
       - tika
       - pdfact
       - gotenberg
+      - redis
     environment:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - SOLR_HOST=http://solr:8983/solr
@@ -37,7 +38,6 @@ services:
       - SCRAPED_DB_USER=${SCRAPER_DB_USER}
       - SCRAPED_DB_PASSWORD=${SCRAPER_DB_PASSWORD}
       - DEBUG=${DEBUG}
-      - UPDATE_SOLR_CRON=${UPDATE_SOLR_CRON}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - DJANGO_SU_NAME=${DJANGO_SU_NAME}
       - DJANGO_SU_PASSWD=${DJANGO_SU_PASSWD}
@@ -46,6 +46,7 @@ services:
       - TIKA_HOST=http://tika:9998
       - PDFACT_HOST=http://pdfact:80
       - GOTENBERG_HOST=http://gotenberg:3000
+      - CELERY_BROKER_URL=redis://redis:6379/0
     volumes:
       - django_staticfiles:/app/staticfiles
       - ./scraper_files:/filestore
@@ -62,14 +63,30 @@ services:
     networks:
       - parliscope
     restart: unless-stopped
-  # container for parliscope cron jobs (processing)
-  parliscope_cron:
+  redis:
+    image: redis:7.0-alpine
+    container_name: parliscope-redis
+    ports:
+      - 6379:6379
+    networks:
+      - parliscope
+    restart: unless-stopped
+  celery-beat:
     <<: *parliscope
-    container_name: parliscope-parliscope_cron
+    container_name: parliscope-celery-beat
     ports: []
-    command: crond -f
+    expose: []
+    command: celery -A parliscope beat -l info
     healthcheck:
-      test: ["NONE"]  # container dies with cron
+      disable: true
+  celery-worker:
+    <<: *parliscope
+    container_name: parliscope-celery-worker
+    ports: []
+    expose: []
+    command: celery -A parliscope worker -l info
+    healthcheck:
+      disable: true
   # scraper cron service
   scraper:
     image: parliscope-scraper
@@ -154,7 +171,7 @@ services:
     image: fpurchess/preview-service
     container_name: parliscope-previewservice
     ports:
-      - 8000:8001
+      - 8001:8000
     networks:
       - parliscope
     restart: unless-stopped

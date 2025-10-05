@@ -62,18 +62,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "fontawesomefree",
-    "django_crontab",
     "health_check",
     "health_check.db",
     "health_check.contrib.migrations",
-]
-
-CRONJOBS = [
-    (
-        env("UPDATE_SOLR_CRON", default="0 */3 * * *"),
-        "django.core.management.call_command",
-        ["update_solr"],
-    )
+    "django_celery_results",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -176,3 +169,14 @@ PREVIEW_RESOLUTION = "256x256"
 TIKA_HOST = env("TIKA_HOST", default="http://localhost:9998")
 PDFACT_HOST = env("PDFACT_HOST", default="http://localhost:80")
 GOTENBERG_HOST = env("GOTENBERG_HOST", default="http://localhost:3000")
+
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = "django-db"  # use django_celery_results
+CELERY_TASK_STORE_ERRORS_EVEN_IF_IGNORED = True  # store all task errors
+CELERY_TASK_TRACK_STARTED = True  # track when task was started
+CELERY_RESULT_EXPIRES = 60 * 60 * 24 * 14  # task results expire after 14 days
+CELERY_RESULT_EXTENDED = True  # store more info about task results
+CELERY_BEAT_SCHEDULER = (
+    "django_celery_beat.schedulers:DatabaseScheduler"  # use database for periodic tasks
+)

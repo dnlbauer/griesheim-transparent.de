@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "frontend",
     "models",
     "fontawesomefree",
-    "django_crontab",
+    "django_celery_beat",
     "health_check",
     "health_check.db",
     "health_check.contrib.migrations",
@@ -88,13 +88,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
     },
-    "scraped": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    },
 }
-
-DATABASE_ROUTERS = ["parliscope.databaserouter.DatabaseRouter"]
 
 # Disable external service dependencies for tests
 SOLR_HOST = "http://mock-solr:8983/solr"
@@ -111,9 +105,6 @@ CACHE_DIR = "/tmp/test_cache"
 # Allow all hosts for testing
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = []
-
-# Disable cron jobs for tests
-CRONJOBS: list[str] = []
 
 # Speed up password hashing for tests
 PASSWORD_HASHERS = [

@@ -11,6 +11,7 @@ A transparency platform for local politics providing citizens access to municipa
 ### System Architecture
 - **Scraper**: Scrapy spider extracting documents from municipal SessionNet
 - **Parliscope**: Django web app with citizen search interface + background document processing
+- **Celery**: Background task processing with Redis broker for document analysis and indexing
 - **Solr**: Full-text search and document indexing
 - **Services**: PostgreSQL, Apache Tika, Gotenberg, preview-service
 
@@ -24,6 +25,7 @@ A transparency platform for local politics providing citizens access to municipa
 ### Stack
 - **Backend**: Django 4.1+, Python 3.13+
 - **Database**: SQLite (parliscope), PostgreSQL (scraped data)
+- **Task Queue**: Celery with Redis broker for background processing
 - **Search**: Apache Solr with pysolr client
 - **Scraping**: Scrapy framework
 - **Document Processing**: Apache Tika, PDFAct, Gotenberg
@@ -43,13 +45,14 @@ The project follows a modular Django architecture designed for scalability:
 
 ```
 griesheim-transparent/
-├── deployment/                 # Docker configurations
+├── deployment/                 # Docker configurations (includes Celery services)
 ├── solr/                      # Search engine configuration  
 ├── scraper/                   # Legacy Scrapy project (external)
 └── parliscope/                # MAIN DJANGO PROJECT
     ├── manage.py              # Django management script
     ├── parliscope/            # MAIN PROJECT APP (Django core)
-    │   ├── settings.py        # Main project settings
+    │   ├── settings.py        # Main project settings (includes Celery config)
+    │   ├── celery.py          # Celery application configuration
     │   ├── urls.py           # Root URL configuration
     │   ├── wsgi.py           # WSGI application
     │   └── databaserouter.py  # Multi-database routing
@@ -63,7 +66,7 @@ griesheim-transparent/
     │   ├── templates/         # HTML templates
     │   ├── static/           # CSS, JS, images
     │   ├── search/           # Search utilities
-    │   ├── management/commands/ # Custom Django commands
+    │   ├── management/commands/ # Custom Django commands (update_solr.py)
     │   └── migrations/        # Frontend-specific migrations
     └── healthcheck/           # HEALTH CHECK APP (extracted)
         ├── apps.py           # Health check backend registration
@@ -133,6 +136,8 @@ uv run python manage.py update_solr  # Process documents to Solr
 uv run python manage.py collectstatic
 ```
 
+DO NOT run `python manage.py test`. Use `pytest` instead.
+
 #### Scraper Operations
 ```bash
 cd scraper/
@@ -177,6 +182,9 @@ SCRAPED_DB_PORT=5432
 SCRAPED_DB_NAME=database_name
 SCRAPED_DB_USER=db_username
 SCRAPED_DB_PASSWORD=db_password
+
+# Celery background processing
+CELERY_BROKER_URL=redis://localhost:6379/0
 
 # Search and processing services
 SOLR_HOST=http://localhost:8983/solr
@@ -272,10 +280,13 @@ uv run python manage.py dbshell [--database=scraped]
 Refer to key files when understanding functionality:
 - Models: `parliscope/models/models.py`
 - Scraping: `scraper/sessionnet/spiders.py`
-- Document processing: `parliscope/frontend/management/commands/update_solr.py`
+- Document processing: `parliscope/parliscope/tasks/indexing.py`
+- Periodic task setup: `parliscope/parliscope/management/commands/setup_periodic_tasks.py`
 - Configuration: `parliscope/parliscope/settings.py`
 - Health checks: `parliscope/healthcheck/`
 
 ---
 *Keep this document updated as the codebase evolves!*
 - when running python manage.py commands, use DEBUG=true
+- Dont use `python -c` for testing snippets. Use the tools provided by django or pytest.
+- Favor double quotes for strings instead of single quotes. Use f-strings for formatting.

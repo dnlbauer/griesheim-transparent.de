@@ -29,10 +29,10 @@ def _is_authenticated_su(request: HttpRequest) -> bool:
 
 
 def update(request: HttpRequest) -> HttpResponse:
-    """Triggers async update of the Solr index (runs update_solr management task).
-    Therefore, a new process is started and the view returns immediately.
-    If the update process is already running, it gets killed and a new one
-    is started"""
+    """Triggers async update of the Solr index via Celery task queue.
+
+    The task is queued and executed by a Celery worker. Returns immediately
+    with a success response once the task is queued."""
 
     if _is_authenticated_su(request):
         chunk_size = int(request.GET.get("chunk_size", 10))

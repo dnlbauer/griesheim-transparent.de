@@ -1,8 +1,11 @@
-from celery import current_app as app
+from celery.app import app_or_default  # type: ignore
 from health_check.backends import BaseHealthCheckBackend
 from health_check.exceptions import ServiceUnavailable
 
 
+# This health check was copied from:
+# https://github.com/revsys/django-health-check/blob/master/health_check/contrib/celery_ping/backends.py
+# and modified to use app_or_default() instead of default_app to get the current Celery app.
 class MyCeleryPingHealthCheckBackend(BaseHealthCheckBackend):
     critical_service = True
     CORRECT_PING_RESPONSE = {"ok": "pong"}
@@ -11,6 +14,7 @@ class MyCeleryPingHealthCheckBackend(BaseHealthCheckBackend):
         return "MyCeleryPingHealthCheck"
 
     def check_status(self) -> None:
+        app = app_or_default()
         try:
             ping_result: list[dict] | None = app.control.ping(timeout=3)
         except OSError as e:
@@ -50,6 +54,7 @@ class MyCeleryPingHealthCheckBackend(BaseHealthCheckBackend):
             self._check_active_queues(active_workers)
 
     def _check_active_queues(self, active_workers: list) -> None:
+        app = app_or_default()
         defined_queues = getattr(app.conf, "task_queues", None) or getattr(
             app.conf, "CELERY_QUEUES", None
         )

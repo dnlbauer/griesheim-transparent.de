@@ -136,6 +136,8 @@ uv run python manage.py update_solr  # Process documents to Solr
 uv run python manage.py collectstatic
 ```
 
+DO NOT run `python manage.py test`. Use `pytest` instead.
+
 #### Scraper Operations
 ```bash
 cd scraper/

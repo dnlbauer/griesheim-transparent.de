@@ -280,10 +280,13 @@ uv run python manage.py dbshell [--database=scraped]
 Refer to key files when understanding functionality:
 - Models: `parliscope/models/models.py`
 - Scraping: `scraper/sessionnet/spiders.py`
-- Document processing: `parliscope/frontend/management/commands/update_solr.py`
+- Document processing: `parliscope/parliscope/tasks/indexing.py`
+- Periodic task setup: `parliscope/parliscope/management/commands/setup_periodic_tasks.py`
 - Configuration: `parliscope/parliscope/settings.py`
 - Health checks: `parliscope/healthcheck/`
 
 ---
 *Keep this document updated as the codebase evolves!*
 - when running python manage.py commands, use DEBUG=true
+- Dont use `python -c` for testing snippets. Use the tools provided by django or pytest.
+- Favor double quotes for strings instead of single quotes. Use f-strings for formatting.

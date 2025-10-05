@@ -51,7 +51,7 @@ def update_solr_index(
 
     for document in Document.objects.all():
         document_name = document.file_name
-        print(f"Processing {document_name} (id={str(document.id)})")
+        logger.info(f"Processing {document_name} (id={str(document.id)})")
 
         repository_file_path: str = file_repository.get_file_path(document.uri)
         if document.content_type and not document.content_type.lower().endswith("pdf"):

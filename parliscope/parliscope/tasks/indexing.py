@@ -121,7 +121,7 @@ def update_solr_index(
             processed += len(solr_docs)
             self.update_state(
                 state="PROGRESS",
-                meta={"processed": processed + len(solr_docs), "total": total},
+                meta={"processed": processed, "total": total},
             )
             solr_docs.clear()
 

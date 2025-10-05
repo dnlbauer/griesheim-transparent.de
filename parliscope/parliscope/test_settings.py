@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     "frontend",
     "models",
     "fontawesomefree",
-    "django_crontab",
     "django_celery_beat",
     "health_check",
     "health_check.db",
@@ -106,9 +105,6 @@ CACHE_DIR = "/tmp/test_cache"
 # Allow all hosts for testing
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = []
-
-# Disable cron jobs for tests
-CRONJOBS: list[str] = []
 
 # Speed up password hashing for tests
 PASSWORD_HASHERS = [

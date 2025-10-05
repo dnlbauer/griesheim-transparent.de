@@ -249,27 +249,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-cron"
-version = "0.6.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/0e/7341616ff90aac0b2c36fe172663bbaa0fc396e1effc215813a3eea8b7e1/django-cron-0.6.0.tar.gz", hash = "sha256:dc3c0d3433a2e4e7012f77f6d8415ad90367ba068649db2674325bc36f935841", size = 14768 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/fc/9a0fa82f88165d44aa38623a77f7a95bc09c4013557b30620cf5d57e4d0c/django_cron-0.6.0-py3-none-any.whl", hash = "sha256:016203554748512b7f19d7363b4fde8741c6ff63fe8a15051f3031f4a0506a41", size = 19314 },
-]
-
-[[package]]
-name = "django-crontab"
-version = "0.7.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/37/bd/a122ba96167f5dfab70a58ca22fa046b7ef1ebad9ff026f7831bd6c2a49c/django-crontab-0.7.1.tar.gz", hash = "sha256:1201810a212460aaaa48eb6a766738740daf42c1a4f6aafecfb1525036929236", size = 7089 }
-
-[[package]]
 name = "django-environ"
 version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -466,8 +445,6 @@ dependencies = [
     { name = "django-appconf" },
     { name = "django-celery-beat" },
     { name = "django-celery-results" },
-    { name = "django-cron" },
-    { name = "django-crontab" },
     { name = "django-environ" },
     { name = "django-health-check" },
     { name = "fontawesomefree" },
@@ -521,8 +498,6 @@ requires-dist = [
     { name = "django-appconf", specifier = "==1.1.0" },
     { name = "django-celery-beat", specifier = ">=2.8.1" },
     { name = "django-celery-results", specifier = ">=2.6.0" },
-    { name = "django-cron", specifier = "==0.6.0" },
-    { name = "django-crontab", specifier = "==0.7.1" },
     { name = "django-environ", specifier = "==0.12.0" },
     { name = "django-health-check", specifier = "~=3.20.0" },
     { name = "django-stubs", marker = "extra == 'dev'" },

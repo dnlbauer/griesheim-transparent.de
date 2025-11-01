@@ -15,7 +15,7 @@ dependencies = [
     "idna==3.10",
     "psycopg2==2.9.10",
     "pysolr==3.10.0",
-    "rcssmin==1.2.1",
+    "rcssmin==1.2.2",
     "requests==2.32.4",
     "rjsmin==1.2.4",
     "six==1.16.0",

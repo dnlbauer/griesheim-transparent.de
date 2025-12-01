@@ -16,7 +16,7 @@ dependencies = [
     "psycopg2==2.9.10",
     "pysolr==3.10.0",
     "rcssmin==1.2.2",
-    "requests==2.32.4",
+    "requests==2.32.5",
     "rjsmin==1.2.4",
     "six==1.16.0",
     "sqlparse==0.5.3",

@@ -13,7 +13,7 @@ dependencies = [
     "django-environ==0.12.0",
     "fontawesomefree==6.6.0",
     "idna==3.10",
-    "psycopg2==2.9.10",
+    "psycopg2==2.9.11",
     "pysolr==3.10.0",
     "rcssmin==1.2.2",
     "requests==2.32.5",

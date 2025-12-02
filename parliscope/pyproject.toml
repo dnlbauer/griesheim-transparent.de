@@ -14,7 +14,7 @@ dependencies = [
     "fontawesomefree==6.6.0",
     "idna==3.11",
     "psycopg2==2.9.11",
-    "pysolr==3.10.0",
+    "pysolr==3.11.0",
     "rcssmin==1.2.2",
     "requests==2.32.5",
     "rjsmin==1.2.4",

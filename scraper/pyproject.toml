@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "psycopg2~=2.9.10",
     "Scrapy~=2.13.3",
-    "peewee~=3.18.2",
+    "peewee~=3.19.0",
     "pytz~=2025.2",
     "Twisted~=25.5",
 ]

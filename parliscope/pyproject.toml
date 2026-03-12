@@ -17,7 +17,7 @@ dependencies = [
     "pysolr==3.11.0",
     "rcssmin==1.2.2",
     "requests==2.32.5",
-    "rjsmin==1.2.4",
+    "rjsmin==1.2.5",
     "six==1.17.0",
     "sqlparse==0.5.5",
     "tornado==6.5.5",

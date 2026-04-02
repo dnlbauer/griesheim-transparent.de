@@ -8,6 +8,6 @@ dependencies = [
     "psycopg2~=2.9.10",
     "Scrapy~=2.14.1",
     "peewee~=4.0.1",
-    "pytz~=2025.2",
+    "pytz~=2026.1",
     "Twisted~=25.5",
 ]

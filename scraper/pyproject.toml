@@ -9,5 +9,5 @@ dependencies = [
     "Scrapy>=2.14.1,<2.16.0",
     "peewee~=4.0.1",
     "pytz~=2026.1",
-    "Twisted~=25.5",
+    "Twisted>=25.5,<27.0",
 ]
